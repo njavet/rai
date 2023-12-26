@@ -34,9 +34,23 @@ grid = [[0, 0, 0, 0, 0, 6, 0, 7, 0],
 
 
 class Agent:
-    def __init__(self, grid):
-        self.grid = [row[:] for row in grid]
+    def __init__(self):
+        self.sudokus = self.load_sudoku_file()
+        self.grid = None
         self.moves = 0
+
+    def load_sudoku_file(self, fname='sudoku.txt'):
+        sudokus = {}
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+            for i in range(0, len(lines), 10):
+                su = lines[i:i + 10]
+                sudokus[su[0].strip()] = []
+                for line in su[1:]:
+                    sudokus[su[0].strip()].append([int(c) for c in line.strip()])
+        return sudokus
+                    
+
 
     def get_neighbors(self, i, j):
         neighbors = [(i, k) for k in range(0, i)]
@@ -122,23 +136,6 @@ class Agent:
             if i in [2, 5]:
                 print('---------------------')
 
-
-    def backtrack_naive(self):
-        try:
-            i, j = self.get_zero_cell()
-        except TypeError:
-            return True
-
-        for val in range(1, 10):
-            if self.is_safe(i, j, val):
-                self.grid[i][j] = val
-                self.moves += 1
-
-                if self.backtrack_naive():
-                    return True
-
-                self.grid[i][j] = 0
-
     def backtrack(self):
         try:
             i, j = self.get_zero_cell()
@@ -154,37 +151,24 @@ class Agent:
 
             self.grid[i][j] = 0
         
-
     def solve_0(self):
-        self.backtrack_naive()
+        self.backtrack()
         print('solve_0 moves', self.moves)
 
     def solve_1(self):
+        self.arc_constraints()
         self.backtrack()
         print('solve_1 moves', self.moves)
 
-    def solve_2(self):
-        self.arc_constraints()
-        self.backtrack_naive()
-        print('solve_2 moves', self.moves)
+    def solve_all(self):
+        for k, grid in self.sudokus.items():
+            self.grid = [row[:] for row in grid]
+            self.moves = 0
+            self.solve_0()
+            self.grid = [row[:] for row in grid]
+            self.moves = 0
+            self.solve_1()
 
-    def solve_3(self):
-        self.arc_constraints()
-        self.backtrack()
-        print('solve_3 moves', self.moves)
-
-
-agent0 = Agent(grid)
-agent0.solve_0()
-
-agent1 = Agent(grid)
-agent1.solve_1()
-
-agent2 = Agent(grid)
-agent2.solve_2()
-
-agent3 = Agent(grid)
-agent3.solve_3()
-
-
+agent = Agent()
+agent.solve_all()
 
