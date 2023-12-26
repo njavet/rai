@@ -2,64 +2,39 @@ import itertools
 import collections
 
 
-grid = [0, 0, 0, 0, 0, 6, 0, 7, 0,
-        8, 0, 1, 4, 7, 3, 0, 0, 0,
-        7, 0, 0, 0, 0, 1, 9, 0, 0,
-        6, 0, 0, 0, 0, 0, 0, 0, 9,
-        0, 5, 0, 0, 0, 0, 0, 0, 0,
-        9, 0, 0, 5, 0, 8, 0, 0, 4,
-        4, 0, 0, 0, 0, 0, 0, 0, 1,
-        1, 6, 2, 0, 3, 0, 0, 0, 0,
-        0, 0, 0, 2, 0, 0, 4, 0, 0]
-
-sol = [3, 4, 5, 9, 2, 6, 1, 7, 8,
-       8, 9, 1, 4, 7, 3, 6, 5, 2,
-       7, 2, 6, 8, 5, 1, 9, 4, 3,
-       6, 8, 7, 3, 4, 2, 5, 1, 9,
-       2, 5, 4, 1, 9, 7, 3, 8, 6,
-       9, 1, 3, 5, 6, 8, 7, 2, 4,
-       4, 7, 9, 6, 8, 5, 2, 3, 1,
-       1, 6, 2, 7, 3, 4, 8, 9, 5,
-       5, 3, 8, 2, 1, 9, 4, 6, 7]
+grid0 = [[3, 4, 0, 2, 9, 8, 7, 0, 1],
+        [9, 6, 0, 0, 5, 0, 0, 0, 0],
+        [8, 7, 0, 6, 0, 1, 5, 9, 3],
+        [1, 0, 0, 0, 2, 0, 0, 0, 0],
+        [0, 0, 7, 8, 0, 0, 0, 4, 9],
+        [5, 0, 8, 0, 0, 0, 1, 0, 6],
+        [0, 0, 9, 0, 0, 0, 4, 0, 0],
+        [0, 0, 0, 0, 7, 2, 0, 1, 5],
+        [7, 0, 0, 1, 0, 4, 0, 0, 0]]
 
 
-class Sudoku:
-    def __init__(self, grid):
-        self.state = grid
+grid = [[0, 0, 0, 0, 2, 0, 5, 0, 0],
+        [0, 0, 8, 5, 0, 9, 0, 0, 2],
+        [0, 4, 0, 3, 8, 0, 1, 9, 0],
+        [3, 5, 0, 1, 7, 8, 9, 0, 0],
+        [7, 6, 0, 0, 0, 3, 8, 5, 1],
+        [8, 0, 9, 0, 0, 0, 4, 7, 3],
+        [0, 0, 7, 2, 0, 1, 6, 0, 0],
+        [1, 2, 0, 8, 9, 5, 0, 0, 0],
+        [0, 0, 0, 4, 0, 0, 0, 0, 0]]
 
-    def extract_row(self, i):
-        s = i*9
-        return self.state[s: s+9]
+class Agent:
+    def __init__(self):
+        self.grid = grid
+        self.variables = self.get_variables()
 
-    def extract_col(self, j):
-        return [self.state_vector[ind] for ind in range(j, 81, 9)]
-
-    def extract_box(self, n):
-    a = state_vector[9*n:9*n+3]
-    b = state_vector[9*n+9:9*n+9+3]
-    c = state_vector[9*n+18:9*n+18+3]
-    return a + b + c
-
-
-    def compute_position_dix(self):
-        dix = collections.defaultdict(list)
-        for i, row in enumerate(self.grid):
-            for j, val in enumerate(row):
-                dix[val].append((i, j))
-        return dix
-
-
-
-    def update_state(self):
-        self.zero_cells = {} 
+    def get_variables(self):
+        variables = []
         for i, row in enumerate(self.grid):
             for j, val in enumerate(row):
                 if val == 0:
-                    self.zero_cells[i, j] = self.get_free_values(i, j)
-
-    def set_cell_value(self, i, j, value):
-        self.grid[i][j] = value
-        self.update_state()
+                    variables.append((i, j))
+        return variables
 
     def get_row(self, i):
         return self.grid[i]
@@ -89,68 +64,120 @@ class Sudoku:
         row = self.get_row(i)
         col = self.get_col(j)
         box = self.get_box(i, j)
-
-        vals = set(sorted(row + col + box))
+        vals = set(row + col + box)
         return [val for val in range(1, 10) if not val in vals]
-
-
-    def is_solved(self):
-        return not self.zero_cells
 
     def print_board(self):
         print(' | '.join([str(self.grid[0:3]), str(self.grid[3:6]), str(self.grid[6:])]))
 
-
-class Agent:
-    def __init__(self):
-        self.sudoku = Sudoku(grid)
-
     def solve(self):
-        state0 = self.sudoku.zero_cells
-        print('initial state')
-        for (i, j), vals in state0.items():
-            print('position', i, j, ' values', vals)
-
-        print('position dict')
-        for val, lst in self.sudoku.compute_position_dix().items():
-            print(val, lst)
-        return 
-
-        dix = self.sudoku.get_free_value_dict()
-        self.set_unique_cell_values(dix)
-        dix2 = self.sudoku.get_free_value_dict()
-        while dix != dix2:
-            dix = dix2
-            self.set_unique_cell_values(dix)
-            dix2 = self.sudoku.get_free_value_dict()
-        print('step 0 complete')
-        
-
-
-        for solvec in itertools.product(*dix.values()):
-            #print('trial', solvec, 'number', trials)
-            for ind, (i, j) in enumerate(dix.keys()):
-                self.sudoku.set_cell_value(i, j, solvec[ind])
-            if self.sudoku.is_solved():
-                print('solution after ', trials, ' trials')
-                self.sudoku.print_board()
+        for ind, (i, j) in enumerate(self.variables):
+            free_values = self.get_free_values(i, j)
+            # solution is certain 
+            if len(free_values) == 1:
+                self.grid[i][j] = free_values[0]
+            # simulation
             else:
-                trials += 1
-                self.sudoku.set_zeros()
-        
-    def free_value_processing(self):
-        state0 = self.sudoku.zero_cells
-        for (i, j), values in state0.items():
-            if len(values) == 1:
-                self.sudoku.set_cell_value(i, j, values[0])
-                # print('set value', values[0], ' at ', i, j)
+                for val in free_values:
+                    self._simulate(i, j, ind, val)
+
+    def _simulate(self, i, j, ind, val):
+        print('board', self.grid)
+        print('root: ', i, j, val)
+        self.grid[i][j] = val
+        branch = [(i, j)]
+        for ii, jj in self.variables[ind+1:]:
+            free_values = self.get_free_values(ii, jj)
+            if len(free_values) == 1:
+                self.grid[ii][jj] = free_values[0]
+                branch.append((ii, jj))
+            elif len(free_values) == 0:
+                print('contradiction at', i, j)
+                print('zeroing branch', branch)
+                for wi, wj in branch:
+                    self.grid[wi][wj] = 0
+            else:
+                for fv in free_values:
+                    self._simulate(ii, jj, ind+1, fv)
+
+
+
+
+
+
 
     
 
 
 ag = Agent()
-ag.solve()
+#ag.solve()
+def solve_sudoku(board):
+    empty = find_empty(board)
+    
+    # If there are no empty cells, the puzzle is solved
+    if not empty:
+        return True
+
+    row, col = empty
+
+    # Try filling the empty cell with numbers 1 to 9
+    for num in range(1, 10):
+        if is_safe(board, row, col, num):
+            # If the number is safe, assign it to the cell
+            board[row][col] = num
+
+            # Recursively attempt to solve the rest of the puzzle
+            if solve_sudoku(board):
+                return True
+
+            # If the current assignment does not lead to a solution, backtrack
+            board[row][col] = 0
+
+    # If no number can be placed, backtrack to the previous cell
+    return False
+
+def find_empty(board):
+    # Find the first empty cell (with value 0)
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                return (i, j)
+    return None
+
+def is_safe(board, row, col, num):
+    # Check if the number is not present in the row, column, and 3x3 subgrid
+    return (
+        is_safe_row(board, row, num) and
+        is_safe_col(board, col, num) and
+        is_safe_box(board, row - row % 3, col - col % 3, num)
+    )
+
+def is_safe_row(board, row, num):
+    return num not in board[row]
+
+def is_safe_col(board, col, num):
+    return all(row[col] != num for row in board)
+
+def is_safe_box(board, start_row, start_col, num):
+    return all(
+        num not in board[i][start_col:start_col + 3]
+        for i in range(start_row, start_row + 3)
+    )
+
+if solve_sudoku(grid):
+    for row in grid:
+        print(row)
 
 
-#### 
-# AIMA problem solving agents 
+"""
+AIMA problem solving agents 
+ a search problem can be defined as follows:
+
+  - set of initial states
+  - initial state
+  - goal state
+  - available actions for the agent 
+  - transition model
+  - action cost function
+
+"""
