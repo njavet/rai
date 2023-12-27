@@ -9,6 +9,8 @@ a constraint satisfaction problem consists of three components:
 import itertools
 import string
 import collections
+import random
+import operator
 
 
 aima = [[0, 0, 3, 0, 2, 0, 6, 0, 0],
@@ -21,6 +23,15 @@ aima = [[0, 0, 3, 0, 2, 0, 6, 0, 0],
         [8, 0, 0, 2, 0, 3, 0, 0, 9],
         [0, 0, 5, 0, 1, 0, 3, 0, 0]]
 
+brute = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 3, 0, 8, 5],
+         [0, 0, 1, 0, 2, 0, 0, 0, 0],
+         [0, 0, 0, 5, 0, 7, 0, 0, 0],
+         [0, 0, 4, 0, 0, 0, 1, 0, 0],
+         [0, 9, 0, 0, 0, 0, 0, 0, 0],
+         [5, 0, 0, 0, 0, 0, 0, 7, 3],
+         [0, 0, 2, 0, 1, 0, 0, 0, 0],
+         [0, 0, 0, 0, 4, 0, 0, 0, 9]]
 
 grid = [[0, 0, 0, 0, 0, 6, 0, 7, 0],
         [8, 0, 1, 4, 7, 3, 0, 0, 0],
@@ -38,6 +49,9 @@ class Agent:
         self.sudokus = self.load_sudoku_file()
         self.grid = None
         self.moves = 0
+        self.rows = {}
+        self.cols = {}
+        self.boxes = {}
 
     def load_sudoku_file(self, fname='sudoku.txt'):
         sudokus = {}
@@ -122,11 +136,36 @@ class Agent:
                         self.moves += 1
                         self.arc_constraints()
 
+    def phase_2(self):
+        zeros = {}
+        for i, row in enumerate(self.grid):
+            for j, val in enumerate(row):
+                if val == 0:
+                    free_values = self.get_free_values(i, j)
+                    zeros[i, j] = free_values
+
+        return zeros
+
+
     def get_zero_cell(self):
         for i, row in enumerate(self.grid):
             for j, val in enumerate(row):
                 if val == 0:
                     return i, j
+
+    def get_low_domain_zero_cell(self):
+        lst = []
+        for i, row in enumerate(self.grid):
+            for j, val in enumerate(row):
+                if val == 0:
+                    free_values = self.get_free_values(i, j)
+                    lst.append((i, j, len(free_values)))
+        try:
+            lst = sorted(lst, key=operator.itemgetter(2))[0]
+            a, b, c = lst[0]
+            return a, b
+        except IndexError:
+            pass
 
     def print_board(self):
         for i, row in enumerate(self.grid):
@@ -150,25 +189,38 @@ class Agent:
                 return True
 
             self.grid[i][j] = 0
-        
+
     def solve_0(self):
         self.backtrack()
         print('solve_0 moves', self.moves)
 
     def solve_1(self):
+        self.print_board()
         self.arc_constraints()
+        zeros = self.phase_2()
+        for (i, j), vals in zeros.items():
+            print(i, j, vals)
+            if i == 8 and j == 7:
+                print(self.get_box_vals(i, j))
+
+        print('\nsolve_1 before backtrack', self.moves)
+        self.print_board()
         self.backtrack()
-        print('solve_1 moves', self.moves)
+        print('\nsolve_1 moves', self.moves)
+        self.print_board()
 
     def solve_all(self):
         for k, grid in self.sudokus.items():
             self.grid = [row[:] for row in grid]
             self.moves = 0
-            self.solve_0()
+            #self.solve_0()
             self.grid = [row[:] for row in grid]
             self.moves = 0
             self.solve_1()
 
 agent = Agent()
-agent.solve_all()
+agent.grid = brute
+agent.moves = 0
+agent.solve_1()
+#agent.solve_all()
 
