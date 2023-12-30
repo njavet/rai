@@ -1,16 +1,21 @@
-
-"""
-a constraint satisfaction problem consists of three components:
-    X: set of variables
-    D:  set of domains, one for each variable
-    C: constraints that specify allowable combinations of values
-
-"""
-import itertools
 import string
 import collections
-import random
-import operator
+from rich.console import Console
+from rich.text import Text
+
+
+import csp
+
+
+grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 3, 0, 8, 5],
+        [0, 0, 1, 0, 2, 0, 0, 0, 0],
+        [0, 0, 0, 5, 0, 7, 0, 0, 0],
+        [0, 0, 4, 0, 0, 0, 1, 0, 0],
+        [0, 9, 0, 0, 0, 0, 0, 0, 0],
+        [5, 0, 0, 0, 0, 0, 0, 7, 3],
+        [0, 0, 2, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 4, 0, 0, 0, 9]]
 
 
 aima = [[0, 0, 3, 0, 2, 0, 6, 0, 0],
@@ -23,204 +28,215 @@ aima = [[0, 0, 3, 0, 2, 0, 6, 0, 0],
         [8, 0, 0, 2, 0, 3, 0, 0, 9],
         [0, 0, 5, 0, 1, 0, 3, 0, 0]]
 
-brute = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 3, 0, 8, 5],
-         [0, 0, 1, 0, 2, 0, 0, 0, 0],
-         [0, 0, 0, 5, 0, 7, 0, 0, 0],
-         [0, 0, 4, 0, 0, 0, 1, 0, 0],
-         [0, 9, 0, 0, 0, 0, 0, 0, 0],
-         [5, 0, 0, 0, 0, 0, 0, 7, 3],
-         [0, 0, 2, 0, 1, 0, 0, 0, 0],
-         [0, 0, 0, 0, 4, 0, 0, 0, 9]]
 
-grid = [[0, 0, 0, 0, 0, 6, 0, 7, 0],
-        [8, 0, 1, 4, 7, 3, 0, 0, 0],
-        [7, 0, 0, 0, 0, 1, 9, 0, 0],
-        [6, 0, 0, 0, 0, 0, 0, 0, 9],
-        [0, 5, 0, 0, 0, 0, 0, 0, 0],
-        [9, 0, 0, 5, 0, 8, 0, 0, 4],
-        [4, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 6, 2, 0, 3, 0, 0, 0, 0],
-        [0, 0, 0, 2, 0, 0, 4, 0, 0]]
+zhaw = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9]]
 
 
-class Agent:
-    def __init__(self):
-        self.sudokus = self.load_sudoku_file()
-        self.grid = None
-        self.moves = 0
-        self.rows = {}
-        self.cols = {}
-        self.boxes = {}
 
-    def load_sudoku_file(self, fname='sudoku.txt'):
-        sudokus = {}
-        with open(fname, 'r') as f:
-            lines = f.readlines()
-            for i in range(0, len(lines), 10):
-                su = lines[i:i + 10]
-                sudokus[su[0].strip()] = []
-                for line in su[1:]:
-                    sudokus[su[0].strip()].append([int(c) for c in line.strip()])
-        return sudokus
-                    
+class SudokuGrid:
+    def __init__(self, grid):
+        self.grid = [row[:] for row in grid]
 
+    def get_row_indexes(self, i, j):
+        a = [(i, k) for k in range(0, j)]
+        b = [(i, k) for k in range(j+1, 9)]
+        assert(len(a + b) == 8)
+        return a + b
 
-    def get_neighbors(self, i, j):
-        neighbors = [(i, k) for k in range(0, i)]
-        neighbors = neighbors + [(i, k) for k in range(i+1, 9)]
+    def get_col_indexes(self, i, j):
+        a = [(k, j) for k in range(0, i)]
+        b = [(k, j) for k in range(i+1, 9)]
+        assert(len(a + b) == 8)
+        return a + b
 
-        neighbors = neighbors + [(k, j) for k in range(0, j)]
-        neighbors = neighbors + [(k, j) for k in range(j+1, 9)]
-
+    def get_box_indexes(self, i, j):
         rs = i - i % 3
         cs = j - j % 3
+        box = []
         for ii in range(rs, rs + 3):
             for jj in range(cs, cs + 3):
-                if (ii, jj) not in neighbors:
-                    if (ii, jj) != (i, j):
-                        neighbors.append((ii, jj))
-        return [(ii, jj) for ii, jj in neighbors if (ii, jj) in self.zero_cells.keys()]
-
-
-    def get_row_vals(self, i):
-        return self.grid[i]
-
-    def is_safe_row(self, i, val):
-        return val not in self.grid[i]
-    
-    def get_col_vals(self, j):
-        return [row[j] for row in self.grid]
-
-    def is_safe_col(self, j, val):
-        return val not in [row[j] for row in self.grid]
-
-    def get_box_vals(self, i, j):
-        row_start = i - i % 3
-        col_start = j - j % 3
-        box = []
-        for ii in range(row_start, row_start+3):
-            for jj in range(col_start, col_start+3):
-                box.append(self.grid[ii][jj])
+                if ii != i and jj != j:
+                    box.append((ii, jj))
+        assert(len(box) == 4)
         return box
 
-    def is_safe_box(self, i, j, val):
-        row_start = i - i % 3
-        row_ind = [row_start, row_start + 1, row_start + 2]
-        col_start = j - j % 3
-        col_ind = [col_start, col_start + 1, col_start + 2]
-        return val not in [self.grid[ri][ci]
-                           for (ri, ci) in itertools.product(row_ind, col_ind)]
+    def get_neighbor_indexes(self, i, j):
+        a = self.get_row_indexes(i, j)
+        b = self.get_col_indexes(i, j)
+        c = self.get_box_indexes(i, j)
+        assert(len(a + b + c) == 20)
+        return a + b + c
 
-    def get_free_values(self, i, j):
-        a = self.get_row_vals(i)
-        b = self.get_col_vals(j)
-        c = self.get_box_vals(i, j)
-        d = set(a + b + c)
-        return [val for val in range(1, 10) if val not in d]
-
-    def is_safe(self, i, j, val):
-        return (
-                self.is_safe_row(i, val) and
-                self.is_safe_col(j, val) and
-                self.is_safe_box(i, j, val)
-        )
-
-    def arc_constraints(self):
+    def print_grid(self):
         for i, row in enumerate(self.grid):
-            for j, val in enumerate(row):
-                if val == 0:
-                    free_values = self.get_free_values(i, j)
-                    if len(free_values) == 1:
-                        self.grid[i][j] = free_values[0]
-                        self.moves += 1
-                        self.arc_constraints()
-
-    def phase_2(self):
-        zeros = {}
-        for i, row in enumerate(self.grid):
-            for j, val in enumerate(row):
-                if val == 0:
-                    free_values = self.get_free_values(i, j)
-                    zeros[i, j] = free_values
-
-        return zeros
-
-
-    def get_zero_cell(self):
-        for i, row in enumerate(self.grid):
-            for j, val in enumerate(row):
-                if val == 0:
-                    return i, j
-
-    def get_low_domain_zero_cell(self):
-        lst = []
-        for i, row in enumerate(self.grid):
-            for j, val in enumerate(row):
-                if val == 0:
-                    free_values = self.get_free_values(i, j)
-                    lst.append((i, j, len(free_values)))
-        try:
-            lst = sorted(lst, key=operator.itemgetter(2))[0]
-            a, b, c = lst[0]
-            return a, b
-        except IndexError:
-            pass
-
-    def print_board(self):
-        for i, row in enumerate(self.grid):
-            print(' | '.join([' '.join([str(val) for val in row[0:3]]),
-                              ' '.join([str(val) for val in row[3:6]]),
-                              ' '.join([str(val) for val in row[6:]])]))
+            s0 = ' '.join([str(val) for val in row[0:3]])
+            s1 = ' '.join([str(val) for val in row[3:6]])
+            s2 = ' '.join([str(val) for val in row[6:]])
+            s3 = ' | '.join([s0, s1, s2])
+            print(' ' + s3)
             if i in [2, 5]:
-                print('---------------------')
+                print(23*'-')
 
-    def backtrack(self):
-        try:
-            i, j = self.get_zero_cell()
-        except TypeError:
-            return True
-    
-        for val in self.get_free_values(i, j):
-            self.grid[i][j] = val
-            self.moves += 1
 
-            if self.backtrack():
-                return True
 
-            self.grid[i][j] = 0
+class SudokuCSP(csp.CSP):
+    def __init__(self, grid):
+        super().__init__()
+        self.grid = SudokuGrid(grid)
+        self.construct_variables()
+        self.assign_neighbors()
+        self.construct_constraints()
 
-    def solve_0(self):
-        self.backtrack()
-        print('solve_0 moves', self.moves)
+    def construct_variables(self):
+        self.variables = {}
+        for i, row in enumerate(self.grid.grid):
+            for j, val in enumerate(row):
+                name = string.ascii_uppercase[0:9][i] + str(j)
+                if val == 0:
+                    domain = list(range(1, 10))
+                    self.variables[i, j] = csp.Variable(name, domain)
+                else:
+                    domain = [val]
+                    self.variables[i, j] = csp.Variable(name, domain)
+                    self.variables[i, j].assigned = val
 
-    def solve_1(self):
-        self.print_board()
-        self.arc_constraints()
-        zeros = self.phase_2()
-        for (i, j), vals in zeros.items():
-            print(i, j, vals)
-            if i == 8 and j == 7:
-                print(self.get_box_vals(i, j))
+    def get_neighbors(self, i, j):
+        neighbors = []
+        for ii, jj in self.grid.get_neighbor_indexes(i, j):
+            neighbors.append(self.variables[ii, jj])
+        return neighbors
 
-        print('\nsolve_1 before backtrack', self.moves)
-        self.print_board()
-        self.backtrack()
-        print('\nsolve_1 moves', self.moves)
-        self.print_board()
+    def assign_neighbors(self):
+        for (i, j), var in self.variables.items():
+            var.neighbors = self.get_neighbors(i, j)
 
-    def solve_all(self):
-        for k, grid in self.sudokus.items():
-            self.grid = [row[:] for row in grid]
-            self.moves = 0
-            #self.solve_0()
-            self.grid = [row[:] for row in grid]
-            self.moves = 0
-            self.solve_1()
+    def construct_constraints(self):
+        self.constraints = []
+        row = collections.defaultdict(list)
+        col = collections.defaultdict(list)
+        box = collections.defaultdict(list)
+        for (i, j), var in self.variables.items():
+            row[i].append(var)
+            col[j].append(var)
+            ii = i - i % 3
+            jj = j - j % 3
+            box[ii, jj].append(var)
+        for i, rc in enumerate(row.values()):
+            self.constraints.append(csp.AllDiff('R' + str(i), rc))
+        for i, cc in enumerate(col.values()):
+            self.constraints.append(csp.AllDiff('C' + str(i), cc))
+        for i, bc in enumerate(box.values()):
+            self.constraints.append(csp.AllDiff('B' + str(i), bc))
 
-agent = Agent()
-agent.grid = brute
-agent.moves = 0
-agent.solve_1()
-#agent.solve_all()
+    def print_variables(self):
+        console = Console()
+        s = Text('   | 0 1 2 | 3 4 5 | 6 7 8 ', style='bold white')
+        console.print(s)
+        console.print(' ' + 25 * '-')
+        for i, row in enumerate(self.grid.grid):
+            a = string.ascii_uppercase[0:9][i]
+            t = Text(' ' + a + ' | ', style='bold white')
+            for j, val in enumerate(row):
+                var = self.variables[i, j]
+                if var.assigned and var.step == 0:
+                    t.append(str(var.assigned) + ' ', style='red')
+                elif var.assigned and var.step == 1:
+                    t.append(str(var.assigned) + ' ', style='green')
+                elif var.assigned and var.step == 2:
+                    t.append(str(var.assigned) + ' ', style='blue')
+                elif var.assigned:
+                    t.append(str(var.assigned) + ' ', style='bold green')
 
+                else:
+                    t.append('0 ', style='bold grey')
+                if j in [2, 5]:
+                    t.append('| ')
+            console.print(t)
+            if i in [2, 5]:
+                console.print(' ' + 25 * '-')
+
+    def assign(self):
+        n = 0
+        for var in self.variables.values():
+            if var.name == 'G1':
+                print('in assign', var.name, var.domain)
+            if not var.assigned and len(var.domain) == 1:
+                n += 1
+                var.step += 1
+                var.assigned = var.domain[0]
+            elif not var.assigned:
+                var.step += 1
+        return n
+
+    def solve(self):
+        self.AC3()
+        n = self.assign()
+
+        if n:
+            print('first AC3, assigned: ', n)
+            self.print_variables()
+
+        for con in self.constraints:
+            lst = con.reduce_constraint_variables_domain()
+            n = self.assign()
+            queue = [(Xi, Xj) for Xi in lst for Xj in Xi.neighbors]
+            queue2 = [(Xj, Xi) for Xi in lst for Xj in Xi.neighbors]
+            self.AC3(queue + queue2)
+            if n:
+                self.print_variables()
+
+
+sudoku = SudokuCSP(grid)
+#sudoku = SudokuCSP(aima)
+#sudoku = SudokuCSP(zhaw)
+print('start grid')
+sudoku.print_variables()
+sudoku.solve()
+sudoku.print_variables()
+
+
+"""
+for var in sudoku.variables.values():
+    if var.name == 'I7':
+        print(var.name, var.domain)
+        for n in var.neighbors:
+            print(n.name, n.domain)
+
+
+print('--')
+for var in sudoku.variables.values():
+    if var.name == 'I7':
+        print(var.name, var.domain)
+        for n in var.neighbors:
+            print(n.name, n.domain)
+
+print('--')
+for con in sudoku.constraints:
+    print('constraint', len(con.variables))
+    for var in con.variables:
+        print(var.name, var.domain, )
+
+
+for var in sudoku.variables.values():
+    if var.name == 'G6':
+        print(var.name, var.domain)
+    if var.name == 'H6':
+        print(var.name, var.domain)
+    if var.name == 'H7':
+        print(var.name, var.domain)
+    if var.name == 'H8':
+        print(var.name, var.domain)
+    if var.name == 'I6':
+        print(var.name, var.domain)
+    if var.name == 'I7':
+        print(var.name, var.domain)
+
+"""
