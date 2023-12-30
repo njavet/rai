@@ -1,0 +1,7 @@
+
+# CSP vs pure backtracking
+29.12.23
+I don't understand the difference between using
+csp for sudoku aka factored states and then backtracking
+vs just use backtracking with atomic states
+
