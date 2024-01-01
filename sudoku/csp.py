@@ -14,18 +14,16 @@ assignment: a : X -> D*
 
 
 class Variable:
-    def __init__(self, name: str, domain: list[int]):
-        # step is only for rich color printing 
-        # when it was assigned
+    def __init__(self, name: str, domain: set[int]):
         self.name = name
         self.domain = domain 
-        self.assigned = None
-        self.step = 0
         self.neighbors = None
+        self.assigned = None
+        self.final = False
 
 
 class Constraint:
-    def __init__(self, name, variables):
+    def __init__(self, name: str, variables: set):
         self.name = name
         self.variables = variables
 
@@ -34,8 +32,7 @@ class AllDiff(Constraint):
     def __init__(self, name, variables):
         super().__init__(name, variables)
 
-    def reduce_constraint_variables_domain(self):
-        print('checking ', self.name)
+    def eliminate_single(self):
         lst = []
         dix = collections.defaultdict(int)
         for var in self.variables:
@@ -46,58 +43,97 @@ class AllDiff(Constraint):
         for val, count in dix.items():
             if count == 1:
                 for var in self.variables:
-                    print('\tvar:', var.domain)
                     if val in var.domain:
-                        var.domain = [val]
+                        var.domain.intersection_update({val})
                         lst.append(var)
-                        print('\tdomain reduced: ', var.name, var.domain)
         return lst
 
-    def is_partial_solution(self):
+    def eliminate_double(self):
         lst = []
-        for var in self.variables:
-            if var.assigned:
-                lst.assigned.append(var.assigned)
-        # all values are different
-        return len(set(lst)) == len(lst)
+        nonass = [var for var in self.variables if not var.assigned
+                  and len(var.domain) == 2]
+        n1 = [var for var in self.variables if not var.assigned]
+        for var in nonass:
+            for var2 in nonass:
+                if var2.name != var.name and var2.domain == var.domain:
+                    others = [v for v in n1
+                                if v.name != var.name and v.name != var2.name]
+                    for v in others:
+                        v.domain.difference_update(var.domain)
+                        lst.append(v)
+                        print('updated double',
+                                  self.name,
+                                    v.name, v.domain,
+                                  var.name, var.domain,
+                                  var2.name, var2.domain)
+        return lst
 
-    def is_solution(self):
-        nvars = len(self.variables)
-        con1 = len(lst) == nvars
-        return con1 and self.is_partial_solution()
+    def eliminate_triple(self):
+        lst = []
+        nonass = [var for var in self.variables if not var.assigned
+                  and len(var.domain) <= 3]
+
+        for var in nonass:
+            names = [var.name]
+            for var2 in nonass:
+                if var2.name not in names and var2.domain.issubset(var.domain):
+                    names.append(var2.name)
+                    for var3 in nonass:
+                        if var3.name not in names:
+                            if var3.domain.issubset(var.domain) and var3.domain.issubset(var2.domain):
+                                others = [v for v in self.variables if v.name not in names]
+                                for v in others:
+                                    print('updated triple',
+                                        self.name,
+                                  var.name, var.domain,
+                                  var2.name, var2.domain)
+                                    v.domain.difference_update(var.domain)
+                                    lst.append(v)
+        return lst
+
+
+
+
+
 
 
 class CSP:
     def __init__(self):
-        self.variables = None
-        self.constraints = None
+        self.variables: dict = {}
+        self.constraints = set()
 
-    def _revise(self, Xi, Xj):
+    @staticmethod
+    def _revise(Xi, Xj):
         revised = False
-        for i, x in enumerate(Xi.domain):
+        for x in list(Xi.domain):
             if all([x == y for y in Xj.domain]):
-                del Xi.domain[i]
+                Xi.domain.remove(x)
                 revised = True
         return revised
 
     def AC3(self, queue=None):
-        """ arc constraints makes only sense with len(Xj.domain) == 1 ? 
-            since it only looks at a pair of variables. if len(Xj.domain) > 1
-            we obviously can just compare the seconds number, which is not equal
-            to the first one
-        """
         if queue is None:
-            queue = [(Xi, Xj) for Xi in self.variables.values() for Xj in Xi.neighbors]
-        rev = 0
+            queue = [(Xi, self.variables[i, j])
+                     for Xi in self.variables.values()
+                     for (i, j) in Xi.neighbors]
         while queue:
             Xi, Xj = queue.pop()
             if self._revise(Xi, Xj):
-                rev += 1
                 if len(Xi.domain) == 0:
                     return False
-                for Xk in [Xn for Xn in Xi.neighbors if Xn.name != Xj.name]:
-                    queue.append((Xk, Xi))
-        print('revised', rev)
+                for (i, j) in Xi.neighbors:
+                    # Xj, Xi is added too
+                    Xk = self.variables[i, j]
+                    if Xk.name != Xj.name:
+                        queue.append((Xk, Xi))
         return True
+
+    def assign_single_domains(self, nassigned=0):
+        for var in self.variables.values():
+            if not var.assigned and len(var.domain) == 1:
+                nassigned += 1
+                var.assigned = var.domain.copy().pop()
+                var.final = True
+        return nassigned
 
 

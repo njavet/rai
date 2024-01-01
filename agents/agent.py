@@ -1,4 +1,13 @@
+"""
+trying to implement different agent types of aima
+"""
+
+
 class Environment:
+    pass
+
+
+class State:
     pass
 
 
@@ -22,7 +31,7 @@ class Rule:
     pass
 
 
-class State:
+class ConditionActionRule(Rule):
     pass
 
 
@@ -30,6 +39,7 @@ class Agent:
     def __init__(self):
         self.sensors = None
         self.actuators = None
+        self.rules = None
 
     def agent_program(self, percept):
         """ returns an action """ 
