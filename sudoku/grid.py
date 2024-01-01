@@ -3,13 +3,14 @@ from rich.text import Text
 from rich.console import Console
 
 
-def get_grids(fname='sudoku.txt'):
+def get_grid_dict(fname='sudoku.txt'):
     with open(fname, 'r') as f:
-        lines = f.readlines()
-    grids = []
-    for i in range(1, len(lines), 10):
-        grids.append([[int(c) for c in row] for row in lines[i:i+9]])
-    return grids
+        lines = [line.strip() for line in f.readlines()]
+    grid_dix = {}
+    for nr, i in enumerate(range(1, len(lines), 10)):
+        grid = [[int(c) for c in row] for row in lines[i:i+9]]
+        grid_dix[nr] = grid
+    return grid_dix
 
 
 def print_grid(grid):

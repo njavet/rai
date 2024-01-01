@@ -5,11 +5,24 @@ from rich.console import Console
 from rich.text import Text
 
 import csp
+"""
+least constraining value:
+isn't it better (at least for sudoku) to take the value that
+rules out the most values in the remaining variables ? because
+then either we fail faster and can move on, or we find the (unique)
+solution faster ?
+
+AC3 is constraint propagation, while
+forward checking would only look at the neighbors of the current
+variable 
+"""
 
 
 class Sudoku(csp.CSP):
-    def __init__(self):
+    def __init__(self, grid):
         super().__init__()
+        self.construct_variables(grid)
+        self.steps = 0
 
     def construct_variables(self, grid):
         for i, row in enumerate(grid):
@@ -19,7 +32,6 @@ class Sudoku(csp.CSP):
                 var.neighbors = self.get_neighbor_index_set(i, j)
                 if val != 0:
                     var.assigned = val
-                    var.final = True
                     var.domain.intersection_update({val})
                 self.variables[i, j] = var
 
@@ -51,7 +63,7 @@ class Sudoku(csp.CSP):
         for i, bc in enumerate(box.values()):
             self.constraints.add(csp.AllDiff('B' + str(i), bc))
 
-    def print_variables(self, color=None):
+    def print_grid(self, color=None):
         if color is None:
             color = 'bold green'
         console = Console()
@@ -64,9 +76,7 @@ class Sudoku(csp.CSP):
             t = Text(' ' + a + ' | ', style='bold white')
             for j in range(9):
                 var = self.variables[i, j]
-                if var.assigned and var.final:
-                    t.append(str(var.assigned) + ' ', style=color)
-                elif var.assigned:
+                if var.assigned:
                     t.append(str(var.assigned) + ' ', style='bold green')
                 else:
                     t.append('0 ', style='bold grey')
@@ -78,7 +88,34 @@ class Sudoku(csp.CSP):
                 console.print(' ' + 25 * '-')
         print('Zeros', zero)
 
+    def print_variables(self):
+        for (i, j), var in self.variables.items():
+            print(var.name, var.domain)
+
+    def mrv(self):
+        pass
+
+    def backtrack_search(self):
+        var = self.select_unassigned_variable()
+        if var is None:
+            return True
+
+        for val in var.domain:
+            var.assigned = val
+            queue0 = [(var, self.variables[i, j]) for (i, j) in var.neighbors]
+            queue1 = [(self.variables[i, j], var) for (i, j) in var.neighbors]
+            if not self.AC3(queue0 + queue1):
+                # revert to the domains before trying this solution
+                for v in self.variables.values():
+                    v.domain = v.domain_copy.copy()
+                return False
+            if self.backtrack_search():
+                return True
+            var.assigned = None
+
     def solve(self):
         pass
+
+
 
 

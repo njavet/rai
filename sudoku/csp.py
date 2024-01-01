@@ -14,18 +14,28 @@ assignment: a : X -> D*
 
 
 class Variable:
-    def __init__(self, name: str, domain: set[int]):
+    def __init__(self, name, domain):
         self.name = name
-        self.domain = domain 
+        self.domain = domain
+        self.simdom = None
         self.neighbors = None
         self.assigned = None
-        self.final = False
 
 
 class CSP:
     def __init__(self):
-        self.variables: dict = {}
-        self.constraints = set()
+        self.variables = None
+
+    def select_unassigned_variable(self, mode):
+        # greedy
+        if mode == 'greedy':
+            for var in self.variables:
+                if not var.assigned:
+                    return var
+        elif mode == 'mrv':
+            sorted([var for var in self.variables], key=lambda v: len())
+            for var in self.variables
+
 
     @staticmethod
     def _revise(Xi, Xj):
@@ -47,18 +57,16 @@ class CSP:
                 if len(Xi.domain) == 0:
                     return False
                 for (i, j) in Xi.neighbors:
-                    # Xj, Xi is added too
                     Xk = self.variables[i, j]
                     if Xk.name != Xj.name:
                         queue.append((Xk, Xi))
         return True
 
-    def assign_single_domains(self, nassigned=0):
+    def assign_single_value_domains(self, nassigned=0):
         for var in self.variables.values():
             if not var.assigned and len(var.domain) == 1:
                 nassigned += 1
                 var.assigned = var.domain.copy().pop()
-                var.final = True
         return nassigned
 
 
