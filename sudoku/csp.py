@@ -92,11 +92,6 @@ class AllDiff(Constraint):
         return lst
 
 
-
-
-
-
-
 class CSP:
     def __init__(self):
         self.variables: dict = {}
