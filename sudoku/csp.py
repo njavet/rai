@@ -13,18 +13,13 @@ assignment: a : X -> D*
 """
 
 
-class Variable:
-    def __init__(self, name, domain):
-        self.name = name
-        self.domain = domain
-        self.simdom = None
-        self.neighbors = None
-        self.assigned = None
-
-
 class CSP:
     def __init__(self):
         self.variables = None
+        self.domains = None
+        self.simdoms = None
+        self.neighbors = None
+        self.n_bt = 0
 
     def select_unassigned_variable(self, mode):
         # greedy
@@ -33,8 +28,7 @@ class CSP:
                 if not var.assigned:
                     return var
         elif mode == 'mrv':
-            sorted([var for var in self.variables], key=lambda v: len())
-            for var in self.variables
+            pass
 
 
     @staticmethod
