@@ -13,6 +13,20 @@ def get_grid_dict(fname='sudoku.txt'):
     return grid_dix
 
 
+def write_solution(grid, solution, fname, dix):
+    with open(fname, 'a') as f:
+        f.write(dix['name'] + '\n')
+        for row in grid:
+            f.write(''.join([str(val) for val in row]) + '\n')
+        f.write('solution\n')
+        for row in solution:
+            f.write(''.join([str(val) for val in row]) + '\n')
+        if dix:
+            for k, v in dix.items():
+                f.write(k + '\t' + v + '\n')
+        f.write(79*'-' + '\n')
+
+
 def print_grid(grid):
     console = Console()
     s = Text('   | 0 1 2 | 3 4 5 | 6 7 8 ', style='bold white')
@@ -28,3 +42,4 @@ def print_grid(grid):
         console.print(t)
         if i in [2, 5]:
             console.print(' ' + 25 * '-')
+

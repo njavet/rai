@@ -22,21 +22,22 @@ class Sudoku(csp.CSP):
     def __init__(self, grid):
         super().__init__()
         self.construct_variables(grid)
-        self.steps = 0
+        self.construct_constraints()
+        self.ass = None
 
     def construct_variables(self, grid):
         for i, row in enumerate(grid):
             for j, val in enumerate(row):
                 name = string.ascii_uppercase[0:9][i] + str(j)
-                var = csp.Variable(name, set(range(1, 10)))
-                var.neighbors = self.get_neighbor_index_set(i, j)
-                if val != 0:
-                    var.assigned = val
-                    var.domain.intersection_update({val})
-                self.variables[i, j] = var
+                self.variables.add(name)
+                if val == 0:
+                    self.domains[name] = set(range(1, 10))
+                else:
+                    self.domains[name] = {val}
+                self.neighbors[name] = self.get_neighbors(i, j)
 
     @staticmethod
-    def get_neighbor_index_set(i, j):
+    def get_neighbors(i, j):
         rs = i - i % 3
         cs = j - j % 3
         row = [(i, col) for col in range(9) if col != j]
@@ -44,28 +45,34 @@ class Sudoku(csp.CSP):
         box = [(row, col) for row, col in itertools.product(
             range(rs, rs + 3), range(cs, cs + 3)
         ) if row != i and col != j]
-        return set(row + col + box)
+        indexes = set(row + col + box)
+        return {string.ascii_uppercase[0:9][ii] + str(jj) for ii, jj in indexes}
 
     def construct_constraints(self):
-        row = collections.defaultdict(set)
-        col = collections.defaultdict(set)
-        box = collections.defaultdict(set)
-        for (i, j), var in self.variables.items():
-            row[i].add(var)
-            col[j].add(var)
-            ii = i - i % 3
-            jj = j - j % 3
-            box[ii, jj].add(var)
-        for i, rc in enumerate(row.values()):
-            self.constraints.add(csp.AllDiff('R' + str(i), rc))
-        for i, cc in enumerate(col.values()):
-            self.constraints.add(csp.AllDiff('C' + str(i), cc))
-        for i, bc in enumerate(box.values()):
-            self.constraints.add(csp.AllDiff('B' + str(i), bc))
+        rows = collections.defaultdict(list)
+        cols = collections.defaultdict(list)
+        for c, d in itertools.product(string.ascii_uppercase[0:9], string.digits[0:9]):
+            rows[c].append(c + d)
+            cols[d].append(c + d)
+        row_sets = [set(row) for row in rows.values()]
+        col_sets = [set(col) for col in cols.values()]
+        for i in range(3):
+            ru = self.append_and_union(i, row_sets)
+            for j in range(3):
+                cu = self.append_and_union(j, col_sets)
+                self.constraints.append(ru.intersection(cu))
 
-    def print_grid(self, color=None):
-        if color is None:
-            color = 'bold green'
+    def append_and_union(self, ind, sets):
+        s0 = sets[3 * ind]
+        self.constraints.append(s0)
+        s1 = sets[3 * ind + 1]
+        self.constraints.append(s1)
+        s2 = sets[3 * ind + 2]
+        self.constraints.append(s2)
+        return s0.union(s1).union(s2)
+
+    @staticmethod
+    def print_grid(assignments):
         console = Console()
         s = Text('   | 0 1 2 | 3 4 5 | 6 7 8 ', style='bold white')
         console.print(s)
@@ -75,12 +82,13 @@ class Sudoku(csp.CSP):
             a = string.ascii_uppercase[0:9][i]
             t = Text(' ' + a + ' | ', style='bold white')
             for j in range(9):
-                var = self.variables[i, j]
-                if var.assigned:
-                    t.append(str(var.assigned) + ' ', style='bold green')
-                else:
-                    t.append('0 ', style='bold grey')
+                name = string.ascii_uppercase[0:9][i] + str(j)
+                try:
+                    val = assignments[name]
+                except KeyError:
                     zero += 1
+                    val = 0
+                t.append(str(val) + ' ', style='bold green')
                 if j in [2, 5]:
                     t.append('| ')
             console.print(t)
@@ -88,34 +96,28 @@ class Sudoku(csp.CSP):
                 console.print(' ' + 25 * '-')
         print('Zeros', zero)
 
-    def print_variables(self):
-        for (i, j), var in self.variables.items():
-            print(var.name, var.domain)
-
-    def mrv(self):
-        pass
-
-    def backtrack_search(self):
-        var = self.select_unassigned_variable()
-        if var is None:
-            return True
-
-        for val in var.domain:
-            var.assigned = val
-            queue0 = [(var, self.variables[i, j]) for (i, j) in var.neighbors]
-            queue1 = [(self.variables[i, j], var) for (i, j) in var.neighbors]
-            if not self.AC3(queue0 + queue1):
-                # revert to the domains before trying this solution
-                for v in self.variables.values():
-                    v.domain = v.domain_copy.copy()
-                return False
-            if self.backtrack_search():
-                return True
-            var.assigned = None
+    def to_grid(self, assignments):
+        grid = []
+        for i in range(9):
+            row = []
+            a = string.ascii_uppercase[0:9][i]
+            for j in range(9):
+                name = string.ascii_uppercase[0:9][i] + str(j)
+                try:
+                    val = assignments[name]
+                except KeyError:
+                    val = 0
+                row.append(val)
+            grid.append(row)
+        return grid
 
     def solve(self):
-        pass
-
-
-
-
+        assignments = {}
+        for var in self.variables:
+            if len(self.domains[var]) == 1:
+                assignments[var] = list(self.domains[var])[0]
+        #self.print_grid(assignments)
+        assignments = {}
+        self.backtrack_search(assignments)
+        self.ass = assignments
+        #self.print_grid(assignments)
