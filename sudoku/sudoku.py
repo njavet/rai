@@ -112,7 +112,6 @@ class Sudoku(csp.CSP):
         return grid
 
     def solve(self):
-        print('yoo')
         assignments = {}
         for var in self.variables:
             if len(self.domains[var]) == 1:

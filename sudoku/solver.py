@@ -1,8 +1,8 @@
 class BackTrack:
     def __init__(self, grid):
         self.grid = grid
-        self.assignments = 0
-        self.recursions = 0
+        self.n_ass = 0
+        self.n_bt = 0
 
     def get_zero_element_greedy(self):
         for i, row in enumerate(self.grid):
@@ -49,7 +49,7 @@ class BackTrack:
         return [n for n in range(1, 10) if n not in values]
 
     def solve(self):
-        self.recursions += 1
+        self.n_bt += 1
         try:
             # i, j = self.get_zero_element_greedy()
             i, j = self.mrv()
@@ -59,7 +59,7 @@ class BackTrack:
         values = [val for val in range(1, 10) if self.is_safe(i, j, val)]
         for val in values:
             self.grid[i][j] = val
-            self.assignments += 1
+            self.n_ass += 1
 
             if self.solve():
                 return True
