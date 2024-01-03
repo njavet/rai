@@ -124,8 +124,8 @@ class Sudoku(csp.CSP):
         for var in sorted(self.variables):
             if len(self.domains[var]) > 1:
                 self.path[var] = {}
-                logging.debug(var + '\t' + ' '.join([str(val) for val in self.domains[var]]))
+                #logging.debug(var + '\t' + ' '.join([str(val) for val in self.domains[var]]))
 
         self.backtrack_search(assignments)
         self.ass = assignments
-        #self.print_grid(assignments)
+        self.print_grid(assignments)

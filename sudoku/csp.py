@@ -38,7 +38,7 @@ class CSP:
         elif mode == 'mrv':
             try:
                 su = sorted(unassigned, key=lambda v: (len(self.domains[v]), v))
-                # print(su)
+                #print([(ss, len(self.domains[ss])) for ss in su])
                 #var = sorted(unassigned, key=lambda v: len(self.domains[v]))[0]
                 var = self.degree_heuristics(su)
                 var = su[0]
@@ -88,11 +88,17 @@ class CSP:
                         queue.append((z, x))
         return True, revised
 
-    def mac(self, var):
-        q0 = [(var, x) for x in self.neighbors[var]]
-        #q1 = [(x, var) for x in self.neighbors[var]]
+    def mac(self, var, val):
+        revised = []
+        for y in self.domains[var]:
+            if val != val:
+                revised.append((var, y))
+        self.domains[var] = {val}
+        revised = []
+        q0 = [(x, var) for x in self.neighbors[var]]
         #return self.AC3(q0 + q1)
-        return self.AC3(q0)
+        res, rev = self.AC3(q0)
+        return res, revised + rev
 
     def nconflicts(self, var, val, assignments):
         count = 0
@@ -105,6 +111,16 @@ class CSP:
                 pass
         return count
 
+    def get_free_values(self, var, assignments):
+        fv = []
+        for var2 in self.neighbors[var]:
+            try:
+                val2 = assignments[var2]
+                fv.append(val2)
+            except KeyError:
+                pass
+        return [n for n in self.domains[var] if n not in fv]
+
     def restore(self, revised):
         for var, val in revised:
             self.domains[var].add(val)
@@ -115,18 +131,18 @@ class CSP:
         print(var)
         if var is None:
             return True
-
-        for val in sorted(self.domains[var]):
-            if 0 == self.nconflicts(var, val, assignments):
-                # assign
-                assignments[var] = val
-                self.n_ass += 1
-                inf, revised = self.mac(var)
-                if inf:
-                    if self.backtrack_search(assignments):
-                        return True
-                self.restore(revised)
-        try:
+        values = [val for val in self.domains[var] if self.nconflicts(var, val, assignments) == 0]
+        for val in values:
+            assignments[var] = val
+            r0 = []
+            for vvv in self.domains[var]:
+                if vvv != val:
+                    r0.append((var, vvv))
+            self.domains[var] = {val}
+            self.n_ass += 1
+            inf, revised = self.mac(var, val)
+            if inf:
+                if self.backtrack_search(assignments):
+                    return True
+            self.restore(revised + r0)
             del assignments[var]
-        except KeyError:
-            pass

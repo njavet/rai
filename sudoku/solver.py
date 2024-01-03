@@ -19,7 +19,9 @@ class BackTrack:
                     nfv = len(self.get_free_values(i, j))
                     lst.append((i, j, nfv))
         try:
-            i, j = sorted(lst, key=lambda t: t[2])[0][0:2]
+            lst = sorted(lst, key=lambda t: (t[2], t[0], t[1]))
+            #print([(string.ascii_uppercase[0:9][ii] + str(jj), kk) for ii, jj, kk in lst])
+            i, j = lst[0][0:2]
             return i, j
         except IndexError:
             pass
@@ -52,13 +54,12 @@ class BackTrack:
     def solve(self):
         self.n_bt += 1
         try:
-            # i, j = self.get_zero_element_greedy()
             i, j = self.mrv()
             print(string.ascii_uppercase[0:9][i] + str(j))
         except TypeError:
             return True
 
-        values = [val for val in range(1, 10) if self.is_safe(i, j, val)]
+        values = self.get_free_values(i, j)
         for val in values:
             self.grid[i][j] = val
             self.n_ass += 1
