@@ -14,8 +14,6 @@ g = grid_dix[6]
 s0 = solver.BackTrack(copy.deepcopy(g))
 s1 = sudoku.Sudoku(copy.deepcopy(g))
 s1.solve()
-print(s1.n_ass)
-grid.print_grid(s1.to_grid(s1.ass))
 
 
 def time_solvers():

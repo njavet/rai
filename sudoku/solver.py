@@ -1,4 +1,6 @@
 import string
+
+
 class BackTrack:
     def __init__(self, grid):
         self.grid = grid
@@ -20,7 +22,7 @@ class BackTrack:
                     lst.append((i, j, nfv))
         try:
             lst = sorted(lst, key=lambda t: (t[2], t[0], t[1]))
-            #print([(string.ascii_uppercase[0:9][ii] + str(jj), kk) for ii, jj, kk in lst])
+            # print([(string.ascii_uppercase[0:9][ii] + str(jj), kk) for ii, jj, kk in lst])
             i, j = lst[0][0:2]
             return i, j
         except IndexError:

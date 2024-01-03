@@ -128,4 +128,4 @@ class Sudoku(csp.CSP):
 
         self.backtrack_search(assignments)
         self.ass = assignments
-        self.print_grid(assignments)
+        #self.print_grid(assignments)

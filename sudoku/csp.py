@@ -88,17 +88,10 @@ class CSP:
                         queue.append((z, x))
         return True, revised
 
-    def mac(self, var, val):
-        revised = []
-        for y in self.domains[var]:
-            if val != val:
-                revised.append((var, y))
-        self.domains[var] = {val}
-        revised = []
-        q0 = [(x, var) for x in self.neighbors[var]]
-        #return self.AC3(q0 + q1)
-        res, rev = self.AC3(q0)
-        return res, revised + rev
+    def mac(self, var):
+        queue = [(x, var) for x in self.neighbors[var]]
+        res, revised = self.AC3(queue)
+        return res, revised
 
     def nconflicts(self, var, val, assignments):
         count = 0
@@ -140,7 +133,7 @@ class CSP:
                     r0.append((var, vvv))
             self.domains[var] = {val}
             self.n_ass += 1
-            inf, revised = self.mac(var, val)
+            inf, revised = self.mac(var)
             if inf:
                 if self.backtrack_search(assignments):
                     return True
