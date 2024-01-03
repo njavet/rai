@@ -1,4 +1,5 @@
 import string
+import logging
 import collections
 
 """
@@ -11,6 +12,7 @@ a constraint satisfaction problem consists of three components:
 assignment: a : X -> D*
 
 """
+logging.basicConfig(level=logging.DEBUG)  # Set to logging.INFO for normal execution
 
 
 class CSP:
@@ -23,6 +25,7 @@ class CSP:
         self.constraints = []
         self.n_bt = 0
         self.n_ass = 0
+        self.path = None
 
     def select_unassigned_variable(self, assignments, mode):
         unassigned = self.variables.difference(set(assignments.keys()))
@@ -34,11 +37,11 @@ class CSP:
                 var = None
         elif mode == 'mrv':
             try:
-                su = sorted(unassigned, key=lambda v: len(self.domains[v]))
-                su1 = sorted(su)
+                su = sorted(unassigned, key=lambda v: (len(self.domains[v]), v))
+                # print(su)
                 #var = sorted(unassigned, key=lambda v: len(self.domains[v]))[0]
-                var = self.degree_heuristics(su1)
-                #var = su1[0]
+                var = self.degree_heuristics(su)
+                var = su[0]
             except IndexError:
                 var = None
         return var
@@ -56,7 +59,7 @@ class CSP:
                 total_domain += len(self.domains[nvar])
             ua.append((var, total_domain))
 
-        tu = sorted(ua, key=lambda v: v[1])[0]
+        tu = sorted(ua, key=lambda v: (v[1], v[0]))[0]
         return tu[0]
 
 
@@ -109,9 +112,8 @@ class CSP:
     def backtrack_search(self, assignments):
         self.n_bt += 1
         var = self.select_unassigned_variable(assignments, 'mrv')
-        #print(var)
+        print(var)
         if var is None:
-            print(len(assignments))
             return True
 
         for val in sorted(self.domains[var]):
@@ -121,15 +123,9 @@ class CSP:
                 self.n_ass += 1
                 inf, revised = self.mac(var)
                 if inf:
-                    unassigned = self.variables.difference(set(assignments.keys()))
-                    for vvv in unassigned:
-                        if len(self.domains[vvv]) == 1:
-                            assignments[vvv] = list(self.domains[vvv])[0]
                     if self.backtrack_search(assignments):
                         return True
                 self.restore(revised)
-            else:
-                print('cant happend', self.n_bt)
         try:
             del assignments[var]
         except KeyError:

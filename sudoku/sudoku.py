@@ -1,3 +1,4 @@
+import logging
 import string
 import collections
 import itertools
@@ -119,6 +120,12 @@ class Sudoku(csp.CSP):
         #self.print_grid(assignments)
         #assignments = {}
         self.AC3()
+        self.path = {}
+        for var in sorted(self.variables):
+            if len(self.domains[var]) > 1:
+                self.path[var] = {}
+                logging.debug(var + '\t' + ' '.join([str(val) for val in self.domains[var]]))
+
         self.backtrack_search(assignments)
         self.ass = assignments
         #self.print_grid(assignments)
