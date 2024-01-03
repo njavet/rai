@@ -113,11 +113,12 @@ class Sudoku(csp.CSP):
 
     def solve(self):
         assignments = {}
-        for var in self.variables:
+        for var in sorted(self.variables):
             if len(self.domains[var]) == 1:
                 assignments[var] = list(self.domains[var])[0]
         #self.print_grid(assignments)
-        assignments = {}
+        #assignments = {}
+        self.AC3()
         self.backtrack_search(assignments)
         self.ass = assignments
         #self.print_grid(assignments)

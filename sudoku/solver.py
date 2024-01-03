@@ -1,3 +1,4 @@
+import string
 class BackTrack:
     def __init__(self, grid):
         self.grid = grid
@@ -53,6 +54,7 @@ class BackTrack:
         try:
             # i, j = self.get_zero_element_greedy()
             i, j = self.mrv()
+            print(string.ascii_uppercase[0:9][i] + str(j))
         except TypeError:
             return True
 
