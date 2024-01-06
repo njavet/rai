@@ -61,6 +61,8 @@ class BackTrack:
         except TypeError:
             return True
 
+        # only the previously assigned value gets removed from the free values list
+        # while with AC3 we have potentially more values removed
         values = self.get_free_values(i, j)
         for val in values:
             self.grid[i][j] = val

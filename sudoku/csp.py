@@ -124,7 +124,7 @@ class CSP:
         print(var)
         if var is None:
             return True
-        values = [val for val in self.domains[var] if self.nconflicts(var, val, assignments) == 0]
+        values = [val for val in sorted(self.domains[var]) if self.nconflicts(var, val, assignments) == 0]
         for val in values:
             assignments[var] = val
             r0 = []
