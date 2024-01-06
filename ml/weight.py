@@ -1,3 +1,4 @@
+import neurons
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -38,16 +39,22 @@ data = [(1, 95.0),
         (34, 94.7), 
         (35, 95.9)]
 
-def func(y, s=1, u=1):
-    tmp = (y - u) ** 2 / (2 * s**2)
-    return (1 / np.sqrt(2 * np.pi * s **2 )) * np.exp(-1 * tmp)
-# ax + b = y
+# y = ax + b 
 # least square loss
 
 fig, ax = plt.subplots()
 
-# ax.plot([x[1] for x in data], '*')
-#ax.set_ylim(90, 100)
-ax.plot([func(y) for y in range(-10, 10)])
+x = np.array([t[0] for t in data], dtype=np.float64)
+y = np.array([t[1] for t in data], dtype=np.float64)
+
+ppn = neurons.LinReg1D()
+ppn.fit(x, y)
+print(ppn.weights[0], ppn.weights[1])
+
+z = [ppn.net_input(x) for x in range(1, 36)]
+
+ax.plot(y, '*')
+ax.plot(z, '-')
+ax.set_ylim(90, 100)
 plt.show()
 

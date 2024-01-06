@@ -6,10 +6,15 @@ class Unit:
     def __init__(self, weights):
         self.weights = weights
 
-    def compute(self, x):
-        h = self.weights[0] + np.dot(self.weights[1:], x)
-        return np.max(0, h)
+    def activation(self, x):
+        # ReLU
+        return np.max(0, x)
 
+    def predict(self, x):
+        return self.activation(self.net_input(x))
+
+    def net_input(self, x):
+        return self.weights[0] + np.dot(self.weights[1:], x)
 
 
 class NeuralNetwork:

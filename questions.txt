@@ -5,3 +5,32 @@ I don't understand the difference between using
 csp for sudoku aka factored states and then backtracking
 vs just use backtracking with atomic states
 
+-> 06.01.24 csp uses contraint propagation, backtracking with
+	atomic states doesn't
+
+06.01.24
+why do we need to include probabilities -> maximum likelyhood
+loss functions
+
+# loss functions
+I don't understand that the ml model needs to predict the distribution
+parameters 
+
+SGD:
+	the gradient needs to be computed for the loss function.
+	the loss function is the MSE / cross entropy loss. so it's
+	linear and easy to compute. 
+	the model that approximates a complex non linear function 
+	doesn't matter, since the gradient will not be computed
+	for the complex function
+
+
+what was the thing with the perceptron and (xor -> not linearly 
+separable). why didn't they connected many perceptron ? since
+it comes from neuron, but they only used one neuron ?
+
+
+a neural network is ALWAYS a linear combination of activation 
+functions ?
+
+* linear regression closed formula -> getting desperate
