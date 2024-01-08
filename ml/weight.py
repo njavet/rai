@@ -42,19 +42,31 @@ data = [(1, 95.0),
 # y = ax + b 
 # least square loss
 
-fig, ax = plt.subplots()
+def linreg_params(x, y):
+    m0 = sum((xi - np.mean(x)) * (yi - np.mean(y)) for xi, yi in zip(x, y)) 
+    m1 = sum((xi - np.mean(x)) ** 2 for xi in x)
+    m = m0 / m1
+    b = np.mean(y) - m * np.mean(x)
+    return m, b
 
+
+fig, ax = plt.subplots()
 x = np.array([t[0] for t in data], dtype=np.float64)
 y = np.array([t[1] for t in data], dtype=np.float64)
 
+
+m, b = linreg_params(x, y)
+print('m = ', m, 'b = ', b)
+
+
+
+
 ppn = neurons.LinReg1D()
 ppn.fit(x, y)
-print(ppn.weights[0], ppn.weights[1])
 
 z = [ppn.net_input(x) for x in range(1, 36)]
 
 ax.plot(y, '*')
 ax.plot(z, '-')
 ax.set_ylim(90, 100)
-plt.show()
 

@@ -34,3 +34,10 @@ a neural network is ALWAYS a linear combination of activation
 functions ?
 
 * linear regression closed formula -> getting desperate
+
+* why isn't the whole derivate of the loss function calculated ?
+* its a linear combination of activation function .. 
+
+07.01.24
+why values, queries and keys ? 
+
