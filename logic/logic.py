@@ -1,4 +1,16 @@
+# ∧ u2227
+# ∨ u2228
+# ¬ u00ac
+# ⊤ u22a4
+# ⊥ u22a5
 
+# ⊨ u22a8
+# ⊢ u22a2
+# ⇒ u21d2
+# ⇔ u21d4
+# ≡ u2261
+# ↔ u2194
+# → u2192
 
 class WFF:
     """ well-formed formula"""
@@ -121,25 +133,4 @@ def pl_true(s: WFF, model):
 def create_space_time_prop_var(name, row, col, t):
     vname = name + '_' + str(row) + str(col) + '_' + str(t)
     return PropVar(vname)
-
-# lab03
-# A: unicorn is mythical
-# B: unicorn is immortal
-# C: unicorn is a mortal mammal
-# D: unicorn is a mammal
-# E: unicorn is horned
-# F: unicorn is magical
-# (A -> B) ∧ (¬A -> C)
-# (B ∨ ∧ (¬A -> C)
-# (B ∨ D) -> E
-# E -> F
-
-## wumpus axtioms
-
-# no pit in 0, 0
-axiom00 = Not.from_prop_var('P00')
-# no wumpus in 0, 0
-axiom01 = Not.from_prop_var('W00')
-# start location == 0, 0
-axiom02 = PropVar('L00')
 
