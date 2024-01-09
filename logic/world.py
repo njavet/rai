@@ -1,17 +1,26 @@
-import random
 from rich.text import Text
 from rich.console import Console
+import random
 import itertools
 
+import agent
 
-class Wumpus:
-    def __init__(self, agent):
+
+class World:
+    def __init__(self, agent, aima=False):
         self.grid = None
         self.wumpus_alive = True
         self.agent_alive = True
         self.agent = agent
+        self.construct_world(aima)
 
-    def construct_world(self):
+    def construct_world(self, aima):
+        if aima:
+            self.grid = [['A', 'B', 'P', 'B'],
+                         ['S', '0', 'B', '0'],
+                         ['W', 'GSB', 'P', 'B'],
+                         ['S', '0', 'B', 'P']]
+            return
         cells = list(itertools.product([0, 1, 2, 3], repeat=2))
         self.grid = [['0', '0', '0', '0'],
                      ['0', '0', '0', '0'],
@@ -134,111 +143,22 @@ class Wumpus:
             return False
 
     def start_game(self):
+        turns = 0
         while self.agent_alive:
+            if turns == 4:
+                return
             percepts = self.construct_percept()
+            i, j = self.agent.location
+            print('percepts at ', i, j, percepts)
             if self.is_agent_dead():
                 print(self.agent.name + ' died!')
                 return
             self.agent.agent_program(percepts)
+            turns += 1
 
 
-class PropKB:
-    def __init__(self, sentence=None):
-        self.clauses = []
-        if sentence:
-            self.tell(sentence)
-
-    def tell(self, sentence):
-        self.clauses.extend(s)
-        self.safe_cells = [(0, 0)]
-        self.sentences = []
-
-    def tell(self, sentence):
-        self.sentences.append(sentence)
-
-    def ask(self):
-        percept = self.sentences[-1]
-
-        pass
-
-    def inference(self):
-        pass
-
-
-class Agent:
-    def __init__(self, name):
-        self.name = name
-        self.performance = 0
-        self.direction = 'EAST'
-        self.steps = 0
-        self.location = (0, 0)
-        self.arrow = True
-        self.kb = KB()
-        self.actions = {0: self.turn_left,
-                        1: self.turn_right,
-                        2: self.move_forward,
-                        3: self.grab_gold,
-                        4: self.shoot,
-                        5: self.climb_out}
-
-    def turn_left(self):
-        self.steps += 1
-        if self.direction == 'EAST':
-            self.direction = 'NORTH'
-        elif self.direction == 'NORTH':
-            self.direction = 'WEST'
-        elif self.direction == 'WEST':
-            self.direction = 'SOUTH'
-        elif self.direction == 'SOUTH':
-            self.direction = 'EAST'
-
-    def turn_right(self):
-        self.steps += 1
-        if self.direction == 'EAST':
-            self.direction = 'SOUTH'
-        elif self.direction == 'NORTH':
-            self.direction = 'EAST'
-        elif self.direction == 'WEST':
-            self.direction = 'NORTH'
-        elif self.direction == 'SOUTH':
-            self.direction = 'WEST'
-
-    def move_forward(self):
-        self.steps += 1
-        i, j = self.location
-        if self.direction == 'EAST':
-            j += 1
-        elif self.direction == 'NORTH':
-            i += 1
-        elif self.direction == 'WEST':
-            j -= 1
-        elif self.direction == 'SOUTH':
-            i -= 1
-        self.location = i, j
-
-    def grab_gold(self):
-        self.steps += 1
-
-    def shoot(self):
-        self.steps += 1
-        self.arrow = False
-
-    def climb_out(self):
-        self.steps += 1
-        # moves out of the world
-        self.location = -1, -1
-
-    def agent_program(self, percept):
-        sentence = self.make_percept_sentence(percept)
-        self.kb.tell(sentence)
-        action = self.kb.ask()
-        self.actions[action]()
-
-    def make_percept_sentence(self, percept):
-        return percept
-
-
-agent = Agent('Noe')
-wumpus = Wumpus(agent)
-wumpus.construct_world()
-wumpus.print_board()
+ag = agent.Agent('Noe')
+world = World(ag, aima=True)
+world.print_board()
+world.start_game()
+world.print_board()
