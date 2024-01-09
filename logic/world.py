@@ -77,9 +77,10 @@ class World:
     def print_board(self):
         console = Console()
         console.print('-------------------------')
-        for row in self.grid:
+        ai, aj = self.agent.location
+        for i, row in enumerate(self.grid):
             t = Text('| ')
-            for cell in row:
+            for j, cell in enumerate(row):
                 if cell == 'W' or cell == 'P':
                     t.append(cell.rjust(3), style='red')
                 elif 'B' in cell or 'S' in cell:
@@ -105,34 +106,26 @@ class World:
         if j > 3:
             self.agent.location = i, 3
             bump = True
-
-        i, j = self.agent.location
-        cells = self.get_neighbor_cells(i, j)
-        ps = set()
-        for ci, cj in cells:
-            for s in self.grid[ci][cj]:
-                ps.add(s)
-        percepts = []
-        if 'S' in ps:
-            percepts.append('S')
+        if 'S' in self.grid[i][j]:
+            percepts = ['S']
         else:
-            percepts.append('0')
-        if 'B' in ps:
+            percepts = [None]
+        if 'B' in self.grid[i][j]:
             percepts.append('B')
         else:
-            percepts.append('0')
-        if 'G' in ps:
+            percepts.append(None)
+        if 'G' in self.grid[i][j]:
             percepts.append('G')
         else:
-            percepts.append('0')
+            percepts.append(None)
         if bump:
-            percepts.append('bump')
+            percepts.append('H')
         else:
-            percepts.append('0')
+            percepts.append(None)
         if self.wumpus_alive:
-            percepts.append('0')
+            percepts.append(None)
         else:
-            percepts.append('dead')
+            percepts.append('D')
         return percepts
 
     def is_agent_dead(self):
@@ -155,9 +148,12 @@ class World:
                 return
             self.agent.agent_program(percepts)
             turns += 1
+            print('kb at ', turns)
+            for s in self.agent.kb.sentences:
+                print(s)
 
 
-ag = agent.Agent('Noe')
+ag = agent.Agent()
 world = World(ag, aima=True)
 world.print_board()
 world.start_game()

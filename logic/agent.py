@@ -8,22 +8,16 @@ import propkb
 
 
 class Agent:
-    def __init__(self, name):
+    def __init__(self, name='Agent'):
         self.name = name
         self.performance = 0
         self.location = (0, 0)
         self.direction = 'EAST'
-        self.steps = 0
+        self.steps = itertools.count()
         self.has_arrow = True
         self.kb = propkb.KB()
 
-    def tell_initial_knowledge(self):
-        self.kb.tell(logic.Not(logic.Symbol('P00', 'pit is in cell 0,0')))
-        self.kb.tell(logic.Not(logic.Symbol('W00', 'wumpus is in cell 0,0')))
-        self.kb.tell(logic.Symbol('V00', 'visited cell 0, 0'))
-
     def turn_left(self):
-        self.steps += 1
         if self.direction == 'EAST':
             self.direction = 'NORTH'
         elif self.direction == 'NORTH':
@@ -34,7 +28,6 @@ class Agent:
             self.direction = 'EAST'
 
     def turn_right(self):
-        self.steps += 1
         if self.direction == 'EAST':
             self.direction = 'SOUTH'
         elif self.direction == 'NORTH':
@@ -45,7 +38,6 @@ class Agent:
             self.direction = 'WEST'
 
     def move_forward(self):
-        self.steps += 1
         i, j = self.location
         if self.direction == 'EAST':
             j += 1
@@ -58,49 +50,63 @@ class Agent:
         self.location = i, j
 
     def grab_gold(self):
-        self.steps += 1
+        # TODO
+        pass
 
     def shoot(self):
-        self.steps += 1
+        # TODO
         self.has_arrow = False
 
     def climb_out(self):
-        self.steps += 1
+        # TODO
         # moves out of the world
         self.location = -1, -1
 
     def agent_program(self, percept):
-        sentence = self.make_percept_sentence(percept)
+        t = next(self.steps)
+        sentence = self.make_percept_sentence(percept, t)
         self.kb.tell(sentence)
-        query = self.make_action_query()
-        if self.kb.ask(query):
+        query = self.make_action_query(t)
+        action = self.kb.ask(query)
+        if action == 0:
+            self.turn_left()
+        if action == 1:
+            self.turn_right()
+        if action == 2:
             self.move_forward()
 
-    def make_percept_sentence(self, percept):
+        #self.kb.tell(self.make_action_sentence(action, t))
+        return action
+
+    def make_percept_sentence(self, percept, t):
+        sentences = []
         def helper(p, s):
-            if s not in self.kb.symbols:
-                if p:
-                    sentence = logic.Symbol(s)
-                else:
-                    sentence = logic.Not(logic.Symbol(s))
-                sentences.append(sentence)
+            if p:
+                sentence = logic.Symbol(s)
+            else:
+                sentence = logic.Not(logic.Symbol(s))
+            sentences.append(sentence)
 
         i, j = self.location
-        # visited this cell
-        if not self.kb.ask(logic.Symbol('V' + str(i) + str(j))):
-            sij = 'S' + str(i) + str(j)
-            bij = 'B' + str(i) + str(j)
-            gij = 'G' + str(i) + str(j)
-            hij = 'H' + str(i) + str(j)
-            dij = 'D' + str(i) + str(j)
-            sentences = []
-            for per, sym in zip(percept, [sij, bij, gij, hij, dij]):
-                helper(per, sym)
 
-            return functools.reduce(logic.And, sentences, sentences[0])
+        pinf = logic.And(logic.Symbol('V' + str(i) + str(j)),
+                         logic.Symbol(self.direction + str(i) + str(j)))
+        sij = 'S' + str(i) + str(j)
+        bij = 'B' + str(i) + str(j)
+        gij = 'G' + str(i) + str(j)
+        hij = 'H' + str(i) + str(j)
+        dij = 'D' + str(i) + str(j)
+        sentences = []
+        for per, sym in zip(percept, [sij, bij, gij, hij, dij]):
+            helper(per, sym)
+        return functools.reduce(logic.And, sentences, pinf)
 
-    def make_action_query(self):
+    def make_action_query(self, t):
         i, j = self.location
-        query = logic.Symbol('A' + str(i) + str(j))
+        query = logic.Symbol('M' + str(i) + str(j))
         return query
+
+    def make_action_sentence(self, action, t):
+        i, j = self.location
+        return logic.Symbol('M' + str(i) + str(j))
 
