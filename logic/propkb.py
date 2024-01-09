@@ -1,3 +1,4 @@
+import collections
 import functools
 
 from rich.text import Text
@@ -19,15 +20,12 @@ p00 = '(((A ∨ B) → C) ∧ (D ∧ (¬E)))'
 
 class KB:
     def __init__(self):
-        self.model = {}
-        self.sentences = []
-        self.initial_knowledge()
+        self.dix = collections.defaultdict(list)
 
     def initial_knowledge(self):
-        self.sentences.append(logic.Not(logic.Symbol('P00')))
-        self.sentences.append(logic.Not(logic.Symbol('W00')))
-        self.model['P00'] = False
-        self.model['W00'] = False
+        self.dix[0, 0].append('A')
+        self.dix[0, 0].append('S')
+        self.dix[0, 0].append('V')
 
     def tell(self, sentence):
         for literal in sentence.get_literal_list():

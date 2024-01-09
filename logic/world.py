@@ -6,12 +6,13 @@ import itertools
 import agent
 
 
+
 class World:
-    def __init__(self, agent, aima=False):
+    def __init__(self, ag, aima=False):
         self.grid = None
         self.wumpus_alive = True
         self.agent_alive = True
-        self.agent = agent
+        self.agent = ag
         self.construct_world(aima)
 
     def construct_world(self, aima):
@@ -153,8 +154,8 @@ class World:
                 print(s)
 
 
-ag = agent.Agent()
-world = World(ag, aima=True)
+a = agent.Agent()
+world = World(a, aima=True)
 world.print_board()
 world.start_game()
 world.print_board()

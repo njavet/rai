@@ -1,137 +1,100 @@
-import functools
-from string import ascii_uppercase
 
 
-class Sentence:
-    def __init__(self):
-        self.is_literal = False
-        self.is_clause = False
-        self.is_cnf = False
-
+class WFF:
     """ well-formed formula"""
     def evaluate(self, model):
         pass
 
     def is_atomic(self):
-        return isinstance(self, Symbol)
-
-    def is_negation(self):
-        return isinstance(self, Not)
-
-    def get_symbol_list(self):
-        pass
-
-    def get_literal_list(self):
-        pass
+        return isinstance(self, PropVar)
 
 
-class Symbol(Sentence):
+class PropVar(WFF):
     """ proposition variable"""
-    def __init__(self, symbol, description=None):
-        super().__init__()
-        self.is_literal = True
-        self.is_clause = True
-        self.is_cnf = True
-        self.symbol = symbol
+    def __init__(self, name, description=None):
+        self.name = name
         self.description = description
 
     def __str__(self):
-        return self.symbol
+        return self.name
 
     def evaluate(self, model):
         # should it be True or False if the model does not assign the Symbol ?
-        return model.get(self.symbol, False)
-
-    def get_symbol_list(self):
-        return [self.symbol]
-
-    def get_literal_list(self):
-        return [self]
+        return model.get(self.name, False)
 
 
-class Not(Sentence):
-    def __init__(self, proposition: Sentence):
-        super().__init__()
-        if proposition.is_literal:
-            self.is_literal = True
-            self.is_clause = True
-            self.is_cnf = True
-        self.proposition = proposition
+class Not(WFF):
+    def __init__(self, wff: WFF):
+        self.wff = wff
 
     def __str__(self):
-        if self.proposition.is_atomic():
-            return '¬' + str(self.proposition)
+        if self.wff.is_atomic():
+            return '¬' + str(self.wff)
         else:
-            return '¬(' + str(self.proposition) + ')'
+            return '¬(' + str(self.wff) + ')'
+
+    @classmethod
+    def from_prop_var(cls, name):
+        return cls(PropVar(name))
 
     def evaluate(self, model):
-        return not self.proposition.evaluate(model)
-
-    def get_symbol_list(self):
-        return self.proposition.get_symbol_list()
-
-    def get_literal_list(self):
-        return [self]
+        return not self.wff.evaluate(model)
 
 
-class Implication(Sentence):
+class Implication(WFF):
     def __init__(self, left, right):
-        super().__init__()
         self.left = left
         self.right = right
 
     def __str__(self):
         return '(' + str(self.left) + ' → ' + str(self.right) + ')'
 
+    @classmethod
+    def from_prop_vars(cls, name0, name1):
+        p0 = PropVar(name0)
+        p1 = PropVar(name1)
+        return cls(p0, p1)
+
     def evaluate(self, model):
         return not self.left.evaluate(model) or self.right.evaluate(model)
 
-    def get_symbol_list(self):
-        return self.left.get_symbol_list() + self.right.get_symbol_list()
 
-    def get_literal_list(self):
-        return self.left.get_literal_list() + self.right.get_literal_list()
-
-class And(Sentence):
+class And(WFF):
     def __init__(self, left, right):
         super().__init__()
         self.left = left
         self.right = right
-        if self.left.is_clause and self.right.is_clause:
-            self.is_cnf = True
 
     def __str__(self):
         return '(' + str(self.left) + ' ∧ ' + str(self.right) + ')'
 
+    @classmethod
+    def from_prop_vars(cls, name0, name1):
+        p0 = PropVar(name0)
+        p1 = PropVar(name1)
+        return cls(p0, p1)
+
     def evaluate(self, model):
         return self.left.evaluate(model) and self.right.evaluate(model)
 
-    def get_symbol_list(self):
-        return self.left.get_symbol_list() + self.right.get_symbol_list()
 
-    def get_literal_list(self):
-        return self.left.get_literal_list() + self.right.get_literal_list()
-
-
-class Or(Sentence):
+class Or(WFF):
     def __init__(self, left, right):
         super().__init__()
         self.left = left
         self.right = right
-        if self.left.is_literal and self.right.is_literal:
-            self.is_clause = True
 
     def __str__(self):
         return '(' + str(self.left) + ' ∨ ' + str(self.right) + ')'
 
+    @classmethod
+    def from_prop_vars(cls, name0, name1):
+        p0 = PropVar(name0)
+        p1 = PropVar(name1)
+        return cls(p0, p1)
+
     def evaluate(self, model):
         return self.left.evaluate(model) or self.right.evaluate(model)
-
-    def get_symbol_list(self):
-        return self.left.get_symbol_list() + self.right.get_symbol_list()
-
-    def get_literal_list(self):
-        return self.left.get_literal_list() + self.right.get_literal_list()
 
 
 def tt_entails(kb, alpha):
@@ -151,8 +114,32 @@ def tt_check_all(kb, alpha, symbols, model):
     return cond0 and cond1
 
 
-def pl_true(s: Sentence, model):
+def pl_true(s: WFF, model):
     return s.evaluate(model)
 
 
+def create_space_time_prop_var(name, row, col, t):
+    vname = name + '_' + str(row) + str(col) + '_' + str(t)
+    return PropVar(vname)
+
+# lab03
+# A: unicorn is mythical
+# B: unicorn is immortal
+# C: unicorn is a mortal mammal
+# D: unicorn is a mammal
+# E: unicorn is horned
+# F: unicorn is magical
+# (A -> B) ∧ (¬A -> C)
+# (B ∨ ∧ (¬A -> C)
+# (B ∨ D) -> E
+# E -> F
+
+## wumpus axtioms
+
+# no pit in 0, 0
+axiom00 = Not.from_prop_var('P00')
+# no wumpus in 0, 0
+axiom01 = Not.from_prop_var('W00')
+# start location == 0, 0
+axiom02 = PropVar('L00')
 
