@@ -59,7 +59,7 @@ class Implication(WFF):
         self.right = right
 
     def __str__(self):
-        return '(' + str(self.left) + ' → ' + str(self.right) + ')'
+        return '(' + str(self.left) + ' -> ' + str(self.right) + ')'
 
     @classmethod
     def from_prop_vars(cls, name0, name1):
@@ -69,6 +69,26 @@ class Implication(WFF):
 
     def evaluate(self, model):
         return not self.left.evaluate(model) or self.right.evaluate(model)
+
+
+class Equivalence(WFF):
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def __str__(self):
+        return '(' + str(self.left) + ' <-> ' + str(self.right) + ')'
+
+    @classmethod
+    def from_prop_vars(cls, name0, name1):
+        p0 = PropVar(name0)
+        p1 = PropVar(name1)
+        return cls(p0, p1)
+
+    def evaluate(self, model):
+        cond0 = Implication(self.left, self.right).evaluate(model)
+        cond1 = Implication(self.right, self.left).evaluate(model)
+        return cond0 and cond1
 
 
 class And(WFF):

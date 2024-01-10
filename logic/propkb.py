@@ -6,7 +6,7 @@ from rich.console import Console
 import random
 import itertools
 
-import logic
+from logic import PropVar, Not, Implication, And, Or, Equivalence
 # standard logical equivalences
 # (A ∧ B) ≡ (B ∧ A) commutativity of ∧
 # (A ∨ B) ≡ (B ∨ A) commutativity of ∨
@@ -16,7 +16,8 @@ import logic
 
 
 p00 = '(((A ∨ B) → C) ∧ (D ∧ (¬E)))'
-
+# wumpus world
+# wumpus and pit axioms
 
 class KB:
     def __init__(self):
