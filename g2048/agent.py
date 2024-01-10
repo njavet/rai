@@ -27,6 +27,7 @@ class SimMove:
         self.merges = self.number_of_merges()
         # primary selection criteria
         self.td_dix = self.tile_distances()
+        self.md = self.max_distance()
         self.td = list(self.td_dix.values())
 
     def gen_tile_dict(self):
@@ -41,16 +42,42 @@ class SimMove:
 
     def number_of_merges(self):
         old_zeros = sum(row.count(0) for row in self.grid)
-        return self.number_of_zeros() - old_zeros
+        return self.zeros - old_zeros
 
     def number_of_zeros(self):
-        return -1 * len(self.tile_val_pos.get(0, []))
+        return len(self.tile_val_pos.get(0, []))
+
+    def score(self):
+        dix = collections.defaultdict(int)
+        for row in self.grid:
+            for val in row:
+                dix[val] += 1
+        new_dix = collections.defaultdict(int)
+        for row in self.new_grid:
+            for val in row:
+                new_dix[val] += 1
+
+        score = 0
+        for k, v in dix.items():
+            if k in new_dix:
+                score += abs(k * (v - new_dix[k]))
+            else:
+                score += abs(k * v)
+        return score / 2
+
+    def max_distance(self):
+        try:
+            mv = max(self.tile_val_pos.keys())
+            pos = self.tile_val_pos[mv]
+            return sum(pos[0])
+        except ValueError:
+            return 0
 
     def tile_distances(self):
         self.tile_val_pos.pop(0, None)
-        self.tile_val_pos.pop(2, None)
-        self.tile_val_pos.pop(4, None)
-        self.tile_val_pos.pop(8, None)
+        #self.tile_val_pos.pop(2, None)
+        #self.tile_val_pos.pop(4, None)
+        #self.tile_val_pos.pop(8, None)
 
         tile_dist = collections.defaultdict(int)
         for tile, positions in self.tile_val_pos.items():
@@ -77,11 +104,15 @@ class State:
         return simmoves
 
     def chose_move(self):
-        lst = sorted(self.simmoves.values(),
-                      key=lambda sm: (sm.td, sm.merges, sm.zeros))
+        lst = sorted(self.simmoves.values(), key=lambda sm: (sm.md,
+                                                             (-1)*sm.score(),
+                                                             sm.td,
+                                                             (-1)*sm.merges,
+                                                             (-1)*sm.zeros))
+
         for s in lst:
-            tds = ' '.join([f'{v:1.1f}' for k, v in s.td_dix.items()])
-            print('TD', tds, '\tMERGES', s.merges, 'ZEROS', s.zeros)
+            tds = ' '.join([f'{v:1.1f}' for v in s.td])
+            print('score', s.score(), 'TD', tds, '\tMERGES', s.merges, 'ZEROS', s.zeros)
         return lst[0].move
 
 
