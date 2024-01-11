@@ -6,8 +6,44 @@ import copy
 import sys
 import random
 
-UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
-MOVES = [UP, DOWN, LEFT, RIGHT]
+
+class Agent2048:
+    UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
+    MOVES = [UP, DOWN, LEFT, RIGHT]
+
+    def __init__(self):
+        self.t = 0
+        self.grid = None
+
+    def random_move(self):
+        return random.choice(self.MOVES)
+
+    def simulate_move(self, move):
+        grid = game.Grid2048(self.grid)
+        if move == self.UP:
+            grid.merge_up()
+        elif move == self.DOWN:
+            grid.merge_down()
+        elif move == self.LEFT:
+            grid.merge_left()
+        elif move == self.RIGHT:
+            grid.merge_right()
+        if not self.grid.is_equal(grid):
+            return grid
+
+    def gen_simulation_dict(self):
+        dix = {}
+        for move in self.MOVES:
+            grid_move = self.simulate_move(move)
+            if grid_move:
+                dix[move] = grid_move
+        return dix
+
+    def heuristic_move(self, grid):
+        self.grid = game.Grid2048(grid)
+        simulations = self.gen_simulation_dict()
+
+
 
 
 class SimMove:
@@ -112,6 +148,7 @@ class SimMove:
 
 
 def find_best_move(grid):
+
     simmoves = []
     for move in MOVES:
         sm = SimMove(move, grid)
@@ -145,28 +182,4 @@ def find_best_move(grid):
 
     return lst[0].move
 
-
-def random_move():
-    return random.choice([UP, DOWN, LEFT, RIGHT])
-
-
-def simulate_move(move, grid):
-    if move == UP:
-        return game.merge_up(grid)
-    elif move == DOWN:
-        return game.merge_down(grid)
-    elif move == LEFT:
-        return game.merge_left(grid)
-    elif move == RIGHT:
-        return game.merge_right(grid)
-    else:
-        sys.exit('invalid move')
-
-
-def score_toplevel_move(move, grid):
-    # expectimax
-    newgrid = simulate_move(move, grid)
-
-    if game.equal_grids(grid, newgrid):
-        return 0
 
