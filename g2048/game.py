@@ -18,11 +18,13 @@ class Grid2048:
         self.merge_number = 0
         self.zero_cells = 0
         self.tile2positions = None
+        self.distance = None
 
     def __str__(self):
-        return ' '.join(['score: ' + str(self.merge_score),
-                  'mnumber: ' + str(self.merge_number),
-                  'zeros: ' + str(self.zero_cells)])
+        return ' '.join(['dist: ', str(self.distance),
+                         'score: ' + str(self.merge_score),
+                         'mnumber: ' + str(self.merge_number),
+                         'zeros: ' + str(self.zero_cells)])
 
     def print_grid(self):
         for row in self.grid:
@@ -50,20 +52,26 @@ class Grid2048:
     def tile_position_analysis(self):
         # remove zero since it means empty cells
         self.tile2positions.pop(0, None)
-        lst = []
+        self.distance = []
         for tile, positions in self.tile2positions.items():
             # there is only one tile with this number
             # distance to left upper corner
             if len(positions) == 1:
                 i, j = positions[0]
-                lst.append((-tile, -1, i + j))
+                self.distance.append((-tile, -1, i + j))
             # we have two tiles and want them to be close together
             elif len(positions) == 2:
                 i0, j0 = positions[0]
                 i1, j1 = positions[1]
                 d = abs(i0 - i1) + abs(j0 - j1)
-                lst.append((-tile, -2, d))
-        return lst
+                self.distance.append((-tile, -2, d))
+            else:
+                i0, j0 = positions[0]
+                i1, j1 = positions[1]
+                d = abs(i0 - i1) + abs(j0 - j1)
+                self.distance.append((-tile, -len(positions), d))
+
+
 
     def merge_seq_to_left(self, seq, acc):
         if not seq:
