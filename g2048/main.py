@@ -21,15 +21,12 @@ def to_score(m):
     return [[_to_score(c) for c in row] for row in m]
 
 
-def find_best_move(board):
-    return agent.find_best_move(board)
-
-
 def movename(move):
     return ['up', 'down', 'left', 'right'][move]
 
 
 def play_game(gamectrl):
+    ag = agent.Agent2048()
     moveno = 0
     start = time.time()
     while 1:
@@ -44,7 +41,7 @@ def play_game(gamectrl):
         time.sleep(1)
         # agent activity
         board = gamectrl.get_board()
-        move = find_best_move(board)
+        move = ag.heuristic_move(board)
 
         if move < 0:
             print('NO VALID MOVE')
