@@ -25,8 +25,12 @@ class Grid2048:
 
     def __str__(self):
         s = self.MOVES_NAMES[self.move].rjust(5) + ' '
-        for k, (sc, dc, d) in self.distance.items():
-            s += '(' + str(k).rjust(3) + ',' + str(-sc) + ',' + str(dc) + ',' + str(d) + ') '
+        for k, (sc, n, dc, d) in self.distance.items():
+            if n == 1:
+                s += '(' + str(k).rjust(3) + ',' + str(-sc) + ',' + str(dc) + ') '
+
+            else:
+                s += '(' + str(k).rjust(3) + ',' + str(-sc) + ',' + str(dc) + ',' + str(d) + ') '
 
         return ' '.join([s, 'mz:',
                          str(self.merge_number),
