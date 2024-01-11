@@ -155,3 +155,50 @@ class Grid2048:
         self.grid = list(zip(*self.grid))
         self.merge_right()
         self.grid = [list(x) for x in zip(*self.grid)]
+
+
+def merge_left(grid):
+
+    def merge_seq_to_left(seq, acc, score=0):
+        if not seq:
+            return score, acc
+
+        x = seq[0]
+        if len(seq) == 1:
+            return score, acc + [x]
+
+        if x == seq[1]:
+            # here is the (only !) point where tiles get merged
+            # therefore we compute relevant values -> ugly from
+            # a functional programming viewpoint
+            return merge_seq_to_left(seq[2:], acc + [2 * x], score+x)
+        else:
+            return merge_seq_to_left(seq[1:], acc + [x], score)
+
+    new_grid = []
+    total_score = 0
+    for i, row in enumerate(grid):
+        mscore, merged = merge_seq_to_left([x for x in row if x != 0], [])
+        # since `merged` has no zeros, the number of zeros can be added here
+        # only here the zeros are "added" to the new grid
+        zeros = len(row) - len(merged)
+        merged_zeros = merged + zeros * [0]
+        new_grid.append(merged_zeros)
+        total_score += mscore
+    return total_score, new_grid
+
+
+def merge_right(grid):
+    s, t = merge_left([row[::-1] for row in grid])
+    return s, [row[::-1] for row in t]
+
+
+def merge_up(grid):
+    s, t = merge_left(zip(*grid))
+    return s, [list(x) for x in zip(*t)]
+
+
+def merge_down(grid):
+    s, t = merge_right(zip(*grid))
+    return s, [list(x) for x in zip(*t)]
+

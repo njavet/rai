@@ -82,3 +82,61 @@ class Agent2048:
         p3 = -grid_obj.merge_number
         p4 = -grid_obj.zero_cells
         return p0, lst, p3, p4
+
+    def expectimax(self, grid, depth=2):
+        """
+        insane how different this looks... nothing like
+        avoiding full boards. incredible to look at it
+
+
+        :param grid:
+        :param depth:
+        :return:
+        """
+        lst = []
+
+        for move in self.MOVES:
+            score, new_grid = self.non_oo_simulate_move(move, grid)
+            if grid == new_grid:
+                continue
+            scores2 = []
+            scores4 = []
+            zeros = 0
+            for i, row in enumerate(new_grid):
+                for j, val in enumerate(row):
+                    if val == 0:
+                        zeros += 1
+                        for move2 in self.MOVES:
+                            ng2 = copy.deepcopy(new_grid)
+                            ng2[i][j] = 2
+                            sc2, _ = self.non_oo_simulate_move(move2, ng2)
+                            scores2.append(sc2)
+                            ng4 = copy.deepcopy(new_grid)
+                            ng4[i][j] = 4
+                            sc4, _ = self.non_oo_simulate_move(move2, ng4)
+                            scores4.append(sc4)
+            s_move = 0
+            for sc2 in scores2:
+                s_move += 0.9 * sc2
+            for sc4 in scores4:
+                s_move += 0.1 * sc4
+            lst.append((move, s_move / zeros))
+
+        lst = sorted(lst, key=lambda t: t[1], reverse=True)
+        print(lst)
+        return lst[0][0]
+
+
+    def non_oo_simulate_move(self, move, grid):
+        score = 0
+        new_grid = grid
+        if move == self.UP:
+            score, new_grid = game.merge_up(grid)
+        elif move == self.DOWN:
+            score, new_grid = game.merge_down(grid)
+        elif move == self.LEFT:
+            score, new_grid = game.merge_left(grid)
+        elif move == self.RIGHT:
+            score, new_grid = game.merge_right(grid)
+        return score, new_grid
+
