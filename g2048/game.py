@@ -1,7 +1,7 @@
 from rich.text import Text
+from rich.console import Console
 import copy
 import collections
-from rich.console import Console
 import itertools
 import functools
 
@@ -13,17 +13,23 @@ class Grid2048:
     def __init__(self, grid, move=None):
         self.grid = copy.deepcopy(grid)
         self.move = move
+        self.console = Console()
         self.merge_score = 0
         self.merge_number = 0
         self.zero_cells = 0
         self.tile2positions = None
 
+    def __str__(self):
+        return ' '.join(['score: ' + str(self.merge_score),
+                  'mnumber: ' + str(self.merge_number),
+                  'zeros: ' + str(self.zero_cells)])
+
     def print_grid(self):
         for row in self.grid:
-            print('|', end=' ')
+            self.console.print('|', end=' ')
             for val in row:
-                print(str(val).rjust(2), end=' | ')
-            print('\n' + 21*'-')
+                self.console.print(str(val).rjust(2), end=' | ')
+            self.console.print('\n' + 21*'-')
 
     def is_equal(self, grid):
         return self.grid == grid.grid
@@ -40,6 +46,24 @@ class Grid2048:
                 dix[val].append((i, j))
         self.tile2positions = {val: sorted(dix[val])
                                for val in sorted(dix, reverse=True)}
+
+    def tile_position_analysis(self):
+        # remove zero since it means empty cells
+        self.tile2positions.pop(0, None)
+        lst = []
+        for tile, positions in self.tile2positions.items():
+            # there is only one tile with this number
+            # distance to left upper corner
+            if len(positions) == 1:
+                i, j = positions[0]
+                lst.append(i + j)
+            # we have two tiles and want them to be close together
+            elif len(positions) == 2:
+                i0, j0 = positions[0]
+                i1, j1 = positions[1]
+                d = abs(i0 - i1) + abs(j0 - j1)
+                lst.append(d)
+        return lst
 
     def merge_seq_to_left(self, seq, acc):
         if not seq:
