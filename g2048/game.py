@@ -10,6 +10,8 @@ class Grid2048:
     """
     this grid object should be created every move
     """
+    MOVES_NAMES = ['UP', 'DOWN', 'LEFT', 'RIGHT']
+
     def __init__(self, grid, move=None):
         self.grid = copy.deepcopy(grid)
         self.move = move
@@ -22,11 +24,13 @@ class Grid2048:
         self.distance = None
 
     def __str__(self):
-        s = ' '.join([str(k) + ' ' + str(v) for k, v in self.distance.items()])
-        return ' '.join(['d: ', s,
-                         's: ' + str(self.merge_score),
-                         'm: ' + str(self.merge_number),
-                         'z: ' + str(self.zero_cells)])
+        s = self.MOVES_NAMES[self.move].rjust(5) + ' '
+        for k, (sc, dc, d) in self.distance.items():
+            s += '(' + str(k).rjust(3) + ',' + str(-sc) + ',' + str(dc) + ',' + str(d) + ') '
+
+        return ' '.join([s, 'mz:',
+                         str(self.merge_number),
+                         str(self.zero_cells)])
 
     def print_grid(self):
         for row in self.grid:
@@ -35,8 +39,11 @@ class Grid2048:
                 self.console.print(str(val).rjust(4), end=' | ')
             self.console.print('\n' + 32*'-')
 
-    def is_equal(self, grid):
-        return self.grid == grid.grid
+    def is_equal(self, grid_obj):
+        return self.grid == grid_obj.grid
+
+    def is_equal_utility(self, grid_obj):
+        return False
 
     def execute_analysis(self):
         self.gen_tile_position_dict()
@@ -77,18 +84,21 @@ class Grid2048:
 
             if len(positions) == 1:
                 i, j = positions[0]
-                self.distance[tile] = (-1, i + j)
+                self.distance[tile] = (-self.merge_score, i + j, i + j)
             # we have two tiles and want them to be close together
             elif len(positions) == 2:
                 i0, j0 = positions[0]
                 i1, j1 = positions[1]
                 d = abs(i0 - i1) + abs(j0 - j1)
-                self.distance[tile] = (-2, d)
+                self.distance[tile] = (-self.merge_score, d, i0 + i1 + j0 + j1)
             else:
-                i0, j0 = positions[0]
-                i1, j1 = positions[1]
-                d = abs(i0 - i1) + abs(j0 - j1)
-                self.distance[tile] = (-len(positions), d)
+                lst = []
+                for (i0, j0), (i1, j1) in itertools.combinations(positions, r=2):
+                    d = abs(i0 - i1) + abs(j0 - j1)
+                    s = i0 + j0 + i1 + j1
+                    lst.append((d, s))
+                lst.sort()
+                self.distance[tile] = (-self.merge_score, lst[0][0], lst[0][1])
 
     def max_element_upper_left(self):
         tiles = list(self.tile2positions.keys())
