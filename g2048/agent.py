@@ -2,6 +2,7 @@ import collections
 from rich.text import Text
 from rich.console import Console
 import itertools
+import math
 
 import game
 import copy
@@ -38,18 +39,20 @@ class Agent2048:
         for move in self.MOVES:
             grid_move = self.simulate_move(move)
             if grid_move:
-                grid_move.gen_tile_position_dict()
-                grid_move.tile_position_analysis()
-                # print(grid_move.tile2positions)
+                grid_move.execute_analysis()
                 lst.append(grid_move)
         return lst
 
     def heuristic_move(self, grid):
         self.grid = game.Grid2048(grid)
         simulations = self.gen_simulation_lst()
-        max_len = min([len(grid_obj.distance) for grid_obj in simulations])
+
+        max_tile = max([list(go.tile2positions.keys())[0] for go in simulations])
+        vals = [max_tile]
+        for e in range(int(math.log2(max_tile)), 1, -1):
+            vals.append(2 ** e)
         lst = sorted(simulations,
-                     key=lambda el: self.move_selection_priority(el, max_len))
+                     key=lambda el: self.move_selection_priority(el, vals))
         console = Console()
         self.grid.print_grid()
         for sim in lst:
@@ -58,9 +61,15 @@ class Agent2048:
 
         return lst[0].move
 
-    def move_selection_priority(self, grid_obj, max_len):
-        p0 = grid_obj.distance[0:max_len]
-        p1 = -grid_obj.merge_score
-        p2 = -grid_obj.merge_number
-        p3 = -grid_obj.zero_cells
-        return p0, p1, p2, p3
+    def move_selection_priority(self, grid_obj, vals):
+        p0 = grid_obj.dmax
+        lst = []
+        for tile in vals:
+            if tile in grid_obj.distance:
+                lst.append(grid_obj.distance[tile])
+            else:
+                lst.append((0, 0))
+        p2 = -grid_obj.merge_score
+        p3 = -grid_obj.merge_number
+        p4 = -grid_obj.zero_cells
+        return p0, lst, p2, p3, p4
