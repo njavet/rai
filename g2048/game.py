@@ -56,13 +56,13 @@ class Grid2048:
             # distance to left upper corner
             if len(positions) == 1:
                 i, j = positions[0]
-                lst.append(i + j)
+                lst.append((-tile, -1, i + j))
             # we have two tiles and want them to be close together
             elif len(positions) == 2:
                 i0, j0 = positions[0]
                 i1, j1 = positions[1]
                 d = abs(i0 - i1) + abs(j0 - j1)
-                lst.append(d)
+                lst.append((-tile, -2, d))
         return lst
 
     def merge_seq_to_left(self, seq, acc):
