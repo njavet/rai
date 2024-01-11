@@ -84,13 +84,13 @@ class Grid2048:
 
             if len(positions) == 1:
                 i, j = positions[0]
-                self.distance[tile] = (-self.merge_score, i + j, i + j)
+                self.distance[tile] = (-self.merge_score, -1, i + j, i + j)
             # we have two tiles and want them to be close together
             elif len(positions) == 2:
                 i0, j0 = positions[0]
                 i1, j1 = positions[1]
                 d = abs(i0 - i1) + abs(j0 - j1)
-                self.distance[tile] = (-self.merge_score, d, i0 + i1 + j0 + j1)
+                self.distance[tile] = (-self.merge_score, -2, d, i0 + i1 + j0 + j1)
             else:
                 lst = []
                 for (i0, j0), (i1, j1) in itertools.combinations(positions, r=2):
@@ -98,7 +98,7 @@ class Grid2048:
                     s = i0 + j0 + i1 + j1
                     lst.append((d, s))
                 lst.sort()
-                self.distance[tile] = (-self.merge_score, lst[0][0], lst[0][1])
+                self.distance[tile] = (-self.merge_score, -2, lst[0][0], lst[0][1])
 
     def max_element_upper_left(self):
         tiles = list(self.tile2positions.keys())

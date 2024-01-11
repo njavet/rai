@@ -77,7 +77,7 @@ class Agent2048:
             if tile in grid_obj.distance:
                 lst.append(grid_obj.distance[tile])
             else:
-                lst.append((0, 0, 0))
+                lst.append((0, 0, 0, 0))
 
         p3 = -grid_obj.merge_number
         p4 = -grid_obj.zero_cells
