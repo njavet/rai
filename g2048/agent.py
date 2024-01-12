@@ -33,7 +33,7 @@ def score_top_level_move(move, grid):
     new_grid = game.simulate_move(move, np.array(grid))
     if (grid == new_grid).all():
         return 0
-    return expectimax(new_grid, depth=3, agent_play=True)
+    return expectimax(new_grid, depth=3, agent_play=False)
 
 
 def expectimax(grid, depth, agent_play, path=None):

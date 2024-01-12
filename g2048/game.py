@@ -51,17 +51,28 @@ class Grid2048:
         #values = self.tile_value_score()
         #self.score = 0.01 * values
         self.score = self.zero_cells
+        #print('zeros', self.zero_cells)
+        self.score += self.rank
+        #print('rank', self.rank)
+
         dix = self.large_values_at_edge()
         for k, v in dix.items():
+            #print('large values', k, v, k*v)
             self.score += k * v
-        self.score -= 1000 * self.dmax
-        self.score += self.rank
-        for tile, d in self.distance.items():
-            self.score -= tile * (d[0] + d[1])
-
         self.score += self.row_monotony()
+        #print('row monotony', self.row_monotony())
         self.score += self.col_monotony()
+        #print('col monotony', self.col_monotony())
         self.score += self.adjacent_cells()
+        #print('adj ', self.adjacent_cells())
+
+        if self.score > self.dmax:
+            self.score -= self.dmax
+
+        for tile, d in self.distance.items():
+            if self.score > tile * (d[0] + d[1]):
+                self.score -= tile * (d[0] + d[1])
+
         if not move_available(self.grid):
             print('WILL ENCOUNTER GAMEOVER')
             self.score = -10000
@@ -100,14 +111,18 @@ class Grid2048:
     def row_monotony(self):
         s = 0
         for row in self.grid:
-            if row == sorted(row, reverse=True):
+            clean_row = [val for val in row if val != 0]
+            cond0 = len(clean_row) > 1
+            if cond0 and clean_row == sorted(clean_row, reverse=True):
                 s += 1
         return s
 
     def col_monotony(self):
         s = 0
         for col in self.grid.transpose():
-            if col == sorted(col, reverse=True):
+            clean_col = [val for val in col if val != 0]
+            cond0 = len(clean_col) > 1
+            if cond0 and clean_col == sorted(clean_col, reverse=True):
                 s += 1
         return s
 
@@ -115,11 +130,11 @@ class Grid2048:
         s = 0
         for i, row in enumerate(self.grid):
             for j, val in enumerate(row[:-1]):
-                if val == row[j + 1]:
+                if val != 0 and val == row[j + 1]:
                     s += 1
         for i, col in enumerate(self.grid.transpose()):
             for j, val in enumerate(col[:-1]):
-                if val == col[j + 1]:
+                if val != 0 and val == col[j + 1]:
                     s += 1
         return s
 
