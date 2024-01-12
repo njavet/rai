@@ -50,28 +50,31 @@ class Grid2048:
         # total values -> kind of merge score
         #values = self.tile_value_score()
         #self.score = 0.01 * values
-        self.score = self.zero_cells
+        #self.score = self.zero_cells
         #print('zeros', self.zero_cells)
-        self.score += self.rank
+        self.score = self.rank
         #print('rank', self.rank)
 
         dix = self.large_values_at_edge()
         for k, v in dix.items():
             #print('large values', k, v, k*v)
-            self.score += k * v
-        self.score += self.row_monotony()
+            pass
+            #self.score += k * v
+        #self.score += self.row_monotony()
         #print('row monotony', self.row_monotony())
-        self.score += self.col_monotony()
+        #self.score += self.col_monotony()
         #print('col monotony', self.col_monotony())
         self.score += self.adjacent_cells()
         #print('adj ', self.adjacent_cells())
 
         if self.score > self.dmax:
-            self.score -= self.dmax
+            pass
+            #self.score -= self.dmax
 
         for tile, d in self.distance.items():
             if self.score > tile * (d[0] + d[1]):
-                self.score -= tile * (d[0] + d[1])
+                pass
+                #self.score -= tile * (d[0] + d[1])
 
         if not move_available(self.grid):
             print('WILL ENCOUNTER GAMEOVER')
@@ -224,27 +227,27 @@ def merge_left(grid):
         zeros = len(row) - len(merged)
         merged_zeros = merged + zeros * [0]
         new_grid.append(merged_zeros)
-    return np.array(new_grid)
+    return new_grid
 
 
 def merge_right(grid):
     t = merge_left(np.array([row[::-1] for row in grid]))
-    return np.array([row[::-1] for row in t])
-    # return [row[::-1] for row in t]
+    #return np.array([row[::-1] for row in t])
+    return [row[::-1] for row in t]
 
 
 def merge_up(grid):
-    t = merge_left(grid.transpose())
-    #t = merge_left(zip(*grid))
-    return t.transpose()
-    #return [list(x) for x in zip(*t)]
+    #t = merge_left(grid.transpose())
+    t = merge_left(zip(*grid))
+    #return t.transpose()
+    return [list(x) for x in zip(*t)]
 
 
 def merge_down(grid):
-    t = merge_right(grid.transpose())
-    # t = merge_right(zip(*grid))
-    return t.transpose()
-    #return [list(x) for x in zip(*t)]
+    #t = merge_right(grid.transpose())
+    t = merge_right(zip(*grid))
+    #return t.transpose()
+    return [list(x) for x in zip(*t)]
 
 
 def simulate_move(move, grid):
@@ -260,15 +263,23 @@ def simulate_move(move, grid):
 
 def move_available(grid):
     mg = merge_up(grid)
-    if not (mg == grid).all():
+    if mg != grid:
         return True
     mg = merge_down(grid)
-    if not (mg == grid).all():
+    if mg != grid:
         return True
     mg = merge_left(grid)
-    if not (mg == grid).all():
+    if mg != grid:
         return True
     mg = merge_right(grid)
-    if not (mg == grid).all():
+    if mg != grid:
         return True
 
+
+console = Console()
+def print_grid(grid):
+    for row in grid:
+        console.print('|', end=' ')
+        for val in row:
+            console.print(str(val).rjust(4), end=' | ')
+        console.print('\n' + 29*'-')

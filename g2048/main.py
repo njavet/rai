@@ -37,7 +37,7 @@ def play_game(gamectrl):
             gamectrl.continue_game()
 
         moveno += 1
-        time.sleep(1)
+        #time.sleep(1)
         # agent activity
         board = gamectrl.get_board()
         # move = ag.heuristic_move(board)

@@ -4,6 +4,8 @@ from rich.console import Console
 import itertools
 import math
 import numpy as np
+import functools
+import operator
 
 import game
 import copy
@@ -25,30 +27,88 @@ UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
 def find_best_move(grid):
     result = [score_top_level_move(i, grid) for i in range(4)]
+    game.print_grid(grid)
     print('result', result)
     return result.index(max(result))
 
 
 def score_top_level_move(move, grid):
-    new_grid = game.simulate_move(move, np.array(grid))
-    if (grid == new_grid).all():
+    new_grid = game.simulate_move(move, grid)
+    if new_grid == grid:
         return 0
     return expectimax(new_grid, depth=3, agent_play=False)
 
 
-def expectimax(grid, depth, agent_play, path=None):
-    if path is None:
-        path = []
+class Memoize:
+    def __init__(self, func):
+        self.func = func
+        self.memo = {}
+
+    def __call__(self, *args):
+        if args not in self.memo:
+            self.memo[args] = self.func(*args)
+        return self.memo[args]
+
+
+class GridMemo:
+    def __init__(self, func):
+        self.func = func
+        self.memo = {}
+
+    def __call__(self, *args, **kwargs):
+        if args not in self.memo:
+            self.memo[args] = self.func(*args)
+        return self.memo[args]
+
+
+@Memoize
+def score_seq(seq):
+    zeros = seq.count(0)
+    rank = max(seq)
+    try:
+        rw = 1 / rank
+    except ZeroDivisionError:
+        rw = 1
+
+    ind = seq.index(rank)
+    if ind == 0 or ind == 3:
+        edge = 1
+    else:
+        edge = 0
+
+    vals = [val for val in seq if val != 0]
+    if vals == sorted(vals) or vals == sorted(vals, reverse=True):
+        mono = 1
+    else:
+        mono = 0
+
+    adj = 0
+    for i, val in enumerate(vals[:-1]):
+        if val == vals[i + 1]:
+            adj += 1
+
+    return mono + adj + edge + zeros - rw
+
+
+@GridMemo
+def score_function(grid):
+    score = 0
+    for row in grid:
+        score += score_seq(row)
+    for col in zip(*grid):
+        score += score_seq(col)
+    return score
+
+
+def expectimax(grid, depth, agent_play):
     if depth == 0:
-        grid_obj = game.Grid2048(grid)
-        grid_obj.execute_analysis()
-        return grid_obj.score
+        return score_function((tuple(row) for row in grid))
 
     if agent_play:
-        alpha = float('-inf')
+        alpha = 0
         for move in range(4):
             new_grid = game.simulate_move(move, grid)
-            if not (new_grid == grid).all():
+            if new_grid != grid:
                 alpha = max(alpha, expectimax(new_grid, depth-1, False))
         return alpha
     else:
@@ -72,3 +132,4 @@ def expectimax(grid, depth, agent_play, path=None):
             ng4[i][j] = 4
             alpha += p * 0.1 * expectimax(ng4, depth-1, True)
         return alpha
+

@@ -104,7 +104,8 @@ class Fast2048Control(Generic2048Control):
                 board[pos[1]][pos[0]] = tval
                 #board[pos[1]][pos[0]] = int(round(math.log(tval, 2)))
 
-        return board
+        return [list(row) for row in board]
+        #return board
 
     def execute_move(self, move):
         # We use UDLR ordering; 2048 uses URDL ordering
