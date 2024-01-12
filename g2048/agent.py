@@ -29,14 +29,18 @@ def find_best_move(grid):
     result = [score_top_level_move(i, grid) for i in range(4)]
     game.print_grid(grid)
     print('result', result)
-    return result.index(max(result))
+    if max(result) == 0:
+        move = random.choice([0, 1, 2, 3])
+    else:
+        move = result.index(max(result))
+    return move
 
 
-def score_top_level_move(move, grid):
+def score_top_level_move(move, grid, depth=3):
     new_grid = game.simulate_move(move, grid)
     if new_grid == grid:
         return 0
-    return expectimax(new_grid, depth=3, agent_play=False)
+    return expectimax(new_grid, depth, agent_play=False)
 
 
 class Memoize:
@@ -72,22 +76,22 @@ def score_seq(seq):
 
     ind = seq.index(rank)
     if ind == 0 or ind == 3:
-        edge = 1
+        edge = 1 - rw
     else:
         edge = 0
 
     vals = [val for val in seq if val != 0]
     if vals == sorted(vals) or vals == sorted(vals, reverse=True):
-        mono = 1
+        mono = 1 - rw
     else:
         mono = 0
 
     adj = 0
     for i, val in enumerate(vals[:-1]):
         if val == vals[i + 1]:
-            adj += 1
+            adj += 1 - rw
 
-    return mono + adj + edge + zeros - rw
+    return zeros + edge + mono + adj - rw
 
 
 @GridMemo
