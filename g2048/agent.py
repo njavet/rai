@@ -36,7 +36,7 @@ def find_best_move(grid):
     return move
 
 
-def score_top_level_move(move, grid, depth=3):
+def score_top_level_move(move, grid, depth=5):
     new_grid = game.simulate_move(move, grid)
     if new_grid == grid:
         return 0
@@ -67,6 +67,7 @@ class GridMemo:
 
 @Memoize
 def score_seq(seq):
+    #print('seq', seq)
     zeros = seq.count(0)
     rank = max(seq)
     try:
@@ -89,8 +90,13 @@ def score_seq(seq):
     adj = 0
     for i, val in enumerate(vals[:-1]):
         if val == vals[i + 1]:
-            adj += 1 - rw
+            adj += 1 - (1/val)
 
+    #print('zeros', zeros)
+    #print('edge', edge)
+    #print('mono', mono)
+    #print('adj', adj)
+    #print('rw', rw)
     return zeros + edge + mono + adj - rw
 
 
@@ -106,7 +112,7 @@ def score_function(grid):
 
 def expectimax(grid, depth, agent_play):
     if depth == 0:
-        return score_function((tuple(row) for row in grid))
+        return score_function(tuple(tuple(row) for row in grid))
 
     if agent_play:
         alpha = 0
