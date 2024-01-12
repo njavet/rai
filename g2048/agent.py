@@ -3,12 +3,22 @@ from rich.text import Text
 from rich.console import Console
 import itertools
 import math
+import numpy as np
 
 import game
 import copy
 import sys
 import random
 
+
+# heuristics from stackover flow post:
+# bonus for zero cells
+# large tiles on the edge
+# penalty for non mononic rows / cols with increasing ranks
+# number of potential merges (adjacent equal values) in addition
+# to zero cells -> this increases delayed merges
+
+# CMA-ES adjust weights -> maybe RL ?
 
 UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
@@ -20,13 +30,15 @@ def find_best_move(grid):
 
 
 def score_top_level_move(move, grid):
-    new_grid = game.simulate_move(move, grid)
-    if grid == new_grid:
+    new_grid = game.simulate_move(move, np.array(grid))
+    if (grid == new_grid).all():
         return 0
-    return expectimax(new_grid, depth=3, agent_play=False)
+    return expectimax(new_grid, depth=5, agent_play=False)
 
 
-def expectimax(grid, depth, agent_play):
+def expectimax(grid, depth, agent_play, path=None):
+    if path is None:
+        path = []
     if depth == 0:
         grid_obj = game.Grid2048(grid)
         grid_obj.execute_analysis()
@@ -36,7 +48,7 @@ def expectimax(grid, depth, agent_play):
         alpha = 0
         for move in range(4):
             new_grid = game.simulate_move(move, grid)
-            if new_grid != grid:
+            if not (new_grid == grid).all():
                 alpha = max(alpha, expectimax(new_grid, depth-1, False))
         return alpha
     else:

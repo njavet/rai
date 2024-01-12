@@ -4,6 +4,7 @@ import copy
 import math
 import collections
 import itertools
+import numpy as np
 import functools
 
 
@@ -46,15 +47,81 @@ class Grid2048:
         return ts
 
     def set_score(self):
-
-        # empty spaces heuristic
+        # total values -> kind of merge score
+        #values = self.tile_value_score()
+        #self.score = 0.01 * values
         self.score = self.zero_cells
-        # distance to left upper corner
-        self.score -= 100000 * self.dmax
-        # highest tile
+        dix = self.large_values_at_edge()
+        for k, v in dix.items():
+            self.score += k * v
+        self.score -= 1000 * self.dmax
         self.score += self.rank
-        # total values
-        self.score += self.tile_value_score()
+        for tile, d in self.distance.items():
+            self.score -= tile * (d[0] + d[1])
+
+        self.score += self.row_monotony()
+        self.score += self.col_monotony()
+        self.score += self.adjacent_cells()
+        if not move_available(self.grid):
+            print('WILL ENCOUNTER GAMEOVER')
+            self.score = -10000
+        # max distance
+
+    def extract_large_tiles(self):
+        dix = {}
+        for lt in list(self.tile2positions.keys())[0:3]:
+            dix[lt] = self.tile2positions[lt]
+        return dix
+
+    def is_on_edge(self, i, j):
+        upper = [(0, 0), (0, 1), (0, 2), (0, 3)]
+        lower = [(3, 0), (3, 1), (3, 2), (3, )]
+        left = [(0, 0), (1, 0), (2, 0), (3, 0)]
+        right = [(0, 3), (1, 3), (2, 3), (3, 3)]
+        if (i, j) in upper:
+            return True
+        if (i, j) in lower:
+            return True
+        if (i, j) in left:
+            return True
+        if (i, j) in right:
+            return True
+
+    def large_values_at_edge(self):
+        # edge : i == 0 or i == 3
+        #
+        dix = collections.defaultdict(int)
+        for tile, positions in self.extract_large_tiles().items():
+            for pos in positions:
+                if self.is_on_edge(pos[0], pos[1]):
+                    dix[tile] += 1
+        return dix
+
+    def row_monotony(self):
+        s = 0
+        for row in self.grid:
+            if row == sorted(row, reverse=True):
+                s += 1
+        return s
+
+    def col_monotony(self):
+        s = 0
+        for col in self.grid.transpose():
+            if col == sorted(col, reverse=True):
+                s += 1
+        return s
+
+    def adjacent_cells(self):
+        s = 0
+        for i, row in enumerate(self.grid):
+            for j, val in enumerate(row[:-1]):
+                if val == row[j + 1]:
+                    s += 1
+        for i, col in enumerate(self.grid.transpose()):
+            for j, val in enumerate(col[:-1]):
+                if val == col[j + 1]:
+                    s += 1
+        return s
 
     def gen_tile_position_dict(self):
         """
@@ -117,9 +184,7 @@ class Grid2048:
         self.dmax = sum(self.tile2positions[max_tile][0])
 
 
-
 def merge_left(grid):
-
     def merge_seq_to_left(seq, acc):
         if not seq:
             return acc
@@ -144,22 +209,27 @@ def merge_left(grid):
         zeros = len(row) - len(merged)
         merged_zeros = merged + zeros * [0]
         new_grid.append(merged_zeros)
-    return new_grid
+    return np.array(new_grid)
 
 
 def merge_right(grid):
-    t = merge_left([row[::-1] for row in grid])
-    return [row[::-1] for row in t]
+    t = merge_left(np.array([row[::-1] for row in grid]))
+    return np.array([row[::-1] for row in t])
+    # return [row[::-1] for row in t]
 
 
 def merge_up(grid):
-    t = merge_left(zip(*grid))
-    return [list(x) for x in zip(*t)]
+    t = merge_left(grid.transpose())
+    #t = merge_left(zip(*grid))
+    return t.transpose()
+    #return [list(x) for x in zip(*t)]
 
 
 def merge_down(grid):
-    t = merge_right(zip(*grid))
-    return [list(x) for x in zip(*t)]
+    t = merge_right(grid.transpose())
+    # t = merge_right(zip(*grid))
+    return t.transpose()
+    #return [list(x) for x in zip(*t)]
 
 
 def simulate_move(move, grid):
@@ -171,3 +241,19 @@ def simulate_move(move, grid):
         return merge_left(grid)
     elif move == 3:
         return merge_right(grid)
+
+
+def move_available(grid):
+    mg = merge_up(grid)
+    if not (mg == grid).all():
+        return True
+    mg = merge_down(grid)
+    if not (mg == grid).all():
+        return True
+    mg = merge_left(grid)
+    if not (mg == grid).all():
+        return True
+    mg = merge_right(grid)
+    if not (mg == grid).all():
+        return True
+
