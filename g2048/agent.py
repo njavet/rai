@@ -32,7 +32,8 @@ class Agent2048:
             grid_obj.merge_left()
         elif move == self.RIGHT:
             grid_obj.merge_right()
-        return grid_obj
+        if grid != grid_obj.grid:
+            return grid_obj
 
     def gen_simulation_lst(self, grid):
         lst = []
@@ -104,27 +105,25 @@ def score_top_level_move(move, grid):
     if grid == new_grid:
         return 0
 
-    score = game.compute_score(grid, new_grid)
-    print('first score', score)
-    return expectimax(grid, score, depth=1, agent_play=False)
+    return expectimax(grid, depth=1, agent_play=False)
 
 
 UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
 
-def expectimax(grid, acc, depth, agent_play):
+def expectimax(grid, depth, agent_play):
     if depth == 0:
         alpha = 0
         for move in range(4):
             new_grid = game.simulate_move(move, grid)
-            alpha = max(alpha, game.compute_score(grid, new_grid))
-        return acc + alpha
+            alpha = min(alpha, game.compute_score(grid, new_grid))
+        return alpha
 
     if agent_play:
         alpha = 0
         for move in range(4):
             new_grid = game.simulate_move(move, grid)
-            alpha = max(alpha, expectimax(new_grid, acc, depth-1, False))
+            alpha = max(alpha, expectimax(new_grid, depth-1, False))
         return alpha
     else:
         alpha = 0
@@ -135,15 +134,15 @@ def expectimax(grid, acc, depth, agent_play):
             p = 1 / zeros
         except ZeroDivisionError:
             print('NO free cells')
-            return expectimax(grid, acc, depth-1, True)
+            return expectimax(grid, depth-1, True)
 
         for i, j in zero_cells:
             ng2 = copy.deepcopy(grid)
             ng2[i][j] = 2
-            alpha += p * 0.9 * expectimax(ng2, acc, depth-1, True)
+            alpha += p * 0.9 * expectimax(ng2, depth-1, True)
 
         for i, j in zero_cells:
             ng4 = copy.deepcopy(grid)
             ng4[i][j] = 4
-            alpha += p * 0.1 * expectimax(ng4, acc, depth-1, True)
+            alpha += p * 0.1 * expectimax(ng4, depth-1, True)
         return alpha
