@@ -41,8 +41,9 @@ def play_game(gamectrl):
         time.sleep(1)
         # agent activity
         board = gamectrl.get_board()
-        #move = ag.heuristic_move(board)
-        move = ag.expectimax(board)
+        # move = ag.heuristic_move(board)
+        # move = ag.find_best_move(board)
+        move = agent.find_best_move(board)
 
         if move < 0:
             print('NO VALID MOVE')

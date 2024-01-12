@@ -19,7 +19,8 @@ class TestMerge(unittest.TestCase):
         self.grid2048_1 = game.Grid2048(self.grid1)
 
     def test_merge_left_grid0(self):
-        score, grid = game.merge_left(self.grid0)
+        grid = game.merge_left(self.grid0)
+        score = game.compute_score(self.grid0, grid)
         self.grid2048_0.merge_left()
 
         grid_res = [[4, 4, 0, 0],
@@ -37,7 +38,7 @@ class TestMerge(unittest.TestCase):
 
 
     def test_merge_left_grid1(self):
-        score, grid = game.merge_left(self.grid1)
+        grid = game.merge_left(self.grid1)
         self.grid2048_1.merge_left()
 
         grid_res = [[4, 4, 2, 0],
@@ -47,14 +48,13 @@ class TestMerge(unittest.TestCase):
 
         self.assertEqual(self.grid2048_1.grid, grid_res)
         self.assertEqual(grid, grid_res)
-        self.assertEqual(score, 6)
 
     def test_merge_left_score_grid1(self):
         self.grid2048_1.merge_left()
         self.assertEqual(self.grid2048_1.merge_score, 6)
 
     def test_merge_right_grid0(self):
-        score, grid = game.merge_right(self.grid0)
+        grid = game.merge_right(self.grid0)
         self.grid2048_0.merge_right()
 
         grid_res = [[0, 0, 4, 4],
@@ -63,14 +63,13 @@ class TestMerge(unittest.TestCase):
                     [0, 0, 4, 4]]
         self.assertEqual(self.grid2048_0.grid, grid_res)
         self.assertEqual(grid, grid_res)
-        self.assertEqual(score, 10)
 
     def test_merge_right_score_grid0(self):
         self.grid2048_0.merge_right()
         self.assertEqual(self.grid2048_0.merge_score, 10)
 
     def test_merge_right_grid1(self):
-        score, grid = game.merge_right(self.grid1)
+        grid = game.merge_right(self.grid1)
         self.grid2048_1.merge_right()
 
         grid_res = [[0, 4, 4, 2],
@@ -80,7 +79,6 @@ class TestMerge(unittest.TestCase):
 
         self.assertEqual(self.grid2048_1.grid, grid_res)
         self.assertEqual(grid, grid_res)
-        self.assertEqual(score, 6)
 
     def test_merge_right_score_grid1(self):
         self.grid2048_1.merge_right()
@@ -88,7 +86,7 @@ class TestMerge(unittest.TestCase):
 
     def test_merge_up_grid0(self): 
         self.grid2048_0.merge_up()
-        score, grid = game.merge_up(self.grid0)
+        grid = game.merge_up(self.grid0)
 
         grid_res = [[2, 2, 2, 2],
                     [4, 8, 8, 16],
@@ -97,14 +95,13 @@ class TestMerge(unittest.TestCase):
 
         self.assertEqual(self.grid2048_0.grid, grid_res)
         self.assertEqual(grid, grid_res)
-        self.assertEqual(score, 6)
 
     def test_merge_up_score_grid0(self):
         self.grid2048_0.merge_up()
         self.assertEqual(self.grid2048_0.merge_score, 6)
 
     def test_merge_up_grid1(self): 
-        score, grid = game.merge_up(self.grid1)
+        grid = game.merge_up(self.grid1)
         self.grid2048_1.merge_up()
 
         grid_res = [[2, 2, 8, 2],
@@ -114,14 +111,13 @@ class TestMerge(unittest.TestCase):
 
         self.assertEqual(self.grid2048_1.grid, grid_res)
         self.assertEqual(grid, grid_res)
-        self.assertEqual(score, 28)
 
     def test_merge_up_score_grid1(self):
         self.grid2048_1.merge_up()
         self.assertEqual(self.grid2048_1.merge_score, 28)
 
     def test_merge_down_grid0(self):
-        score, grid = game.merge_down(self.grid0)
+        grid = game.merge_down(self.grid0)
         self.grid2048_0.merge_down()
 
         grid_res = [[0, 0, 0, 0],
@@ -131,14 +127,13 @@ class TestMerge(unittest.TestCase):
 
         self.assertEqual(self.grid2048_0.grid, grid_res)
         self.assertEqual(grid, grid_res)
-        self.assertEqual(score, 6)
 
     def test_merge_down_score_grid0(self):
         self.grid2048_0.merge_down()
         self.assertEqual(self.grid2048_0.merge_score, 6)
     
     def test_merge_down_grid1(self):
-        score, grid = game.merge_down(self.grid1)
+        grid = game.merge_down(self.grid1)
         self.grid2048_1.merge_down()
 
         grid_res = [[0, 0, 0, 0],
@@ -148,7 +143,6 @@ class TestMerge(unittest.TestCase):
 
         self.assertEqual(self.grid2048_1.grid, grid_res)
         self.assertEqual(grid, grid_res)
-        self.assertEqual(score, 28)
 
     def test_merge_down_score_grid1(self):
         self.grid2048_1.merge_down()

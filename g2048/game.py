@@ -22,6 +22,7 @@ class Grid2048:
         self.tile2positions = None
         self.dmax = 0
         self.distance = None
+        self.expectimax_score = 0
 
     def __str__(self):
         s = self.MOVES_NAMES[self.move].rjust(5) + ' '
@@ -159,46 +160,86 @@ class Grid2048:
 
 def merge_left(grid):
 
-    def merge_seq_to_left(seq, acc, score=0):
+    def merge_seq_to_left(seq, acc):
         if not seq:
-            return score, acc
+            return acc
 
         x = seq[0]
         if len(seq) == 1:
-            return score, acc + [x]
+            return acc + [x]
 
         if x == seq[1]:
             # here is the (only !) point where tiles get merged
             # therefore we compute relevant values -> ugly from
             # a functional programming viewpoint
-            return merge_seq_to_left(seq[2:], acc + [2 * x], score+x)
+            return merge_seq_to_left(seq[2:], acc + [2 * x])
         else:
-            return merge_seq_to_left(seq[1:], acc + [x], score)
+            return merge_seq_to_left(seq[1:], acc + [x])
 
     new_grid = []
-    total_score = 0
     for i, row in enumerate(grid):
-        mscore, merged = merge_seq_to_left([x for x in row if x != 0], [])
+        merged = merge_seq_to_left([x for x in row if x != 0], [])
         # since `merged` has no zeros, the number of zeros can be added here
         # only here the zeros are "added" to the new grid
         zeros = len(row) - len(merged)
         merged_zeros = merged + zeros * [0]
         new_grid.append(merged_zeros)
-        total_score += mscore
-    return total_score, new_grid
+    return new_grid
 
 
 def merge_right(grid):
-    s, t = merge_left([row[::-1] for row in grid])
-    return s, [row[::-1] for row in t]
+    t = merge_left([row[::-1] for row in grid])
+    return [row[::-1] for row in t]
 
 
 def merge_up(grid):
-    s, t = merge_left(zip(*grid))
-    return s, [list(x) for x in zip(*t)]
+    t = merge_left(zip(*grid))
+    return [list(x) for x in zip(*t)]
 
 
 def merge_down(grid):
-    s, t = merge_right(zip(*grid))
-    return s, [list(x) for x in zip(*t)]
+    t = merge_right(zip(*grid))
+    return [list(x) for x in zip(*t)]
+
+
+def simulate_move(move, grid):
+    if move == 0:
+        return merge_up(grid)
+    elif move == 1:
+        return merge_down(grid)
+    elif move == 2:
+        return merge_left(grid)
+    elif move == 3:
+        return merge_right(grid)
+
+
+def compute_value2occurence(grid):
+    dix = collections.defaultdict(int)
+    for i, row in enumerate(grid):
+        for j, val in enumerate(row):
+            dix[val] += 1
+    return dix
+
+
+def compute_row_score(old_row, new_row, rscore):
+    if not new_row:
+        return rscore
+
+    x = new_row[0]
+    try:
+        ind = old_row.index(x)
+        row = old_row[:ind] + old_row[ind+1:]
+        return compute_row_score(row, new_row[1:], rscore)
+    except ValueError:
+        return compute_row_score(old_row, new_row[1:], rscore + x // 2)
+
+
+def compute_score(old_grid, new_grid):
+
+    score = 0
+    for i, row in enumerate(new_grid):
+        old_row = [val for val in old_grid[i] if val != 0]
+        new_row = [val for val in row if val != 0]
+        score += compute_row_score(old_row, new_row, 0)
+    return score
 
