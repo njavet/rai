@@ -1,6 +1,7 @@
 from rich.text import Text
 from rich.console import Console
 import copy
+import math
 import collections
 import itertools
 import functools
@@ -14,8 +15,8 @@ class Grid2048:
         self.console = Console()
         self.grid = copy.deepcopy(grid)
         self.zero_cells = 0
+        self.rank = 0
         self.dmax = 0
-        self.d2max = 0
         self.tile2positions = None
         self.distance = None
         self.score = 0
@@ -31,15 +32,29 @@ class Grid2048:
         self.gen_tile_position_dict()
         self.tile_position_analysis()
         self.max_element_upper_left()
+        self.monotony()
         self.set_score()
 
+    def monotony(self):
+        pass
+
+    def tile_value_score(self):
+        ts = 0
+        for tile, positions in self.tile2positions.items():
+            base = 10 ** int(math.log2(tile))
+            ts += len(positions) * base
+        return ts
+
     def set_score(self):
+
+        # empty spaces heuristic
         self.score = self.zero_cells
-        self.score -= self.dmax
-        self.score -= self.d2max
-        tiles = list(self.tile2positions.keys())
-        max_tile = tiles[0]
-        self.score += max_tile
+        # distance to left upper corner
+        self.score -= 100000 * self.dmax
+        # highest tile
+        self.score += self.rank
+        # total values
+        self.score += self.tile_value_score()
 
     def gen_tile_position_dict(self):
         """
@@ -94,17 +109,13 @@ class Grid2048:
     def max_element_upper_left(self):
         tiles = list(self.tile2positions.keys())
         max_tile = tiles[0]
-        try:
-            snd = tiles[1]
-            self.d2max = sum(self.tile2positions[snd][0])
-        except IndexError:
-            self.d2max = 0
-
+        self.rank = max_tile
         # main priority is to keep it at the upper left
         # TODO expected "stupid" behavior if we have more than
         #  one max and the agent could merge them without risking
         #  the upper left corner position
         self.dmax = sum(self.tile2positions[max_tile][0])
+
 
 
 def merge_left(grid):

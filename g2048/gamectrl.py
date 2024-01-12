@@ -99,7 +99,7 @@ class Fast2048Control(Generic2048Control):
                 # use this line if you want to return the real values not the log2 ones
                 board[pos[1]][pos[0]] = tval
                 #board[pos[1]][pos[0]] = int(round(math.log(tval, 2)))
-        return [[val for val in row] for row in board]
+        #return [[val for val in row] for row in board]
         return board
 
     def execute_move(self, move):
