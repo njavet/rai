@@ -29,6 +29,90 @@ from rich.text import Text
 from rich.console import Console
 
 
+def is_terminal_state(board):
+    game_over, _, _ = evaluate(board)
+    if game_over:
+        return True
+    else:
+        return False
+
+
+def get_free_fields(board):
+    return [i for i, val in enumerate(board) if val == ' ']
+
+
+def minimax_decision(board):
+    result = []
+    moves = get_free_fields(board)
+    for move in moves:
+        new_board = insert_symbol(board, 'X', move)
+        result.append(minimax(new_board, 'O'))
+    ind = result.index(max(result))
+    return moves[ind]
+
+
+def expectimax_decision(board):
+    result = []
+    moves = get_free_fields(board)
+    for move in moves:
+        new_board = insert_symbol(board, 'X', move)
+        result.append(expectimax(new_board, 'O'))
+    ind = result.index(max(result))
+    return moves[ind]
+
+
+def expectimax(board, turn):
+    if is_terminal_state(board):
+        return utility(board)
+
+    if turn == 'X':
+        v = float('-inf')
+        for field in get_free_fields(board):
+            new_board = insert_symbol(board, 'X', field)
+            v = max(v, expectimax(new_board, 'O'))
+        return v
+
+    if turn == 'O':
+        fields = get_free_fields(board)
+        p = 1 / len(fields)
+        v = 0
+        for field in fields:
+            new_board = insert_symbol(board, 'O', field)
+            v += p * expectimax(new_board, 'X')
+        return v
+
+
+def minimax(board, turn):
+    if is_terminal_state(board):
+        return utility(board)
+
+    # max player
+    if turn == 'X':
+        v = float('-inf')
+        for field in get_free_fields(board):
+            new_board = insert_symbol(board, 'X', field)
+            v = max(v, minimax(new_board, 'O'))
+        return v
+
+    # min player
+    if turn == 'O':
+        v = float('inf')
+        for field in get_free_fields(board):
+            new_board = insert_symbol(board, 'O', field)
+            v = min(v, minimax(new_board, 'X'))
+        return v
+
+
+def utility(board):
+    game_over, winner, reward = evaluate(board)
+    if winner == 'X':
+        return 1
+    elif winner == 'O':
+        return 0
+    else:
+        return 0.5
+
+
 def insert_symbol(board, symbol, field):
     """
     Return a new BOARD by inserting the character SYMBOL at the index position 

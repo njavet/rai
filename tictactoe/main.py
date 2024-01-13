@@ -10,7 +10,7 @@ import t3_engine as engine
 
 def parse_args(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', help='training mode (default: False)', default=False)
+    parser.add_argument('-t', help='training mode (default: False)', action='store_const', const=True, default=False)
     parser.add_argument('-n', help='number of games in self play', default=10000)
     parser.add_argument('-m', help='model file', default='model.json')
     return parser.parse_args(argv)
@@ -43,7 +43,9 @@ def main():
         while True:
             turn = engine.whos_turn(board)
             if turn == 'X':
-                field = agent.get_best_action(board, model, turn)
+                #field = agent.get_best_action(board, model, turn, debug=True)
+                #field = agent.get_minimax_action(board)
+                field = agent.get_expectimax_action(board)
                 board = engine.make_move(board, field, turn)
                 assert(board != '')
             else:

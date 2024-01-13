@@ -1,3 +1,4 @@
+import collections
 import json
 import random
 
@@ -13,13 +14,14 @@ def load_model(file_name):
     return model
 
 
-def get_best_action(board, model, turn):
-    free_fields = _get_free_fields(board)
+def get_best_action(board, model, turn, debug=False):
+    free_fields = engine.get_free_fields(board)
 
     if board == engine.get_initial_board():
         return _opening_action()
 
     if random.uniform(0, 1) < exploration_rate:
+        print('explore')
         return random.choice(free_fields)
     
     best_prob = 0
@@ -32,15 +34,29 @@ def get_best_action(board, model, turn):
         if best_prob < win_prob:
             best_prob = win_prob
             chosen_field = field
-
+        if debug:
+            print('field', field, 'winprob', win_prob)
     return chosen_field
+
+
+def get_minimax_action(board):
+    return engine.minimax_decision(board)
+
+
+def get_expectimax_action(board):
+    return engine.expectimax_decision(board)
 
 
 def train_model(number_of_games, model_file_name):
     model = {}
+    winners = collections.defaultdict(int)
     for game_nr in range(number_of_games):
-        _play_game(model)
+        who_won = _play_game(model)
+        winners[who_won] += 1
     _save_model(model, model_file_name)
+
+    for k, v in winners.items():
+        print(k, v)
 
 
 def _play_game(model):
@@ -56,11 +72,11 @@ def _play_game(model):
         else:
             field = _get_opponent_action(board)
             board = engine.make_move(board, field, turn)
-    
+
         game_over, who_won, reward = engine.evaluate(board)
         if game_over:
             _learn_from_final_move(board, model, who_won)
-            break
+            return who_won
 
 
 def _save_model(model, model_file_name):
@@ -69,12 +85,12 @@ def _save_model(model, model_file_name):
 
 
 def _get_opponent_action(board):
-    free_fields = _get_free_fields(board)
+    free_fields = engine.get_free_fields(board)
     return random.choice(free_fields)
 
 
 def _opening_action():
-    """ three equivalent actions: 
+    """ three equivalent actions:
     corner, edge, center """
     opening = random.random()
     # corner
@@ -82,32 +98,28 @@ def _opening_action():
         # 4 equivalent corners
         corner = random.random()
         if corner < 0.25:
-            return 1
+            return 0
         elif corner < 0.5:
-            return 3
+            return 2
         elif corner < 0.75:
-            return 7
+            return 6
         else:
-            return 9
+            return 8
     # edge
     if 0.33 <= opening < 0.66:
         # 4 equivalent edges
         edge = random.random()
         if edge < 0.25:
-            return 2
+            return 1
         elif edge < 0.5:
-            return 4
+            return 3
         elif edge < 0.75:
-            return 6
+            return 5
         else:
-            return 8
+            return 7
     # center
     else:
-        return 5
-
-
-def _get_free_fields(board):
-    return [i + 1 for i, val in enumerate(board) if val == ' ']
+        return 4
 
 
 def _update_model(old_state, new_state, step_size, model):
@@ -117,40 +129,17 @@ def _update_model(old_state, new_state, step_size, model):
 
 def _learn_from_final_move(old_state, model, winner):
     if winner == 'O':
-        model[old_state] = -1
+        model[old_state] = 0
     if winner == 'X':
         model[old_state] = 1
 
 
 def compute_probability_from_state(board):
-    # rows 
-    for i in range(3):
-        if board[i*3] == board[i*3+1] and board[i*3] == board[i*3+2] and board[i*3] != ' ':
-            if board[i*3] == 'X':
-                return 1
-            else:
-                return 0
-
-    # check cols
-    for i in range(3):
-        if board[i] == board[i+3] and board[i] == board[i+6] and board[i] != ' ':
-            if board[i] == 'X':
-                return 1
-            else:
-                return 0
- 
-     # check diagonals:
-    if board[0] == board[4] and board[0] == board[8] and board[0] != ' ': #down diag
-        if board[0] == 'X':
-            return 1
-        else:
-            return 0
-
-    if board[6] == board[4] and board[6] == board[2] and board[6] != ' ': #up diag
-        if board[6] == 'X':
-            return 1
-        else:
-            return 0
-
-    return 0.5
-
+    # rows
+    over, winner, value = engine.evaluate(board)
+    if winner == 'X':
+        return 1
+    elif winner == 'O':
+        return 0
+    else:
+        return 0.5
