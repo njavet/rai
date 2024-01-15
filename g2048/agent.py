@@ -4,6 +4,8 @@ from rich.console import Console
 import itertools
 import math
 import numpy as np
+import torch.nn as nn
+import torch.nn.functional as F
 import functools
 import operator
 
@@ -60,11 +62,15 @@ class Node:
 
 UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
+b = 0
 
 def find_best_move(grid):
+    global b
+    b = 0
     result = [score_top_level_move(i, grid) for i in range(4)]
     game.print_grid(grid)
     print('result', result)
+    print('branches', b)
 
     if max(result) == 0:
         move = random.choice([0, 1, 2, 3])
@@ -77,6 +83,8 @@ def score_top_level_move(move, grid, depth=6):
     new_grid = game.simulate_move(move, grid)
     if new_grid == grid:
         return 0
+
+    #print('MOVE', move)
     node = Node(new_grid, move)
     node.path = [move]
     node.num = move
@@ -136,13 +144,15 @@ def utility(node):
         score += score_seq(tuple(row))
     for col in zip(*node.grid):
         score += score_seq(tuple(col))
+    #print('score:', score)
     return score
 
 
 def expectimax(node, depth, agent_play):
     if depth == 0:
-        node.num += 1
-        #print('node ', node.num, 'path', node.path)
+        global b
+        b += 1
+        #print(utility(node))
         assert(node.move >= 0)
         return utility(node)
 
@@ -152,31 +162,25 @@ def expectimax(node, depth, agent_play):
             new_grid = game.simulate_move(move, node.grid)
             if new_grid != node.grid:
                 next_node = Node(new_grid, move)
-                next_node.path = node.path.copy()
-                next_node.path.append(move)
-                next_node.num = node.num + 1
                 alpha = max(alpha, expectimax(next_node, depth-1, False))
+        #print('random node alpha', alpha)
         return alpha
     else:
         expected_value = 0
         zero_cells = [(i, j) for i, row in enumerate(node.grid)
                       for j, val in enumerate(row) if val == 0]
         zeros = len(zero_cells)
+
         for i, j in zero_cells:
             ng2 = copy.deepcopy(node.grid)
             ng2[i][j] = 2
-            next_node = Node(ng2)
-            next_node.num = node.num + 1
-            next_node.path = node.path.copy()
-            next_node.path.append('r2')
-            expected_value += 0.9 * expectimax(next_node, depth-1, True)
+            next_node2 = Node(ng2)
+            expected_value += 0.9 * expectimax(next_node2, depth-1, True)
 
-        for i, j in zero_cells:
             ng4 = copy.deepcopy(node.grid)
             ng4[i][j] = 4
-            next_node = Node(ng4)
-            next_node.num = node.num + zeros + i + j
-            next_node.path = node.path.copy()
-            next_node.path.append('r4')
-            expected_value += 0.1 * expectimax(next_node, depth-1, True)
+            next_node4 = Node(ng4)
+            expected_value += 0.1 * expectimax(next_node4, depth-1, True)
+        #print('expected value', (1 / zeros) * expected_value)
         return (1 / zeros) * expected_value
+
