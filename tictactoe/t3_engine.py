@@ -27,6 +27,22 @@ O's turn.
 """
 from rich.text import Text
 from rich.console import Console
+import itertools
+import collections
+
+
+def enumerate_states(board, ind, states):
+    game_over, winner, reward = evaluate(board)
+    if game_over:
+        states[winner] += 1
+        return 
+
+    new0 = board[0:ind] + 'X' + board[ind+1:]
+    new1 = board[0:ind] + 'O' + board[ind+1:]
+    enumerate_states(new0, ind+1, states)
+    enumerate_states(new1, ind+1, states)
+
+
 
 
 def is_terminal_state(board):

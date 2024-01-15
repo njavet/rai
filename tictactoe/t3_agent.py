@@ -143,3 +143,4 @@ def compute_probability_from_state(board):
         return 0
     else:
         return 0.5
+

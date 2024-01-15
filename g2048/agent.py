@@ -30,8 +30,10 @@ class Node:
             self.move = -1
         else:
             self.move = move
+
         self.grid = grid
         self.grid_tuple = self.convert_grid_2_tuple()
+        self.num = 0
         self.path = []
 
     def convert_grid_2_tuple(self):
@@ -71,15 +73,19 @@ def find_best_move(grid):
     return move
 
 
-def score_top_level_move(move, grid, depth=2):
+def score_top_level_move(move, grid, depth=6):
     new_grid = game.simulate_move(move, grid)
     if new_grid == grid:
         return 0
-    return expectimax(Node(new_grid, move), depth, agent_play=False)
+    node = Node(new_grid, move)
+    node.path = [move]
+    node.num = move
+    return expectimax(node, depth, agent_play=False)
 
 
 @Memoize
 def score_seq(seq):
+
     # number of zeros heuristic
     zeros = seq.count(0)
 
@@ -108,14 +114,16 @@ def score_seq(seq):
     adj = 0
     for i, val in enumerate(vals[:-1]):
         if val == vals[i + 1]:
-            adj += 1 - (1/val)
+            adj += 1 - (1 / val)
 
     #print('zeros', zeros)
     #print('edge', edge)
     #print('mono', mono)
     #print('adj', adj)
     #print('rw', rw)
-    return zeros + edge + mono + adj - rw
+    bias = 0
+    #wtx = bias + w1 * zeros + w2 * edge + w3 * mono + w4 * adj + w5 * rank
+    return zeros + edge + mono + adj
 
 
 @Memoize
@@ -133,6 +141,8 @@ def utility(node):
 
 def expectimax(node, depth, agent_play):
     if depth == 0:
+        node.num += 1
+        #print('node ', node.num, 'path', node.path)
         assert(node.move >= 0)
         return utility(node)
 
@@ -141,7 +151,11 @@ def expectimax(node, depth, agent_play):
         for move in range(4):
             new_grid = game.simulate_move(move, node.grid)
             if new_grid != node.grid:
-                alpha = max(alpha, expectimax(Node(new_grid, move), depth-1, False))
+                next_node = Node(new_grid, move)
+                next_node.path = node.path.copy()
+                next_node.path.append(move)
+                next_node.num = node.num + 1
+                alpha = max(alpha, expectimax(next_node, depth-1, False))
         return alpha
     else:
         expected_value = 0
@@ -151,11 +165,18 @@ def expectimax(node, depth, agent_play):
         for i, j in zero_cells:
             ng2 = copy.deepcopy(node.grid)
             ng2[i][j] = 2
-            expected_value += 0.9 * expectimax(Node(ng2), depth-1, True)
+            next_node = Node(ng2)
+            next_node.num = node.num + 1
+            next_node.path = node.path.copy()
+            next_node.path.append('r2')
+            expected_value += 0.9 * expectimax(next_node, depth-1, True)
 
         for i, j in zero_cells:
             ng4 = copy.deepcopy(node.grid)
             ng4[i][j] = 4
-            expected_value += 0.1 * expectimax(Node(ng4), depth-1, True)
+            next_node = Node(ng4)
+            next_node.num = node.num + zeros + i + j
+            next_node.path = node.path.copy()
+            next_node.path.append('r4')
+            expected_value += 0.1 * expectimax(next_node, depth-1, True)
         return (1 / zeros) * expected_value
-
