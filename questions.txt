@@ -41,3 +41,9 @@ functions ?
 07.01.24
 why values, queries and keys ? 
 
+
+14.01.24
+best first search, visited nodes.. in the literature neighbor 
+nodes are checked if in visited node, but the euler path 
+finding problems only work without this.
+

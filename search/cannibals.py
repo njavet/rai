@@ -1,3 +1,5 @@
+import queue
+import collections
 
 
 def is_valid_state(state):
@@ -88,8 +90,50 @@ def bfs(state, visited):
 
 
 
+
+
+def breath_first_search(node):
+    q = [node]
+    #q = queue.Queue()
+    #q.put(node)
+
+    path = collections.defaultdict(list)
+    # for grapsh
+    visited = []
+
+    expanded = 0
+    while q:
+        node = q.pop()
+        expanded += 1
+        # for graphs
+        visited.append(node)
+        if is_goal_state(node):
+            #print('expanded', expanded)
+            path[node] = []
+            #for n, c in path.items():
+                #print('node', n, 'children', c)
+            return node
+
+        for move in moves:
+            if node[2] == 1:
+                new_node = (node[0] - move[0], node[1] - move[1], 0)
+            else:
+                new_node = (node[0] + move[0], node[1] + move[1], 1)
+            if is_valid_state(new_node) and new_node not in visited:
+                path[node].append(new_node)
+                q.append(new_node)
+
+        print('expanded', expanded,
+              'quue', q)
+    
+    return path
+
+    
+    
 backtrack(start_state, visited)
 print(len(nodes))
 bfs(start_state, v)
 print(len(n2))
+path = breath_first_search(start_state)
+print(path)
 

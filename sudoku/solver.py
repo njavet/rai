@@ -72,3 +72,4 @@ class BackTrack:
                 return True
 
             self.grid[i][j] = 0
+

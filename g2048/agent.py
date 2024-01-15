@@ -71,7 +71,7 @@ def find_best_move(grid):
     return move
 
 
-def score_top_level_move(move, grid, depth=6):
+def score_top_level_move(move, grid, depth=2):
     new_grid = game.simulate_move(move, grid)
     if new_grid == grid:
         return 0
@@ -148,20 +148,14 @@ def expectimax(node, depth, agent_play):
         zero_cells = [(i, j) for i, row in enumerate(node.grid)
                       for j, val in enumerate(row) if val == 0]
         zeros = len(zero_cells)
-        try:
-            p = 1 / zeros
-        except ZeroDivisionError:
-            print('NO free cells')
-            return expectimax(node, depth-1, True)
-
         for i, j in zero_cells:
             ng2 = copy.deepcopy(node.grid)
             ng2[i][j] = 2
-            expected_value += p * 0.9 * expectimax(Node(ng2), depth-1, True)
+            expected_value += 0.9 * expectimax(Node(ng2), depth-1, True)
 
         for i, j in zero_cells:
             ng4 = copy.deepcopy(node.grid)
             ng4[i][j] = 4
-            expected_value += p * 0.1 * expectimax(Node(ng4), depth-1, True)
-        return expected_value
+            expected_value += 0.1 * expectimax(Node(ng4), depth-1, True)
+        return (1 / zeros) * expected_value
 
