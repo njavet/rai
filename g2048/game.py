@@ -1,3 +1,5 @@
+import random
+
 from rich.text import Text
 from rich.console import Console
 import copy
@@ -6,200 +8,6 @@ import collections
 import itertools
 import numpy as np
 import functools
-
-
-class Grid2048:
-    """
-    this grid object should be created every move
-    """
-    def __init__(self, grid):
-        self.console = Console()
-        self.grid = copy.deepcopy(grid)
-        self.zero_cells = 0
-        self.rank = 0
-        self.dmax = 0
-        self.tile2positions = None
-        self.distance = None
-        self.score = 0
-
-    def print_grid(self):
-        for row in self.grid:
-            self.console.print('|', end=' ')
-            for val in row:
-                self.console.print(str(val).rjust(4), end=' | ')
-            self.console.print('\n' + 32*'-')
-
-    def execute_analysis(self):
-        self.gen_tile_position_dict()
-        self.tile_position_analysis()
-        self.max_element_upper_left()
-        self.monotony()
-        self.set_score()
-
-    def monotony(self):
-        pass
-
-    def tile_value_score(self):
-        ts = 0
-        for tile, positions in self.tile2positions.items():
-            base = 10 ** int(math.log2(tile))
-            ts += len(positions) * base
-        return ts
-
-    def set_score(self):
-        # total values -> kind of merge score
-        #values = self.tile_value_score()
-        #self.score = 0.01 * values
-        #self.score = self.zero_cells
-        #print('zeros', self.zero_cells)
-        self.score = self.rank
-        #print('rank', self.rank)
-
-        dix = self.large_values_at_edge()
-        for k, v in dix.items():
-            #print('large values', k, v, k*v)
-            pass
-            #self.score += k * v
-        #self.score += self.row_monotony()
-        #print('row monotony', self.row_monotony())
-        #self.score += self.col_monotony()
-        #print('col monotony', self.col_monotony())
-        self.score += self.adjacent_cells()
-        #print('adj ', self.adjacent_cells())
-
-        if self.score > self.dmax:
-            pass
-            #self.score -= self.dmax
-
-        for tile, d in self.distance.items():
-            if self.score > tile * (d[0] + d[1]):
-                pass
-                #self.score -= tile * (d[0] + d[1])
-
-        if not move_available(self.grid):
-            print('WILL ENCOUNTER GAMEOVER')
-            self.score = -10000
-        # max distance
-
-    def extract_large_tiles(self):
-        dix = {}
-        for lt in list(self.tile2positions.keys())[0:3]:
-            dix[lt] = self.tile2positions[lt]
-        return dix
-
-    def is_on_edge(self, i, j):
-        upper = [(0, 0), (0, 1), (0, 2), (0, 3)]
-        lower = [(3, 0), (3, 1), (3, 2), (3, )]
-        left = [(0, 0), (1, 0), (2, 0), (3, 0)]
-        right = [(0, 3), (1, 3), (2, 3), (3, 3)]
-        if (i, j) in upper:
-            return True
-        if (i, j) in lower:
-            return True
-        if (i, j) in left:
-            return True
-        if (i, j) in right:
-            return True
-
-    def large_values_at_edge(self):
-        # edge : i == 0 or i == 3
-        #
-        dix = collections.defaultdict(int)
-        for tile, positions in self.extract_large_tiles().items():
-            for pos in positions:
-                if self.is_on_edge(pos[0], pos[1]):
-                    dix[tile] += 1
-        return dix
-
-    def row_monotony(self):
-        s = 0
-        for row in self.grid:
-            clean_row = [val for val in row if val != 0]
-            cond0 = len(clean_row) > 1
-            if cond0 and clean_row == sorted(clean_row, reverse=True):
-                s += 1
-        return s
-
-    def col_monotony(self):
-        s = 0
-        for col in self.grid.transpose():
-            clean_col = [val for val in col if val != 0]
-            cond0 = len(clean_col) > 1
-            if cond0 and clean_col == sorted(clean_col, reverse=True):
-                s += 1
-        return s
-
-    def adjacent_cells(self):
-        s = 0
-        for i, row in enumerate(self.grid):
-            for j, val in enumerate(row[:-1]):
-                if val != 0 and val == row[j + 1]:
-                    s += 1
-        for i, col in enumerate(self.grid.transpose()):
-            for j, val in enumerate(col[:-1]):
-                if val != 0 and val == col[j + 1]:
-                    s += 1
-        return s
-
-    def gen_tile_position_dict(self):
-        """
-        creates a SORTED dict, in a decreasing tile order
-        the position lists are sored increasingly
-        :return:
-        """
-        dix = collections.defaultdict(list)
-        for i, row in enumerate(self.grid):
-            for j, val in enumerate(row):
-                dix[val].append((i, j))
-        self.tile2positions = {val: sorted(dix[val])
-                               for val in sorted(dix, reverse=True)}
-
-    def tile_position_analysis(self):
-        # remove zero since it means empty cells
-        # the max value is kept here, to maybe avoid the expected
-        # stupid behavior in the TODO comment
-        self.zero_cells = len(self.tile2positions.pop(0, []))
-
-        self.distance = {}
-        for tile, positions in self.tile2positions.items():
-            # there is only one tile with this number
-            # distance to left upper corner
-            # TODO seperate max values from others
-            # TODO compare only equal values between stats
-            # -> sort prioritize 2 512, over 1 1024
-            # (-1, -1024, 0), (-2, -128, 2), ...
-            # (-1, -1024, 0), (-1, -256, 2), ....
-
-            # (-1, -1024, 0), (0, -256, 0), (-2, -128, 2), ...
-            # (-1, -1024, 0), (-1, -256, 2), (0, -128, 0) ....
-
-            if len(positions) == 1:
-                i, j = positions[0]
-                self.distance[tile] = (1, i + j, i + j)
-            # we have two tiles and want them to be close together
-            elif len(positions) == 2:
-                i0, j0 = positions[0]
-                i1, j1 = positions[1]
-                d = abs(i0 - i1) + abs(j0 - j1)
-                self.distance[tile] = (2, d, i0 + i1 + j0 + j1)
-            else:
-                lst = []
-                for (i0, j0), (i1, j1) in itertools.combinations(positions, r=2):
-                    d = abs(i0 - i1) + abs(j0 - j1)
-                    s = i0 + j0 + i1 + j1
-                    lst.append((d, s))
-                lst.sort()
-                self.distance[tile] = (len(lst), lst[0][0], lst[0][1])
-
-    def max_element_upper_left(self):
-        tiles = list(self.tile2positions.keys())
-        max_tile = tiles[0]
-        self.rank = max_tile
-        # main priority is to keep it at the upper left
-        # TODO expected "stupid" behavior if we have more than
-        #  one max and the agent could merge them without risking
-        #  the upper left corner position
-        self.dmax = sum(self.tile2positions[max_tile][0])
 
 
 def merge_left(grid):
@@ -276,10 +84,110 @@ def move_available(grid):
         return True
 
 
-console = Console()
-def print_grid(grid):
+def is_move_available(grid, move):
+    new_grid = simulate_move(move, grid)
+    return new_grid != grid
+
+
+def print_grid(grid, console=None):
+    if console is None:
+        console = Console()
     for row in grid:
         console.print('|', end=' ')
         for val in row:
             console.print(str(val).rjust(4), end=' | ')
         console.print('\n' + 29*'-')
+
+
+class Game(object):
+    # actions = [up, down, left, right] -> [0, 1, 2, 3]
+    def __init__(self, state=None, initial_score=0):
+        self.score = initial_score
+        if state is None:
+            self.state = [[0, 0, 0, 0],
+                          [0, 0, 0, 0],
+                          [0, 0, 0, 0],
+                          [0, 0, 0, 0]]
+            self.add_random_tile()
+            self.add_random_tile()
+        else:
+            self.state = state
+
+    def copy(self):
+        return Game(copy.deepcopy(self.state), self.score)
+
+    def game_over(self):
+        return not move_available(self.state)
+
+    def available_actions(self):
+        return [action for action in range(4)
+                if is_move_available(self.state, action)]
+
+    def execute_action(self, action):
+        reward = 0
+        # up
+        if action == 0:
+            reward = self.merge_up()
+        # down
+        if action == 1:
+            reward = self.merge_down()
+        # left
+        if action == 2:
+            reward = self.merge_left()
+        # right
+        if action == 3:
+            reward = self.merge_right()
+        self.score += reward
+        self.add_random_tile()
+        return reward
+
+    def add_random_tile(self):
+        inds = [(i, j) for (i, j) in itertools.product(range(4), repeat=2)
+                if self.state[i][j] == 0]
+        assert(len(inds) > 0)
+        i, j = random.choice(inds)
+        value = np.random.choice([1, 2], p=[0.9, 0.1])
+        self.state[i][j] = value
+
+    def merge_left(self):
+        def merge_seq_to_left(seq, acc, seq_r=0):
+            if not seq:
+                return acc, seq_r
+
+            x = seq[0]
+            if len(seq) == 1:
+                return acc + [x], seq_r
+
+            if x == seq[1]:
+                return merge_seq_to_left(seq[2:], acc + [2 * x], seq_r + 2 * x)
+            else:
+                return merge_seq_to_left(seq[1:], acc + [x], seq_r)
+
+        new_state = []
+        reward = 0
+        for i, row in enumerate(self.state):
+            merged, r = merge_seq_to_left([x for x in row if x != 0], [])
+            zeros = len(row) - len(merged)
+            merged_zeros = merged + zeros * [0]
+            new_state.append(merged_zeros)
+            reward += r
+        self.state = new_state
+        return reward
+
+    def merge_right(self):
+        self.state = [row[::-1] for row in self.state]
+        reward = self.merge_left()
+        self.state = [row[::-1] for row in self.state]
+        return reward
+
+    def merge_up(self):
+        self.state = zip(*self.state)
+        reward = self.merge_left()
+        self.state = [list(x) for x in zip(*self.state)]
+        return reward
+
+    def merge_down(self):
+        self.state = zip(*self.state)
+        reward = self.merge_right()
+        self.state = [list(x) for x in zip(*self.state)]
+        return reward
