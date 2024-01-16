@@ -1,5 +1,6 @@
 import collections
 from rich.text import Text
+import gymnasium as gym
 from rich.console import Console
 import itertools
 import math
@@ -25,6 +26,9 @@ EPS_END = 0.05
 EPS_DECAY = 1000
 TAU = 0.005
 LR = 1e-4
+
+# TODO
+env = gym.make()
 
 Transition = collections.namedtuple('Transition',
                                     ('state', 'action', 'next_state', 'reward'))
@@ -61,9 +65,14 @@ class DQN(nn.Module):
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+n_actions = env.action_space.n
+state, info = env.reset()
+n_observations = len(state)
+
 policy_net = DQN().to(device)
 target_net = DQN().to(device)
 target_net.load_state_dict(policy_net.state_dict())
+
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
 memory = ReplayMemory(10000)
 
@@ -73,15 +82,14 @@ steps_done = 0
 def select_action(state):
     global steps_done
     sample = random.random()
-    eps_threshod = EPS_END + (EPS_START - EPS_END) * \
+    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
                    math.exp(-1. * steps_done / EPS_DECAY)
     steps_done += 1
-    if sample > eps_threshod:
+    if sample > eps_threshold:
         with torch.no_grad():
             return policy_net(state).max(1).indices.view(1, 1)
     else:
-        move = random.choice(range(4))
-        return torch.tensor([[move]], device=device, dtype=torch.long)
+        return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
 
 
 episode_durations = []
@@ -142,7 +150,7 @@ else:
 for i_episode in range(num_episodes):
     # Initialize the environment and get it's state
     state, info = env.reset()
-    state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+    state = torch.tensor(state, dtype=torch.int64, device=device).unsqueeze(0)
     for t in itertools.count():
         action = select_action(state)
         observation, reward, terminated, truncated, _ = env.step(action.item())
@@ -152,7 +160,9 @@ for i_episode in range(num_episodes):
         if terminated:
             next_state = None
         else:
-            next_state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
+            next_state = torch.tensor(observation,
+                                      dtype=torch.float32,
+                                      device=device).unsqueeze(0)
 
         # Store the transition in memory
         memory.push(state, action, next_state, reward)

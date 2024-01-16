@@ -68,7 +68,7 @@ def find_best_move(grid):
     global b
     b = 0
     result = [score_top_level_move(i, grid) for i in range(4)]
-    game.print_grid(grid)
+    #game.print_grid(grid)
     print('result', result)
     print('branches', b)
 
@@ -79,7 +79,7 @@ def find_best_move(grid):
     return move
 
 
-def score_top_level_move(move, grid, depth=6):
+def score_top_level_move(move, grid, depth=4):
     new_grid = game.simulate_move(move, grid)
     if new_grid == grid:
         return 0
@@ -111,18 +111,19 @@ def score_seq(seq):
     else:
         edge = 0
 
-    # monocity of the grid
-    vals = [val for val in seq if val != 0]
-    if vals == sorted(vals) or vals == sorted(vals, reverse=True):
-        mono = 1 - rw
-    else:
-        mono = 0
+    # monotonous
+    mono = 0
+    mon_inc = all([val <= seq[i + 1] for i, val in enumerate(seq[:-1])])
+    mon_dec = all([seq[i + 1] <= val for i, val in enumerate(seq[:-1])])
+    if mon_inc:
+        mono += 2
+    if mon_dec:
+        mono += 2
 
-    # adjacent values
     adj = 0
-    for i, val in enumerate(vals[:-1]):
-        if val == vals[i + 1]:
-            adj += 1 - (1 / val)
+    for i, val in enumerate(seq[1:]):
+        if val == seq[i + 1]:
+            adj += 1 - rw
 
     #print('zeros', zeros)
     #print('edge', edge)

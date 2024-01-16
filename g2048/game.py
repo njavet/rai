@@ -1,102 +1,18 @@
-import random
-
 from rich.text import Text
 from rich.console import Console
 import copy
+import random
 import math
 import collections
-import itertools
-import numpy as np
 import functools
+import itertools
+
+import numpy as np
+import pygame
+import utils2048
 
 
-def merge_left(grid):
-    def merge_seq_to_left(seq, acc):
-        if not seq:
-            return acc
-
-        x = seq[0]
-        if len(seq) == 1:
-            return acc + [x]
-
-        if x == seq[1]:
-            # here is the (only !) point where tiles get merged
-            # therefore we compute relevant values -> ugly from
-            # a functional programming viewpoint
-            return merge_seq_to_left(seq[2:], acc + [2 * x])
-        else:
-            return merge_seq_to_left(seq[1:], acc + [x])
-
-    new_grid = []
-    for i, row in enumerate(grid):
-        merged = merge_seq_to_left([x for x in row if x != 0], [])
-        # since `merged` has no zeros, the number of zeros can be added here
-        # only here the zeros are "added" to the new grid
-        zeros = len(row) - len(merged)
-        merged_zeros = merged + zeros * [0]
-        new_grid.append(merged_zeros)
-    return new_grid
-
-
-def merge_right(grid):
-    t = merge_left(np.array([row[::-1] for row in grid]))
-    #return np.array([row[::-1] for row in t])
-    return [row[::-1] for row in t]
-
-
-def merge_up(grid):
-    #t = merge_left(grid.transpose())
-    t = merge_left(zip(*grid))
-    #return t.transpose()
-    return [list(x) for x in zip(*t)]
-
-
-def merge_down(grid):
-    #t = merge_right(grid.transpose())
-    t = merge_right(zip(*grid))
-    #return t.transpose()
-    return [list(x) for x in zip(*t)]
-
-
-def simulate_move(move, grid):
-    if move == 0:
-        return merge_up(grid)
-    elif move == 1:
-        return merge_down(grid)
-    elif move == 2:
-        return merge_left(grid)
-    elif move == 3:
-        return merge_right(grid)
-
-
-def move_available(grid):
-    mg = merge_up(grid)
-    if mg != grid:
-        return True
-    mg = merge_down(grid)
-    if mg != grid:
-        return True
-    mg = merge_left(grid)
-    if mg != grid:
-        return True
-    mg = merge_right(grid)
-    if mg != grid:
-        return True
-
-
-def is_move_available(grid, move):
-    new_grid = simulate_move(move, grid)
-    return new_grid != grid
-
-
-def print_grid(grid, console=None):
-    if console is None:
-        console = Console()
-    for row in grid:
-        console.print('|', end=' ')
-        for val in row:
-            console.print(str(val).rjust(4), end=' | ')
-        console.print('\n' + 29*'-')
+ACTION_NAMES = ['up', 'down', 'left', 'right']
 
 
 class Game(object):
@@ -117,11 +33,7 @@ class Game(object):
         return Game(copy.deepcopy(self.state), self.score)
 
     def game_over(self):
-        return not move_available(self.state)
-
-    def available_actions(self):
-        return [action for action in range(4)
-                if is_move_available(self.state, action)]
+        return not utils2048.available_moves(self.state)
 
     def execute_action(self, action):
         reward = 0
@@ -191,3 +103,12 @@ class Game(object):
         reward = self.merge_right()
         self.state = [list(x) for x in zip(*self.state)]
         return reward
+
+    def print_state(self, console=None):
+        if console is None:
+            console = Console()
+        for row in self.state:
+            console.print('|', end=' ')
+            for val in row:
+                console.print(str(val).rjust(4), end=' | ')
+            console.print('\n' + 29*'-')
