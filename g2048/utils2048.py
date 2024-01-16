@@ -9,11 +9,11 @@ import numpy as np
 def add_random_tile(grid):
     inds = [(i, j) for (i, j) in itertools.product(range(4), repeat=2)
             if grid[i][j] == 0]
-    assert(len(inds) > 0)
-    i, j = random.choice(inds)
-    value = np.random.choice([2, 4], p=[0.9, 0.1])
-    grid[i][j] = value
-    return grid
+    if len(inds) > 0:
+        i, j = random.choice(inds)
+        value = np.random.choice([2, 4], p=[0.9, 0.1])
+        grid[i][j] = value
+        return grid
 
 
 def merge_left(grid):
@@ -39,12 +39,12 @@ def merge_left(grid):
         merged_zeros = merged + zeros * [0]
         new_grid.append(merged_zeros)
         reward += r
-    return np.array(new_grid), reward
+    return np.array(new_grid, dtype=np.int16), reward
 
 
 def merge_right(grid):
     new_grid, reward = merge_left(np.array([row[::-1] for row in grid]))
-    return np.array([row[::-1] for row in new_grid]), reward
+    return np.array([row[::-1] for row in new_grid], dtype=np.int16), reward
 
 
 def merge_up(grid):
@@ -70,17 +70,17 @@ def simulate_move(grid, move):
 
 def available_moves(grid):
     moves = []
-    mg0 = merge_up(grid)
-    if mg0 != grid:
+    mg0, _ = merge_up(grid)
+    if not np.array_equal(mg0, grid):
         moves.append(0)
-    mg1 = merge_down(grid)
-    if mg1 != grid:
+    mg1, _ = merge_down(grid)
+    if not np.array_equal(mg1, grid):
         moves.append(1)
-    mg2 = merge_left(grid)
-    if mg2 != grid:
+    mg2, _ = merge_left(grid)
+    if not np.array_equal(mg2, grid):
         moves.append(2)
-    mg3 = merge_right(grid)
-    if mg3 != grid:
+    mg3, _ = merge_right(grid)
+    if not np.array_equal(mg3, grid):
         moves.append(3)
     return moves
 

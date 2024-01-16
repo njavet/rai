@@ -8,12 +8,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 import functools
 import operator
+import dqn
 
 import game
 import copy
 import sys
 import random
+import torch
 
+
+model = dqn.DQN()
+model.load_state_dict(torch.load('policy_state_dict.pth'))
 
 class Memoize:
     def __init__(self, func):
@@ -64,7 +69,7 @@ UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
 b = 0
 
-def find_best_move(grid):
+def find_best_move_0(grid):
     global b
     b = 0
     result = [score_top_level_move(i, grid) for i in range(4)]
@@ -76,6 +81,16 @@ def find_best_move(grid):
         move = random.choice([0, 1, 2, 3])
     else:
         move = result.index(max(result))
+    return move
+
+
+def find_best_move(grid):
+    g = np.array(grid).reshape(16)
+    state = torch.tensor(g, dtype=torch.float32)
+    res = model(state)
+    print('tensor', res)
+    move = torch.argmax(res).item()
+    print('move', move)
     return move
 
 
@@ -93,6 +108,25 @@ def score_top_level_move(move, grid, depth=4):
 
 @Memoize
 def score_seq(seq):
+    """
+        the goal is to find the correct weights to combine the obviously
+        good heuristics:
+        zeros: number of empty cells, the more, the better
+        rank: maximum tile, the higher, the better
+        edge / corner: large tiles in corner or at the edges
+        monotony: a monotonously decreasing / increasing board is easier to merge
+        adjacency: the more tiles with the same value are close together, the better
+        how important are the values of the tiles in the mono / adj, edge score ?
+
+        return bias +
+               w0 * zeros +
+               w1 * rank +
+               w2 * edge +
+               w3 * mono +
+               w4 * adj
+    :param seq:
+    :return:
+    """
 
     # number of zeros heuristic
     zeros = seq.count(0)
@@ -125,13 +159,6 @@ def score_seq(seq):
         if val == seq[i + 1]:
             adj += 1 - rw
 
-    #print('zeros', zeros)
-    #print('edge', edge)
-    #print('mono', mono)
-    #print('adj', adj)
-    #print('rw', rw)
-    bias = 0
-    #wtx = bias + w1 * zeros + w2 * edge + w3 * mono + w4 * adj + w5 * rank
     return zeros + edge + mono + adj
 
 

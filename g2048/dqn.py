@@ -1,34 +1,11 @@
-import collections
-from rich.text import Text
-import gymnasium as gym
-from rich.console import Console
 import itertools
 import math
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import collections
-import functools
-import operator
-
-import game
-import copy
-import sys
 import random
-
-
-BATCH_SIZE = 128
-GAMMA = 0.99
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 1000
-TAU = 0.005
-LR = 1e-4
-
-# TODO
-env = gym.make()
 
 Transition = collections.namedtuple('Transition',
                                     ('state', 'action', 'next_state', 'reward'))
@@ -59,43 +36,24 @@ class DQN(nn.Module):
         self.layer2 = nn.Linear(128, n_actions)
 
     def forward(self, x):
+        #print('input', x.shape)
         x = F.relu(self.layer0(x))
+        #print('layer0', x.shape)
         x = F.relu(self.layer1(x))
-        return self.layer2(x)
+        #print('layer1', x.shape)
+        x = self.layer2(x)
+        #print('output', x.shape)
+        return x
+        #return self.layer2(x)
 
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-n_actions = env.action_space.n
-state, info = env.reset()
-n_observations = len(state)
-
-policy_net = DQN().to(device)
-target_net = DQN().to(device)
-target_net.load_state_dict(policy_net.state_dict())
-
-optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
-memory = ReplayMemory(10000)
-
-
-steps_done = 0
-
-def select_action(state):
-    global steps_done
-    sample = random.random()
-    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-                   math.exp(-1. * steps_done / EPS_DECAY)
-    steps_done += 1
-    if sample > eps_threshold:
-        with torch.no_grad():
-            return policy_net(state).max(1).indices.view(1, 1)
-    else:
-        return torch.tensor([[env.action_space.sample()]], device=device, dtype=torch.long)
-
-
-episode_durations = []
-
-
-def optimize_model():
+def optimize_model(memory,
+                   BATCH_SIZE,
+                   GAMMA,
+                   device,
+                   policy_net,
+                   target_net,
+                   optimizer):
     if len(memory) < BATCH_SIZE:
         return
     transitions = memory.sample(BATCH_SIZE)
@@ -110,13 +68,18 @@ def optimize_model():
                                           batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state
                                                 if s is not None])
+    #print('batch state', batch.state)
     state_batch = torch.cat(batch.state)
+    #print('state', state_batch.shape)
     action_batch = torch.cat(batch.action)
+    #print('action', action_batch.shape)
     reward_batch = torch.cat(batch.reward)
+    #print('reward', reward_batch.shape)
 
     # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
     # columns of actions taken. These are the actions which would've been taken
     # for each batch state according to policy_net
+
     state_action_values = policy_net(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
@@ -141,46 +104,37 @@ def optimize_model():
     torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
     optimizer.step()
 
-if torch.cuda.is_available():
-    num_episodes = 600
-else:
-    num_episodes = 50
+
+class ConvBlock(nn.Module):
+    def __init__(self, idim, odim):
+        super().__init__()
+        d = odim // 4
+        self.conv0 = nn.Conv2d(idim, d, 1, padding='same')
+        self.conv1 = nn.Conv2d(idim, d, 2, padding='same')
+        self.conv2 = nn.Conv2d(idim, d, 3, padding='same')
+        self.conv3 = nn.Conv2d(idim, d, 4, padding='same')
+
+    def forward(self, x):
+        x0 = self.conv0(x)
+        x1 = self.conv1(x0)
+        x2 = self.conv2(x1)
+        x3 = self.conv3(x2)
+        return torch.cat((x0, x1, x2, x3), dim=1)
 
 
-for i_episode in range(num_episodes):
-    # Initialize the environment and get it's state
-    state, info = env.reset()
-    state = torch.tensor(state, dtype=torch.int64, device=device).unsqueeze(0)
-    for t in itertools.count():
-        action = select_action(state)
-        observation, reward, terminated, truncated, _ = env.step(action.item())
-        reward = torch.tensor([reward], device=device)
-        done = terminated or truncated
+class NDQN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv0 = ConvBlock(16, 2048)
+        self.conv1 = ConvBlock(2048, 2048)
+        self.conv2 = ConvBlock(2048, 2048)
+        self.dense0 = nn.Linear(2048 * 16, 1024)
+        self.dense1 = nn.Linear(1024, 4)
 
-        if terminated:
-            next_state = None
-        else:
-            next_state = torch.tensor(observation,
-                                      dtype=torch.float32,
-                                      device=device).unsqueeze(0)
-
-        # Store the transition in memory
-        memory.push(state, action, next_state, reward)
-
-        # Move to the next state
-        state = next_state
-
-        # Perform one step of the optimization (on the policy network)
-        optimize_model()
-
-        # Soft update of the target network's weights
-        # θ′ ← τ θ + (1 −τ )θ′
-        target_net_state_dict = target_net.state_dict()
-        policy_net_state_dict = policy_net.state_dict()
-        for key in policy_net_state_dict:
-            target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
-        target_net.load_state_dict(target_net_state_dict)
-
-        if done:
-            episode_durations.append(t + 1)
-            break
+    def forward(self, x):
+        x = F.relu(self.conv0(x))
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = nn.Flatten()(x)
+        x = F.dropout(self.dense0(x))
+        return self.dense1(x)
