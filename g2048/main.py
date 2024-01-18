@@ -42,7 +42,7 @@ def play_game(gamectrl):
         board = gamectrl.get_board()
         # move = ag.heuristic_move(board)
         # move = ag.find_best_move(board)
-        move = agent.find_best_move(board)
+        move = agent.find_best_move_0(board)
 
         if move < 0:
             print('NO VALID MOVE')

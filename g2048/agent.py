@@ -10,6 +10,7 @@ import functools
 import operator
 import dqn
 
+import utils2048
 import game
 import copy
 import sys
@@ -17,8 +18,12 @@ import random
 import torch
 
 
-model = dqn.DQN()
-model.load_state_dict(torch.load('policy_state_dict.pth'))
+try:
+    model = dqn.DQN()
+    model.load_state_dict(torch.load('policy_state_dict.pth'))
+except:
+    pass
+
 
 class Memoize:
     def __init__(self, func):
@@ -95,7 +100,7 @@ def find_best_move(grid):
 
 
 def score_top_level_move(move, grid, depth=4):
-    new_grid = game.simulate_move(move, grid)
+    new_grid = utils2048.simulate_move(grid, move)
     if new_grid == grid:
         return 0
 
@@ -164,7 +169,7 @@ def score_seq(seq):
 
 @Memoize
 def utility(node):
-    if not game.move_available(node.grid):
+    if not utils2048.available_moves(node.grid):
         print('WILL encounter game over soon')
         return 0
     score = 0
@@ -187,7 +192,7 @@ def expectimax(node, depth, agent_play):
     if agent_play:
         alpha = 0
         for move in range(4):
-            new_grid = game.simulate_move(move, node.grid)
+            new_grid = utils2048.simulate_move(move, node.grid)
             if new_grid != node.grid:
                 next_node = Node(new_grid, move)
                 alpha = max(alpha, expectimax(next_node, depth-1, False))

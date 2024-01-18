@@ -27,7 +27,7 @@ LR = 1e-5
 episode_durations = []
 scores = []
 if torch.cuda.is_available():
-    num_episodes = 20000
+    num_episodes = 5000
 
 else:
     num_episodes = 50
@@ -53,7 +53,7 @@ def select_action(state):
         with torch.no_grad():
 
             #return policy_net(state).max(1).indices.view(1, 1)
-            st = torch.tensor(state.reshape(16), dtype=torch.float32)
+            st = torch.tensor(state.reshape(1, 16), dtype=torch.float32)
             res = policy_net(st)
             return res.reshape(1, 4).max(1).indices.view(1, 1)
     # exploration
@@ -65,7 +65,8 @@ def select_action(state):
 for i_episode in range(num_episodes):
     # Initialize the environment and get it's state
     state, info = env.reset()
-    state = torch.tensor(state.reshape(16), dtype=torch.float32, device=device).unsqueeze(0)
+    # state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+    state = torch.tensor(state.reshape(1, 16), device=device).unsqueeze(0)
     for t in itertools.count():
         action = select_action(state)
         observation, reward, terminated, truncated, _ = env.step(action.item())
