@@ -131,7 +131,7 @@ def plot_steps_and_rewards(rewards_df, steps_df, params):
     plt.show()
 
 
-def record_video(env, Qtable, params, fname, fps=1):
+def record_video(env, qtable, params, fname, fps=1):
     """
   Generate a replay video of the agent
   :param env
@@ -150,7 +150,7 @@ def record_video(env, Qtable, params, fname, fps=1):
     # while not terminated or truncated:
     while not done:
         # Take the action (index) that have the maximum expected future reward given that state
-        action = np.argmax(Qtable[state][:])
+        action = np.argmax(qtable[state][:])
         state, reward, terminated, truncated, info = env.step(
             action)  # We directly put next_state = state for recording logic
         img = env.render()

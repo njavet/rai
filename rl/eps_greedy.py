@@ -1,5 +1,8 @@
 import numpy as np
 
+# project imports
+from rl.helpers import argmax
+
 
 class EpsilonGreedy:
     def __init__(self, epsilon):
@@ -13,6 +16,5 @@ class EpsilonGreedy:
         if np.random.rand() < self.epsilon:
             action = action_space.sample()
         else:
-            action = np.argmax(qtable[state])
-
+            action = argmax(qtable[state])
         return action

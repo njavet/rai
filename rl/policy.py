@@ -12,13 +12,18 @@ class MonteCarloRandomPolicy:
         self.env = env
         self.params = params
         self.debug = debug
+        self.traj_lengths = []
+
+        self.rewards = np.zeros((params.total_episodes, params.n_runs))
+        self.steps = np.zeros((params.total_episodes, params.n_runs))
+        self.episodes = np.arange(params.total_episodes)
+        self.qtables = np.zeros((params.n_runs, env.observation_space.n, env.action_space.n))
 
     def choose_action(self):
         action = self.env.action_space.sample()
         return action
 
-    def run(self) -> np.ndarray:
-
+    def run(self):
         returns_sum = defaultdict(float)
         returns_count = defaultdict(float)
         value_function = np.zeros(self.env.observation_space.n)
@@ -33,6 +38,7 @@ class MonteCarloRandomPolicy:
                 state = new_state
 
             episode_reward = 0
+            self.traj_lengths.append(len(buffer))
             for t in reversed(range(len(buffer))):
                 state, action, reward = buffer[t]
                 episode_reward = self.params.gamma * episode_reward + reward
@@ -41,7 +47,7 @@ class MonteCarloRandomPolicy:
                     returns_sum[state] += episode_reward
                     returns_count[state] += 1
                     value_function[state] = returns_sum[state] / returns_count[state]
-        return value_function
+        return value_function, self.traj_lengths
 
 
 # TODO refactor
