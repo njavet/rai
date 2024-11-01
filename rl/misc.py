@@ -85,7 +85,7 @@ def plot_q_values_map(qtable, env, map_size, params, img_label):
         spine.set_color("black")
     img_title = f"frozenlake_q_values_{map_size}x{map_size}_{img_label}.png"
     fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
-    plt.show()
+    # plt.show()
 
 
 def plot_states_actions_distribution(states, actions, map_size, params, img_label):
@@ -105,7 +105,7 @@ def plot_states_actions_distribution(states, actions, map_size, params, img_labe
     fig.tight_layout()
     img_title = f"frozenlake_states_actions_distrib_{map_size}x{map_size}_{img_label}.png"
     fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
-    plt.show()
+    # plt.show()
 
 
 def plot_steps_and_rewards(rewards_df, steps_df, params, img_label):
@@ -128,7 +128,7 @@ def plot_steps_and_rewards(rewards_df, steps_df, params, img_label):
     fig.tight_layout()
     img_title = f"frozenlake_steps_and_rwards_{img_label}.png"
     fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
-    plt.show()
+    # plt.show()
 
 
 def record_video(env, qtable, params, fname, fps=1):

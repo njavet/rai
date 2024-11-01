@@ -20,8 +20,8 @@ class Params(NamedTuple):
 
 
 def get_params():
-    params = Params(total_episodes=2000,
-                    learning_rate=0.1,
+    params = Params(total_episodes=10000,
+                    learning_rate=0.05,
                     gamma=0.98,
                     epsilon=0.2,
                     map_size=4,
