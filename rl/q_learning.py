@@ -12,6 +12,10 @@ class Qlearning:
         self.params = params
         self.state_size = env.observation_space.n
         self.action_size = env.action_space.n
+        self.rewards = np.zeros((params.total_episodes, params.n_runs))
+        self.steps = np.zeros((params.total_episodes, params.n_runs))
+        self.episodes = np.arange(params.total_episodes)
+        self.qtables = np.zeros((params.n_runs, self.state_size, self.action_size))
         self.qtable = np.zeros((self.state_size, self.action_size))
         self.explorer = EpsilonGreedy(self.params.epsilon)
 
@@ -21,7 +25,7 @@ class Qlearning:
                 delta =  [R(s,a) + gamma * max Q(s',a') - Q(s,a)] """
 
         # Compute the temporal difference (TD) target
-        bfq = (not term) * np.max(self.qtable[new_state])
+        bfq = (not term) * argmax(self.qtable[new_state])
         delta = reward + self.params.gamma * bfq - self.qtable[state, action]
 
         self.qtable[state, action] = (
@@ -33,14 +37,27 @@ class Qlearning:
         self.qtable = np.zeros((self.state_size, self.action_size))
 
     def q_learning_algorithm(self):
-        for episode in range(self.params.total_episodes):
-            state, info = self.env.reset()
-            done = False
+        all_states = []
+        all_actions = []
+        for i in range(self.params.n_runs):
+            self.reset_qtable()
 
-            while not done:
-                action = self.explorer.choose_action(self.env.action_space, state, self.qtable)
-                new_state, reward, done, trunc, info = self.env.step(action)
-                self.update(state, action, reward, done, new_state)
-                state = new_state
+            for episode in range(self.params.total_episodes):
+                state, info = self.env.reset()
+                step = 0
+                done = False
+                total_rewards = 0
 
-        return self.qtable
+                while not done:
+                    action = self.explorer.choose_action(self.env.action_space, state, self.qtable)
+                    all_states.append(state)
+                    all_actions.append(action)
+                    new_state, reward, done, trunc, info = self.env.step(action)
+                    self.update(state, action, reward, done, new_state)
+                    total_rewards += reward
+                    step += 1
+                    state = new_state
+                self.rewards[episode, i] = total_rewards
+                self.steps[episode, i] = step
+            self.qtables[i, :, :] = self.qtable
+        return self.rewards, self.steps, self.episodes, self.qtables, all_states, all_actions

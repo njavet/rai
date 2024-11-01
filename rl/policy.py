@@ -12,8 +12,6 @@ class MonteCarloRandomPolicy:
         self.env = env
         self.params = params
         self.debug = debug
-        self.traj_lengths = []
-
         self.rewards = np.zeros((params.total_episodes, params.n_runs))
         self.steps = np.zeros((params.total_episodes, params.n_runs))
         self.episodes = np.arange(params.total_episodes)
@@ -38,7 +36,6 @@ class MonteCarloRandomPolicy:
                 state = new_state
 
             episode_reward = 0
-            self.traj_lengths.append(len(buffer))
             for t in reversed(range(len(buffer))):
                 state, action, reward = buffer[t]
                 episode_reward = self.params.gamma * episode_reward + reward
@@ -47,7 +44,7 @@ class MonteCarloRandomPolicy:
                     returns_sum[state] += episode_reward
                     returns_count[state] += 1
                     value_function[state] = returns_sum[state] / returns_count[state]
-        return value_function, self.traj_lengths
+        return value_function
 
 
 # TODO refactor
@@ -55,17 +52,17 @@ class MonteCarloIncPolicy(MonteCarloRandomPolicy):
     def __init__(self, env, params: Params, debug: bool = False):
         super().__init__(env, params, debug)
         self.explorer = EpsilonGreedy(self.params.epsilon)
+        self.q_table = np.zeros((self.env.observation_space.n, self.env.action_space.n))
 
-    def run(self) -> np.ndarray:
-        q_table = np.zeros((self.env.observation_space.n, self.env.action_space.n))
+    def run(self):
         state_counts = defaultdict(int)
         for episode in range(self.params.total_episodes):
-            state = self.env.reset()
+            state, info = self.env.reset()
             buffer = []
 
             done = False
             while not done:
-                action = self.explorer.choose_action(self.env.action_space, state, q_table)
+                action = self.explorer.choose_action(self.env.action_space, state, self.q_table)
                 new_state, reward, done, _, _ = self.env.step(action)
                 buffer.append((state, action, reward))
                 state = new_state
@@ -78,7 +75,5 @@ class MonteCarloIncPolicy(MonteCarloRandomPolicy):
                 if not any((state == x[0] and action == x[1]) for x in buffer[:t]):
                     state_counts[(state, action)] += 1
                     alpha = 1 / state_counts[(state, action)]
-                    q_table[state, action] += alpha * (episode_reward - q_table[state, action])
+                    self.q_table[state, action] += alpha * (episode_reward - self.q_table[state, action])
 
-        value_function = np.max(q_table, axis=1)
-        return value_function

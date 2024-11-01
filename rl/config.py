@@ -22,14 +22,14 @@ class Params(NamedTuple):
 def get_params():
     params = Params(total_episodes=2000,
                     learning_rate=0.1,
-                    gamma=0.95,
+                    gamma=0.98,
                     epsilon=0.1,
                     map_size=4,
                     seed=0x101,
-                    is_slippery=False,
+                    is_slippery=True,
                     n_runs=20,
                     proba_frozen=0.9,
-                    savefig_folder=Path('static/img'))
+                    savefig_folder=Path('rl/static/img'))
 
     # Create the figure folder if it doesn't exist
     params.savefig_folder.mkdir(parents=True, exist_ok=True)
