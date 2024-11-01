@@ -8,7 +8,7 @@ from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 
 # project imports
 from rl.config import get_params
-from rl.q_learning import Qlearning
+from rl.q_learning import get_q_learner
 from rl.eps_greedy import EpsilonGreedy
 
 
@@ -25,36 +25,32 @@ def get_env(params):
     return env
 
 
-def get_learner(params, action_size, state_size):
-    learner = Qlearning(learning_rate=params.learning_rate,
-                        gamma=params.gamma,
-                        state_size=state_size,
-                        action_size=action_size, )
-    return learner
-
-
-def run_env_no_learning(env, learner, explorer, params):
+def init_run(env, params):
     rewards = np.zeros((params.total_episodes, params.n_runs))
     steps = np.zeros((params.total_episodes, params.n_runs))
     episodes = np.arange(params.total_episodes)
     qtables = np.zeros((params.n_runs, env.observation_space.n, env.action_space.n))
+    return rewards, steps, episodes, qtables
+
+
+def run_env_no_learning(env, learner, explorer, params):
+    rewards, steps, episodes, qtables = init_run(env, params)
     all_states = []
     all_actions = []
 
-    for run in range(params.n_runs):  # Run several times to account for stochasticity
-
-        for episode in tqdm(
-                episodes, desc=f"Run {run}/{params.n_runs} - Episodes", leave=False
-        ):
-            state = env.reset(seed=params.seed)[0]  # Reset the environment
+    # Run several times to account for stochasticity
+    for run in range(params.n_runs):
+        desc = f'Run {run}/{params.n_runs} - Episodes'
+        for episode in tqdm(episodes, desc=desc, leave=False):
+            state = env.reset(seed=params.seed)[0]
             step = 0
             done = False
             total_rewards = 0
 
             while not done:
-                action = explorer.choose_action(
-                    action_space=env.action_space, state=state, qtable=learner.qtable
-                )
+                action = explorer.choose_action(action_space=env.action_space,
+                                                state=state,
+                                                qtable=learner.qtable)
 
                 # Log all states and actions
                 all_states.append(state)
@@ -80,28 +76,23 @@ def run_env_no_learning(env, learner, explorer, params):
 
 
 def run_env(env, learner, explorer, params):
-    rewards = np.zeros((params.total_episodes, params.n_runs))
-    steps = np.zeros((params.total_episodes, params.n_runs))
-    episodes = np.arange(params.total_episodes)
-    qtables = np.zeros((params.n_runs, env.observation_space.n, env.action_space.n))
+    rewards, steps, episodes, qtables = init_run(env, params)
     all_states = []
     all_actions = []
 
     for run in range(params.n_runs):  # Run several times to account for stochasticity
         learner.reset_qtable()  # Reset the Q-table between runs
-
-        for episode in tqdm(
-            episodes, desc=f"Run {run}/{params.n_runs} - Episodes", leave=False
-        ):
-            state = env.reset(seed=params.seed)[0]  # Reset the environment
+        desc = f'Run {run}/{params.n_runs} - Episodes'
+        for episode in tqdm(episodes, desc=desc, leave=False):
+            state = env.reset(seed=params.seed)[0]
             step = 0
             done = False
             total_rewards = 0
 
             while not done:
-                action = explorer.choose_action(
-                    action_space=env.action_space, state=state, qtable=learner.qtable
-                )
+                action = explorer.choose_action(action_space=env.action_space,
+                                                state=state,
+                                                qtable=learner.qtable)
 
                 # Log all states and actions
                 all_states.append(state)
@@ -136,7 +127,7 @@ def main():
     params = get_params()
     rng = np.random.default_rng(params.seed)
     env = get_env(params)
-    learner = get_learner(params, env.action_space.n, env.observation_space.n)
+    learner = get_q_learner(params, env.action_space.n, env.observation_space.n)
     explorer = EpsilonGreedy(epsilon=params.epsilon, )
     run_env_no_learning(env, learner, explorer, params)
     run_env(env, learner, explorer, params)

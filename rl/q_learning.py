@@ -11,7 +11,7 @@ class Qlearning:
         self.qtable = np.zeros((self.state_size, self.action_size))
 
     def update(self, state, action, reward, new_state):
-        """ TODO: Change the following code to implement the update of the Q-function
+        """ Q-function update
             Q_update(s,a):= Q(s,a) + learning_rate * delta
                 delta =  [R(s,a) + gamma * max Q(s',a') - Q(s,a)] """
 
@@ -26,3 +26,12 @@ class Qlearning:
     def reset_qtable(self):
         """Reset the Q-table."""
         self.qtable = np.zeros((self.state_size, self.action_size))
+
+
+def get_q_learner(params, action_size, state_size):
+    learner = Qlearning(learning_rate=params.learning_rate,
+                        gamma=params.gamma,
+                        state_size=state_size,
+                        action_size=action_size, )
+
+    return learner
