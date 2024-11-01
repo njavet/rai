@@ -1,91 +1,43 @@
 from pathlib import Path
 from typing import NamedTuple
 from tqdm import tqdm
-
+import seaborn as sns
 import gymnasium as gym
+import numpy as np
 from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 
-from misc import *
-
-sns.set_theme()
-
-
-# Set the seed
-rng = np.random.default_rng(params.seed)
+# project imports
+from rl.config import get_params
+from rl.q_learning import Qlearning
+from rl.eps_greedy import EpsilonGreedy
 
 
-# Create the figure folder if it doesn't exist
-params.savefig_folder.mkdir(parents=True, exist_ok=True)
+def get_env(params):
+    # The frozen lake environment
+    env = gym.make(
+        'FrozenLake-v1',
+        is_slippery=params.is_slippery,
+        render_mode='rgb_array',
+        desc=generate_random_map(size=params.map_size,
+                                 p=params.proba_frozen,
+                                 seed=params.seed),
+    )
+    return env
 
 
-# The frozen lake environment
-env = gym.make(
-    "FrozenLake-v1",
-    is_slippery=params.is_slippery,
-    render_mode="rgb_array",
-    desc=generate_random_map(
-        size=params.map_size, p=params.proba_frozen, seed=params.seed
-    ),
-)
-
-params = params._replace(action_size=env.action_space.n)
-params = params._replace(state_size=env.observation_space.n)
-print(f"Action size: {params.action_size}")
-print(f"State size: {params.state_size}")
+def get_learner(params, action_size, state_size):
+    learner = Qlearning(learning_rate=params.learning_rate,
+                        gamma=params.gamma,
+                        state_size=state_size,
+                        action_size=action_size, )
+    return learner
 
 
-class Qlearning:
-    def __init__(self, learning_rate, gamma, state_size, action_size):
-        self.state_size = state_size
-        self.action_size = action_size
-        self.learning_rate = learning_rate
-        self.gamma = gamma
-        self.reset_qtable()
-        self.qtable = np.zeros((self.state_size, self.action_size))
-
-
-    def update(self, state, action, reward, new_state):
-        """TODO: Change the following code to implement the update of the Q-function
-            Q_update(s,a):= Q(s,a) + learning_rate * delta
-                delta =  [R(s,a) + gamma * max Q(s',a') - Q(s,a)]"""
-
-        q_update = self.qtable[state, action]
-        return q_update
-
-    def reset_qtable(self):
-        """Reset the Q-table."""
-        self.qtable = np.zeros((self.state_size, self.action_size))
-
-
-class EpsilonGreedy:
-    def __init__(self, epsilon):
-        self.epsilon = epsilon
-
-    def choose_action(self, action_space, state, qtable):
-        """TODO: Implement the e-greedy algorithm. i.e.:
-            with probability epsilon:
-                select an action randomly
-            else
-                select the action with the highest q-value"""
-
-        # Select a random action
-        action = action_space.sample()
-        return action
-
-
-learner = Qlearning(learning_rate=params.learning_rate,
-                    gamma=params.gamma,
-                    state_size=params.state_size,
-                    action_size=params.action_size,)
-
-explorer = EpsilonGreedy(epsilon=params.epsilon,)
-
-
-def run_env_no_learning():
+def run_env_no_learning(env, learner, explorer, params):
     rewards = np.zeros((params.total_episodes, params.n_runs))
     steps = np.zeros((params.total_episodes, params.n_runs))
     episodes = np.arange(params.total_episodes)
-    qtables = np.zeros((params.n_runs, params.state_size, params.action_size))
+    qtables = np.zeros((params.n_runs, env.observation_space.n, env.action_space.n))
     all_states = []
     all_actions = []
 
@@ -127,63 +79,11 @@ def run_env_no_learning():
     return rewards, steps, episodes, qtables, all_states, all_actions
 
 
-all_states = []
-all_actions = []
-
-env = gym.make("FrozenLake-v1",
-               is_slippery=params.is_slippery,
-               render_mode="rgb_array",
-               desc=generate_random_map(
-                   size=params.map_size, p=params.proba_frozen, seed=params.seed),)
-
-params = params._replace(action_size=env.action_space.n)
-params = params._replace(state_size=env.observation_space.n)
-
-# Set the seed to get reproducible results when sampling the action space
-env.action_space.seed(params.seed)
-learner = Qlearning(learning_rate=params.learning_rate,
-                    gamma=params.gamma,
-                    state_size=params.state_size,
-                    action_size=params.action_size,)
-
-# Force exploration in every step
-explorer = EpsilonGreedy(epsilon=1.0,)
-
-state = env.reset(seed=params.seed)[0]  # Reset the environment
-
-# Initialize the Q-table with zero values
-learner.reset_qtable()
-
-# Generate several trajectories using the Q-function without exploration and plot
-# the distribution of states visited and actions taken
-
-# Notice that if the policy directs the agent towards the border of the
-# environment, it will remain stuck at that point
-
-rewards, steps, episodes, qtables, all_states, all_actions = run_env_no_learning()
-
-# Save the results in dataframes
-res, st = postprocess(episodes, params, rewards, steps, params.map_size)
-
-# Plot the Q-table
-plot_q_values_map(learner.qtable, env, params.map_size, params, img_label='random')
-
-# Plot the state and action distribution
-plot_states_actions_distribution(states=all_states,
-                                 actions=all_actions,
-                                 map_size=params.map_size,
-                                 params=params,
-                                 img_label='random')
-
-env.close()
-plot_steps_and_rewards(res, st, params)
-
-
-def run_env():
+def run_env(env, learner, explorer, params):
     rewards = np.zeros((params.total_episodes, params.n_runs))
     steps = np.zeros((params.total_episodes, params.n_runs))
     episodes = np.arange(params.total_episodes)
-    qtables = np.zeros((params.n_runs, params.state_size, params.action_size))
+    qtables = np.zeros((params.n_runs, env.observation_space.n, env.action_space.n))
     all_states = []
     all_actions = []
 
@@ -230,41 +130,17 @@ def run_env():
     return rewards, steps, episodes, qtables, all_states, all_actions
 
 
-env = gym.make(
-    "FrozenLake-v1",
-    is_slippery=params.is_slippery,
-    render_mode="rgb_array",
-    desc=generate_random_map(
-        size=params.map_size, p=params.proba_frozen, seed=params.seed
-    ),
-)
+def main():
+    sns.set_theme()
 
-params = params._replace(action_size=env.action_space.n)
-params = params._replace(state_size=env.observation_space.n)
-env.action_space.seed(
-    params.seed
-)  # Set the seed to get reproducible results when sampling the action space
-learner = Qlearning(learning_rate=params.learning_rate,
-                    gamma=params.gamma,
-                    state_size=params.state_size,
-                    action_size=params.action_size,)
-explorer = EpsilonGreedy(epsilon=params.epsilon,)
+    params = get_params()
+    rng = np.random.default_rng(params.seed)
+    env = get_env(params)
+    learner = get_learner(params, env.action_space.n, env.observation_space.n)
+    explorer = EpsilonGreedy(epsilon=params.epsilon, )
+    run_env_no_learning(env, learner, explorer, params)
+    run_env(env, learner, explorer, params)
 
-rewards, steps, episodes, qtables, all_states, all_actions = run_env()
 
-# Save the results in dataframes
-res, st = postprocess(episodes, params, rewards, steps, params.map_size)
-qtable = qtables.mean(axis=0)  # Average the Q-table between runs
-
-# Plot the Q-table
-plot_q_values_map(qtable, env, params.map_size, params=params, img_label='learned')
-
-# Plot the state and action distribution
-plot_states_actions_distribution(states=all_states,
-                                 actions=all_actions,
-                                 map_size=params.map_size,
-                                 params=params,
-                                 img_label='learned')
-
-env.close()
-plot_steps_and_rewards(res, st, params)
+if __name__ == '__main__':
+    main()
