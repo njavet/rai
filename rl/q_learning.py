@@ -41,5 +41,5 @@ class Qlearning:
                 new_state, reward, done, _, _ = self.env.step(action)
                 self.qtable[state, action] = self.update(state, action, reward, new_state)
                 state = new_state
-        value_function = np.max(self.q_table, axis=1)
+        value_function = np.max(self.qtable, axis=1)
         return value_function

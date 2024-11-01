@@ -8,7 +8,7 @@ from rl.eps_greedy import EpsilonGreedy
 
 
 class MonteCarloRandomPolicy:
-    def __init__(self, env: TimeLimit, params: Params, debug: bool = False):
+    def __init__(self, env, params: Params, debug: bool = False):
         self.env = env
         self.params = params
         self.debug = debug
@@ -46,7 +46,7 @@ class MonteCarloRandomPolicy:
 
 # TODO refactor
 class MonteCarloIncPolicy(MonteCarloRandomPolicy):
-    def __init__(self, env: TimeLimit, params: Params, debug: bool = False):
+    def __init__(self, env, params: Params, debug: bool = False):
         super().__init__(env, params, debug)
         self.explorer = EpsilonGreedy(self.params.epsilon)
 
