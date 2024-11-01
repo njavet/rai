@@ -28,13 +28,39 @@ def main():
     params = get_params()
     env = get_env(params)
 
+    # TODO refactor
+    # monte carlo random
     mc_rand = MonteCarloRandomPolicy(env, params)
+    rewards, steps, episodes, qtables, states, actions = mc_rand.run()
+    res, st = misc.postprocess(episodes, params, rewards, steps, params.map_size)
+    qtable = qtables.mean(axis=0)  # Average the Q-table between runs
+    misc.plot_q_values_map(qtable, env, params.map_size, params, img_label='mc_rand')
+
+    # Plot the state and action distribution
+    misc.plot_states_actions_distribution(states=states,
+                                          actions=actions,
+                                          map_size=params.map_size,
+                                          params=params,
+                                          img_label='mc_rand')
+    misc.plot_steps_and_rewards(res, st, params, 'mc_rand')
+
+    # monte carlo incremental
     mc_inc = MonteCarloIncPolicy(env, params)
-    mc_inc.run()
-    #misc.plot_q_values_map(mc_inc.q_table, env, params.map_size, params, img_label='mc_inc')
+    rewards, steps, episodes, qtables, states, actions = mc_inc.run()
+    res, st = misc.postprocess(episodes, params, rewards, steps, params.map_size)
+    qtable = qtables.mean(axis=0)  # Average the Q-table between runs
+    misc.plot_q_values_map(qtable, env, params.map_size, params, img_label='mc_inc')
 
+    # Plot the state and action distribution
+    misc.plot_states_actions_distribution(states=states,
+                                          actions=actions,
+                                          map_size=params.map_size,
+                                          params=params,
+                                          img_label='mc_inc')
+    misc.plot_steps_and_rewards(res, st, params, 'mc_inc')
+
+    # Q learning
     ql = Qlearning(env, params)
-
     rewards, steps, episodes, qtables, states, actions = ql.q_learning_algorithm()
     res, st = misc.postprocess(episodes, params, rewards, steps, params.map_size)
     qtable = qtables.mean(axis=0)  # Average the Q-table between runs
@@ -46,7 +72,7 @@ def main():
                                           map_size=params.map_size,
                                           params=params,
                                           img_label='ql')
-    misc.plot_steps_and_rewards(res, st, params)
+    misc.plot_steps_and_rewards(res, st, params, 'ql')
 
 
 if __name__ == '__main__':

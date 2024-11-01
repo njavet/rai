@@ -23,7 +23,7 @@ def get_params():
     params = Params(total_episodes=2000,
                     learning_rate=0.1,
                     gamma=0.98,
-                    epsilon=0.1,
+                    epsilon=0.2,
                     map_size=4,
                     seed=0x101,
                     is_slippery=True,

@@ -108,7 +108,7 @@ def plot_states_actions_distribution(states, actions, map_size, params, img_labe
     plt.show()
 
 
-def plot_steps_and_rewards(rewards_df, steps_df, params):
+def plot_steps_and_rewards(rewards_df, steps_df, params, img_label):
     """This function plots the cumulated sum of
     rewards, as well as the number of steps needed until the end of the
     episode."""
@@ -126,7 +126,7 @@ def plot_steps_and_rewards(rewards_df, steps_df, params):
     for axi in ax:
         axi.legend(title="map size")
     fig.tight_layout()
-    img_title = "frozenlake_steps_and_rewards.png"
+    img_title = f"frozenlake_steps_and_rwards_{img_label}.png"
     fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
     plt.show()
 
