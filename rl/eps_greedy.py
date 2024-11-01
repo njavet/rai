@@ -6,8 +6,7 @@ class EpsilonGreedy:
         self.epsilon = epsilon
 
     def choose_action(self, action_space, state, qtable):
-        """ TODO: Implement the e-greedy algorithm. i.e.:
-            with probability epsilon:
+        """ with probability epsilon:
                 select an action randomly
             else
                 select the action with the highest q-value """
