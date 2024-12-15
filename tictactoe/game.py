@@ -2,6 +2,7 @@ import argparse
 
 # project imports
 from tictactoe.env import Env, EnvPres
+from tictactoe.agent import Agent
 
 
 def create_parser():
@@ -17,12 +18,22 @@ def main():
 
     env = Env()
     env_pres = EnvPres(env)
+    agent = Agent(env.state)
+
     # training mode, self play
     if args.tmode:
         pass
 
     # play against another agent
     else:
+        print('New game, agent starts...')
+        agent.act()
         env_pres.pprint_board()
-        pass
+        while not env.game_over:
+            cell = input('Your turn: ')
+            while not env.is_valid_action(cell):
+                cell = input('invalid move, choose again: ')
+            env.execute_action(cell, 'O')
+            env_pres.pprint_board()
+
 

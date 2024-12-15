@@ -27,6 +27,9 @@ class Agent:
         with open(file_name, 'w') as f:
             json.dump(model, f, indent=2)
 
+    def act(self):
+        return self.action.get_action()
+
 
 class Action:
     def __init__(self, state, exploration_rate):
