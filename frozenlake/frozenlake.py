@@ -17,7 +17,8 @@ def get_env(params):
         is_slippery=params.is_slippery,
         render_mode="rgb_array",
         desc=generate_random_map(size=params.map_size,
-                                 p=params.proba_frozen))
+                                 p=params.proba_frozen,
+                                 seed=params.seed))
 
     return env
 
@@ -32,6 +33,7 @@ def main():
     t0 = time.time()
     mc_rand = MonteCarloRandom(env, params)
     qtable, steps, rewards, episodes, actions, states = mc_rand.run()
+    print(qtable)
     print('MC random execution time:', time.time() - t0)
     res, st = helpers.postprocess(episodes, params, rewards, steps, params.map_size)
     helpers.plot_q_values_map(qtable, env, params.map_size, params, img_label='mc_rand')

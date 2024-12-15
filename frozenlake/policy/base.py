@@ -35,7 +35,7 @@ class BasePolicy(ABC):
         for i in range(self.params.n_runs):
             for episode in range(self.params.total_episodes):
                 done = False
-                state, info = self.env.reset(seed=self.params.seed)
+                state, info = self.env.reset()
                 steps = 0
                 total_rewards = 0
                 while not done:
@@ -47,6 +47,8 @@ class BasePolicy(ABC):
                     steps += 1
                     self.trajectories[i].append((state, reward, action))
                     self.update_qtable( state, reward, action)
+                    if trunc:
+                        print(steps)
                     done = term or trunc
                 self.update_qtable( next_state, total_rewards, action)
             rewards[episode, i] = total_rewards

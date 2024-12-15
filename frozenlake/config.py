@@ -25,7 +25,7 @@ def get_params():
                     gamma=0.97,
                     epsilon=0.25,
                     map_size=4,
-                    seed=0x101,
+                    seed=101,
                     is_slippery=False,
                     n_runs=20,
                     proba_frozen=0.9,
