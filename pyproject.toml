@@ -1,22 +1,20 @@
 [tool.poetry]
-name = "rl"
+name = "frozenlake"
 version = "0.1.0"
 description = ""
-authors = ["Noe Javet <np.javet@gmail.com>"]
+authors = ["Noe Javet <javetnoe@students.zhaw.ch>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pandas = "^2.2.3"
-numpy = "^2.1.2"
-jupyter = "^1.1.1"
-matplotlib = "^3.9.2"
-tqdm = "^4.66.6"
-seaborn = "^0.13.2"
-gymnasium = "^1.0.0"
+gym = "^0.26.2"
 pygame = "^2.6.1"
+seaborn = "^0.13.2"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+main: "frozenlake:main"
