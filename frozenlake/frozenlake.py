@@ -17,7 +17,7 @@ def get_env(params):
         render_mode="rgb_array",
         desc=generate_random_map(size=params.map_size,
                                  p=params.proba_frozen,
-                                 seed=params.seed),)
+                                 seed=params.seed))
 
     return env
 
@@ -27,6 +27,7 @@ def main():
 
     params = get_params()
     env = get_env(params)
+
 
     # TODO refactor
     # monte carlo random
