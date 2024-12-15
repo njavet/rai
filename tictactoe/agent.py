@@ -1,4 +1,4 @@
-import collections
+from collections import defaultdict
 import json
 import random
 
@@ -22,7 +22,7 @@ class Agent:
             with open(file_name) as f:
                 model = json.load(f)
         except FileNotFoundError:
-            model = {}
+            model = defaultdict(float)
         return model
 
     @staticmethod
