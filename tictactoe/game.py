@@ -1,5 +1,8 @@
 import argparse
 
+# project imports
+from tictactoe.env import Env, EnvPres
+
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -12,11 +15,14 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
+    env = Env()
+    env_pres = EnvPres(env)
     # training mode, self play
     if args.tmode:
         pass
 
     # play against another agent
     else:
+        env_pres.pprint_board()
         pass
 
