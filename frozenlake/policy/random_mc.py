@@ -10,5 +10,5 @@ class MonteCarloRandom(BasePolicy):
         action = self.env.action_space.sample()
         return action
 
-    def update_qtable(self, i, state, reward, action):
-        self.qtables[i, state, action] = reward
+    def update_qtable(self, state, reward, action):
+        self.qtable[state, action] = reward
