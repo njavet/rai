@@ -44,17 +44,8 @@ class Action:
         if random.uniform(0, 1) < self.exploration_rate:
             return random.choice(free_cells)
 
-        best_prob = 0
-        chosen_field = free_fields[0]
-        for ind, field in enumerate(free_fields):
-
-            new_board = engine.insert_symbol(board, turn, field)
-            win_prob = model.get(new_board, 0.5)
-
-            if best_prob < win_prob:
-                best_prob = win_prob
-                chosen_field = field
-        return chosen_field
+        else:
+            return random.choice(free_cells)
 
     @staticmethod
     def _opening_action():

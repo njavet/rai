@@ -35,5 +35,5 @@ def main():
                 cell = input('invalid move, choose again: ')
             env.execute_action(cell, 'O')
             env_pres.pprint_board()
-
+        print('winner:', env.winner)
 
