@@ -5,6 +5,7 @@ import time
 
 # project imports
 from frozenlake.config import get_params
+from frozenlake import helpers
 from frozenlake.policy.random_mc import MonteCarloRandom
 from frozenlake.policy.inc_mc import MonteCarloInc
 from frozenlake.policy.ql import Qlearning
@@ -16,8 +17,7 @@ def get_env(params):
         is_slippery=params.is_slippery,
         render_mode="rgb_array",
         desc=generate_random_map(size=params.map_size,
-                                 p=params.proba_frozen,
-                                 seed=params.seed))
+                                 p=params.proba_frozen))
 
     return env
 
@@ -30,22 +30,21 @@ def main():
 
     # monte carlo random
     t0 = time.time()
-    mc_rand = MonteCarloRandomPolicy(env, params)
-    qtable = mc_rand.run()
+    mc_rand = MonteCarloRandom(env, params)
+    qtable, steps, rewards, episodes, actions, states = mc_rand.run()
     print('MC random execution time:', time.time() - t0)
-
-    res, st = misc.postprocess(params.episodes, params, rewards, steps, params.map_size)
-    qtable = qtables.mean(axis=0)  # Average the Q-table between runs
-    misc.plot_q_values_map(qtable, env, params.map_size, params, img_label='mc_rand')
+    res, st = helpers.postprocess(episodes, params, rewards, steps, params.map_size)
+    helpers.plot_q_values_map(qtable, env, params.map_size, params, img_label='mc_rand')
 
     # Plot the state and action distribution
-    misc.plot_states_actions_distribution(states=states,
+    helpers.plot_states_actions_distribution(states=states,
                                           actions=actions,
                                           map_size=params.map_size,
                                           params=params,
                                           img_label='mc_rand')
-    misc.plot_steps_and_rewards(res, st, params, 'mc_rand')
+    helpers.plot_steps_and_rewards(res, st, params, 'mc_rand')
 
+    return
     # monte carlo incremental
     t1 = time.time()
     mc_inc = MonteCarloIncPolicy(env, params)

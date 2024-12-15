@@ -8,7 +8,7 @@ from typing import NamedTuple
 
 class Params(NamedTuple):
     total_episodes: int  # Total episodes
-    learning_rate: float  # Learning rate
+    alpha: float  # Learning rate
     gamma: float  # Discounting rate
     epsilon: float  # Exploration probability
     map_size: int  # Number of tiles of one side of the squared environment
