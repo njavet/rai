@@ -27,13 +27,13 @@ def main():
     # play against another agent
     else:
         print('New game, agent starts...')
-        agent.act()
-        env_pres.pprint_board()
         while not env.game_over:
-            cell = input('Your turn: ')
-            while not env.is_valid_action(cell):
-                cell = input('invalid move, choose again: ')
-            env.execute_action(cell, 'O')
+            cell = agent.act()
+            env.execute_action(cell, 'X')
             env_pres.pprint_board()
+            cell = int(input('Your turn: '))
+            while not env.is_valid_action(cell):
+                cell = int(input('invalid move, choose again: '))
+            env.execute_action(cell, 'O')
         print('winner:', env.winner)
 
