@@ -1,18 +1,14 @@
-from collections import defaultdict
-import numpy as np
-from gymnasium.wrappers.common import TimeLimit
-
 # project imports
 from frozenlake.policy.base import BasePolicy
 
 
 class MonteCarloRandom(BasePolicy):
-    def __init__(self, action_space, obs_space_size, action_space_size):
-        super().__init__(action_space, obs_space_size, action_space_size)
+    def __init__(self, env, params):
+        super().__init__(env, params)
 
     def choose_action(self, state):
-        action = self.action_space.sample()
+        action = self.env.action_space.sample()
         return action
 
-    def update_qtable(self, state, reward, action):
-        self.qtable[state, action] = reward
+    def update_qtable(self, i, state, reward, action):
+        self.qtables[i, state, action] = reward
