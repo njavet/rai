@@ -37,8 +37,8 @@ class Agent:
 
     def generate_trajectories(self):
 
+        lst = []
         def helper(state, action_t=None, traj=None):
-            print(traj)
             if traj is None:
                 traj = []
             for action in Action:
@@ -47,24 +47,28 @@ class Agent:
                 if cond0 and cond1:
                     at = traj[:]
                     new_state = self.transition(action)
+                    self.state = new_state
                     reward = self.reward(state, action, new_state)
                     traj_elem = TrajectoryElement(state=state,
                                                   reward=reward,
                                                   action=action)
                     at.append(traj_elem)
                     if new_state.x == 2 and new_state.y == 4:
+                        print('yo')
+                        print('type', type(new_state))
                         traj_elem = TrajectoryElement(state=new_state,
-                                                      reward=reward)
+                                                      reward=reward,
+                                                      action=None)
                         at.append(traj_elem)
-                        return at
+                        lst.append(at)
                     else:
-                        return helper(new_state, action, at)
-                else:
-                    if state.x == 2 and state.y == 4:
-                        return traj
+                        helper(new_state, action, at)
+                elif state.x == 2 and state.y == 4:
+                    print('yo')
+                    lst.append(traj)
+                    return
 
-        lst = []
-        helper(self.state, traj=lst)
+        helper(self.state)
         print(lst)
 
     def is_terminal_state(self):
@@ -87,11 +91,13 @@ class Agent:
 
     def is_valid_action(self, action):
         new_state = self.transition(action)
-        if new_state.x < 0 or new_state.y > 5:
+        if new_state.x < 0 or new_state.x > 4:
             return False
-        if new_state.y < 0 or new_state.y > 5:
+        if new_state.y < 0 or new_state.y > 4:
             return False
         if self.model[new_state.x][new_state.y] == 0:
+            return False
+        if new_state.y < self.state.y:
             return False
         return True
 
