@@ -29,7 +29,7 @@ def get_params():
                     is_slippery=False,
                     n_runs=20,
                     proba_frozen=0.9,
-                    savefig_folder=Path('rl/plots'))
+                    savefig_folder=Path('plots'))
 
     # Create the figure folder if it doesn't exist
     params.savefig_folder.mkdir(parents=True, exist_ok=True)
