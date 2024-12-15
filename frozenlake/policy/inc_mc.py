@@ -5,7 +5,7 @@ from frozenlake.policy.base import BasePolicy
 from frozenlake.helpers import argmax
 
 
-class MonteCarloIncPolicy(BasePolicy):
+class MonteCarloInc(BasePolicy):
     def __init__(self, action_space, obs_space_size, action_space_size, eps):
         super().__init__()
         self.eps = eps
