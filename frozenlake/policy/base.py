@@ -10,3 +10,5 @@ class BasePolicy(ABC):
     def choose_action(self, state):
         raise NotImplementedError
 
+    def reset_qtable(self):
+        self.qtable = np.zeros((obs_space_size, action_space_size))
