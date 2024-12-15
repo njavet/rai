@@ -1,9 +1,16 @@
+import numpy as np
 import imageio
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+
+
+def argmax(arr):
+    """ randomize return value """
+    arr_max = np.max(arr)[0]
+    return np.random.choice(np.where(arr == arr_max)[0])
 
 
 def postprocess(episodes, params, rewards, steps, map_size):

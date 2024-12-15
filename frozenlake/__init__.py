@@ -1,2 +1,2 @@
-from .lunar import main
+from .frozenlake import main
 
