@@ -36,40 +36,44 @@ class Agent:
         self.gamma = 1
 
     def generate_trajectories(self):
+        all_trajectories = []
 
-        lst = []
-        def helper(state, action_t=None, traj=None):
-            if traj is None:
-                traj = []
-            for action in Action:
-                cond0 = not self.is_inverse_action(action, action_t)
-                cond1 = self.is_valid_action(action)
+        def helper(state_t, action_t, traj_t):
+            for action_t1 in Action:
+                cond0 = not self.is_inverse_action(action_t, action_t1)
+                cond1 = self.is_valid_action(action_t1)
                 if cond0 and cond1:
-                    at = traj[:]
-                    new_state = self.transition(action)
-                    self.state = new_state
-                    reward = self.reward(state, action, new_state)
-                    traj_elem = TrajectoryElement(state=state,
-                                                  reward=reward,
-                                                  action=action)
-                    at.append(traj_elem)
-                    if new_state.x == 2 and new_state.y == 4:
-                        print('yo')
-                        print('type', type(new_state))
-                        traj_elem = TrajectoryElement(state=new_state,
-                                                      reward=reward,
-                                                      action=None)
-                        at.append(traj_elem)
-                        lst.append(at)
+                    new_traj = Trajectory(elements=traj_t.elements)
+                    print(new_traj.elements)
+                    state_t1 = self.transition(action)
+                    reward = self.reward(state_t, action, state_t1)
+                    traj_elem_t = TrajectoryElement(state=state_t,
+                                                    reward=reward,
+                                                    action=action_t)
+                    new_traj.elements += (traj_elem_t, )
+                    self.state = state_t1
+                    if state_t1.x == 2 and state_t1.y == 4:
+                        traj_elem_t1 = TrajectoryElement(state=state_t1,
+                                                         reward=reward,
+                                                         action=None)
+                        new_traj.elements += (traj_elem_t1, )
+                        all_trajectories.append(new_traj)
                     else:
-                        helper(new_state, action, at)
-                elif state.x == 2 and state.y == 4:
-                    print('yo')
-                    lst.append(traj)
-                    return
+                        helper(state_t1, action_t1, new_traj)
 
-        helper(self.state)
-        print(lst)
+        for action in Action:
+            if self.is_valid_action(action):
+                traj_elem = TrajectoryElement(state=self.state,
+                                              reward=-1,
+                                              action=action)
+                traj = Trajectory(elements=(traj_elem,))
+                self.state = self.transition(action)
+                helper(self.state, action, traj)
+
+        for t in all_trajectories:
+            print('traj')
+            for elem in t.elements:
+                print(elem.state)
 
     def is_terminal_state(self):
         return self.state.x == 2 and self.state.y == 4
