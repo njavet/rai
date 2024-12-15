@@ -28,26 +28,26 @@ class Env:
 
     def get_winner(self):
         # check rows
-        rows = [self.state[0:3], self.state[3:6], self.state[6:]]
+        rows = [self.board[0:3], self.board[3:6], self.board[6:]]
         if any([row == 'XXX' for row in rows]):
             return 'X'
         elif any([row == 'OOO' for row in rows]):
             return 'O'
         # check columns
-        cols = [self.state[0::3], self.state[1::3], self.state[2::3]]
+        cols = [self.board[0::3], self.board[1::3], self.board[2::3]]
         if any([col == 'XXX' for col in cols]):
             return 'X'
         elif any([col == 'OOO' for col in cols]):
             return 'O'
 
-        if self.state[0::4] == 'OOO':
+        if self.board[0::4] == 'OOO':
             return 'O'
-        elif self.state[0::4] == 'XXX':
+        elif self.board[0::4] == 'XXX':
             return 'X'
 
-        if self.state[2::2] == 'OOO':
+        if self.board[2::2] == 'OOO':
             return 'O'
-        elif self.state[2::2] == 'XXX':
+        elif self.board[2::2] == 'XXX':
             return 'X'
 
     def execute_action(self, action, sym):

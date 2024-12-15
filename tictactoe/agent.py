@@ -18,8 +18,11 @@ class Agent:
 
     @staticmethod
     def _load_model(file_name):
-        with open(file_name) as f:
-            model = json.load(f)
+        try:
+            with open(file_name) as f:
+                model = json.load(f)
+        except FileNotFoundError:
+            model = {}
         return model
 
     @staticmethod
