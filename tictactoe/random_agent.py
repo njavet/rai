@@ -26,7 +26,7 @@ class Agent:
         return model
 
     @staticmethod
-    def _save_model(model, file_name):g
+    def _save_model(model, file_name):
         with open(file_name, 'w') as f:
             json.dump(model, f, indent=2)
 
