@@ -1,4 +1,4 @@
-from enum import Enum
+from grid.environment import Action, State, Reward
 
 
 class Agent:
@@ -6,22 +6,27 @@ class Agent:
         self.state = None
         self.reward = None
 
-    def policy(self, state, action) -> float:
-        return 0.
+    def policy(self, state: State) -> Action:
+        """
+        the policy p(a|s) = P[At = a | St = s]
+        maps an action At to a given state St where At has probability P
 
-    def value_function(self, state) -> float:
-        return 0.
-
-    def predict_next_state(self, state, action):
+        """
         pass
 
-    def predict_next_reward(self, state, action):
+    def value_function(self, state: State) -> float:
+        """
+        The value function computes the expectation value given a policy
+        of the total reward in this state: V = E[sum(rewards) | St = s]
+
+        """
+        pass
+
+    def predict_next_state(self, state: State, action: Action) -> State:
+        pass
+
+    def predict_next_reward(self, state: State, action: Action) -> Reward:
         pass
 
 
-class Action(Enum):
-    UP = 0
-    RIGHT = 1
-    DOWN = 2
-    LEFT = 3
 
