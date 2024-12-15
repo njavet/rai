@@ -18,13 +18,16 @@ class Action(Enum):
 class TrajectoryElement(BaseModel):
     state: State
     reward: float
-    action: Action
+    action: Action | None
+
+
+class Trajectory(BaseModel):
+    elements: tuple
 
 
 class Agent:
     def __init__(self):
-        self.state = 3, 0
-        self.terminal_state = 2, 4
+        self.state = State(x=3, y=0)
         self.model = [[1, 1, 1, 1, 1],
                       [1, 0, 1, 1, 1],
                       [1, 0, 1, 0, 1],
@@ -33,46 +36,68 @@ class Agent:
         self.gamma = 1
 
     def generate_trajectories(self):
-        lst = []
 
-        def helper(state_t, action_t, traj):
+        def helper(state, action_t=None, traj=None):
+            print(traj)
+            if traj is None:
+                traj = []
             for action in Action:
-                cond0 = self.is_inverse_action(action, action_t)
+                cond0 = not self.is_inverse_action(action, action_t)
                 cond1 = self.is_valid_action(action)
-                state_t1 =
                 if cond0 and cond1:
-                    traj.append(state_t)
-                    traj.append(self.reward())
-                    traj.append(state_t)
+                    at = traj[:]
+                    new_state = self.transition(action)
+                    reward = self.reward(state, action, new_state)
+                    traj_elem = TrajectoryElement(state=state,
+                                                  reward=reward,
+                                                  action=action)
+                    at.append(traj_elem)
+                    if new_state.x == 2 and new_state.y == 4:
+                        traj_elem = TrajectoryElement(state=new_state,
+                                                      reward=reward)
+                        at.append(traj_elem)
+                        return at
+                    else:
+                        return helper(new_state, action, at)
+                else:
+                    if state.x == 2 and state.y == 4:
+                        return traj
 
-    def is_inverse_action(self, action0, action1):
+        lst = []
+        helper(self.state, traj=lst)
+        print(lst)
+
+    def is_terminal_state(self):
+        return self.state.x == 2 and self.state.y == 4
+
+    def transition(self, action):
+        ax, ay = action.value
+        xs = self.state.x + ax
+        ys = self.state.y + ay
+        return State(x=xs, y=ys)
+
+    @staticmethod
+    def is_inverse_action(action0, action1=None):
+        if action1 is None:
+            return False
+
         ax0, ay0 = action0.value
         ax1, ay1 = action1.value
         return sum([ax0, ay0, ax1, ay1]) == 0
 
     def is_valid_action(self, action):
-        ax, ay = action.value
-        x, y = self.state
-        new_x = ax + x
-        new_y = ay + y
-        if new_x < 0 or new_x > 5:
+        new_state = self.transition(action)
+        if new_state.x < 0 or new_state.y > 5:
             return False
-        if new_y < 0 or new_y > 5:
+        if new_state.y < 0 or new_state.y > 5:
             return False
-        if self.model[new_x][new_y] == 0:
+        if self.model[new_state.x][new_state.y] == 0:
             return False
         return True
 
     @staticmethod
     def reward(state, action, next_state):
         return -1
-
-    def transition(self, action):
-        x, y = self.state
-        ax, ay = action.value
-        xs = self.model[x] + ax
-        ys = self.model[x][y] + ay
-        self.state = xs, ys
 
     def policy(self):
         pass
