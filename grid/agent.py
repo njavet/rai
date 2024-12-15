@@ -1,12 +1,30 @@
+from collections import defaultdict
+
+# project imports
 from grid.environment import Action, State, Reward
 
 
 class Agent:
     def __init__(self):
-        self.state = None
-        self.reward = None
+        self.state_t = 3, 0
+        self.reward_t = 0
+        self.policy = [[2, 2, 2, 2, 3],
+                       [1, 0, 2, 2, 3],
+                       [1, 0, 1, 0, 0],
+                       [0, 2, 2, 2, 1],
+                       [2, 2, 2, 2, 1]]
+        self.value = [[-6, -5, -4, -3, -2],
+                      [-7, 0, -3, -2, -1],
+                      [-8, 0, -4, 0, 0],
+                      [0, -4, -3, -2, -1],
+                      [-6, -5, -4, -3, -2]]
+        self.reward = [[-1, -1, -1, -1, -1],
+                       [-1, 0, -1, -1, -1],
+                       [-1, 0, -1, 0, -1],
+                       [0, -1, -1, -1, -1],
+                       [-1, -1, -1, -1, -1]]
 
-    def policy(self, state: State) -> Action:
+    def _policy(self, state: State) -> Action:
         """
         the policy p(a|s) = P[At = a | St = s]
         maps an action At to a given state St where At has probability P
