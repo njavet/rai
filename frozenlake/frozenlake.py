@@ -4,10 +4,10 @@ from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 import time
 
 # project imports
-from rl.config import get_params
-from rl.q_learning import Qlearning
-from rl.policy import MonteCarloRandomPolicy, MonteCarloIncPolicy
-from rl import misc
+from frozenlake.config import get_params
+from frozenlake.policy.random_mc import MonteCarloRandom
+from frozenlake.policy.inc_mc import MonteCarloInc
+from frozenlake.policy.ql import Qlearning
 
 
 def get_env(params):
@@ -28,15 +28,13 @@ def main():
     params = get_params()
     env = get_env(params)
 
-
-    # TODO refactor
     # monte carlo random
     t0 = time.time()
     mc_rand = MonteCarloRandomPolicy(env, params)
-    rewards, steps, episodes, qtables, states, actions = mc_rand.run()
+    qtable = mc_rand.run()
     print('MC random execution time:', time.time() - t0)
 
-    res, st = misc.postprocess(episodes, params, rewards, steps, params.map_size)
+    res, st = misc.postprocess(params.episodes, params, rewards, steps, params.map_size)
     qtable = qtables.mean(axis=0)  # Average the Q-table between runs
     misc.plot_q_values_map(qtable, env, params.map_size, params, img_label='mc_rand')
 
