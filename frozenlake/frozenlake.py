@@ -23,6 +23,42 @@ def get_env(params):
     return env
 
 
+def run(env, params):
+    pass
+    def run(self):
+        self.reset_qtable()
+        rewards = np.zeros((self.params.total_episodes, self.params.n_runs))
+        steps = np.zeros((self.params.total_episodes, self.params.n_runs))
+        episodes = np.arange(self.params.total_episodes)
+        all_states = []
+        all_actions = []
+
+        for i in range(self.params.n_runs):
+            for episode in range(self.params.total_episodes):
+                done = False
+                state, info = self.env.reset()
+                total_steps = 0
+                total_rewards = 0
+                while not done:
+                    action = self.choose_action(state)
+                    next_state, reward, term, trunc, info = self.env.step(action)
+
+                    # update and collect
+                    all_actions.append(action)
+                    all_states.append(state)
+                    total_rewards += reward
+                    total_steps += 1
+                    self.trajectories[i].append((state, reward, action))
+                    self.update_qtable( state, reward, action)
+
+                    done = term or trunc
+                self.update_qtable( next_state, total_rewards, action)
+            rewards[episode, i] = total_rewards
+            steps[episode, i] = steps
+            self.qtables[i, :, :] = self.qtable
+        return self.qtables.mean(axis=0), total_steps, rewards, episodes, all_actions, all_states
+
+
 def main():
     sns.set_theme()
 

@@ -2,7 +2,7 @@ from collections import defaultdict
 import numpy as np
 
 # project imports
-from frozenlake.helpers import argmax
+from frozenlake.helpers import rand_argmax
 from frozenlake.policy.inc_mc import MonteCarloInc
 
 
@@ -16,7 +16,7 @@ class Qlearning(MonteCarloInc):
                 delta =  [R(s,a) + gamma * max Q(s',a') - Q(s,a)] """
 
         # Compute the temporal difference (TD) target
-        bfq = self.params.gamma * argmax(self.qtable[new_state])
+        bfq = self.params.gamma * rand_argmax(self.qtable[new_state])
         delta = reward + bfq - self.qtable[state, action]
 
         self.qtable[state, action] = (
