@@ -7,7 +7,7 @@ import seaborn as sns
 import pandas as pd
 
 
-def argmax(arr):
+def rand_argmax(arr):
     """ randomize return value """
     arr_max = np.max(arr)[0]
     return np.random.choice(np.where(arr == arr_max)[0])
