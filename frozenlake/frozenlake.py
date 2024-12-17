@@ -1,5 +1,6 @@
 import seaborn as sns
 import gymnasium as gym
+import numpy as np
 from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 import time
 
@@ -24,9 +25,9 @@ def get_env(params):
 
 
 def run(env, params):
-    pass
-    def run(self):
+    qtables = np.
         self.reset_qtable()
+
         rewards = np.zeros((self.params.total_episodes, self.params.n_runs))
         steps = np.zeros((self.params.total_episodes, self.params.n_runs))
         episodes = np.arange(self.params.total_episodes)

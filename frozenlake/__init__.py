@@ -1,2 +1,0 @@
-from .frozenlake import main
-
