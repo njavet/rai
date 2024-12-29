@@ -1,28 +1,6 @@
-from enum import Enum
-from pydantic import BaseModel
 
 
-class State(BaseModel):
-    x: int
-    y: int
 
-
-class Action(Enum):
-    # finite set of actions
-    UP = -1, 0
-    RIGHT = 0, 1
-    DOWN = 1, 0
-    LEFT = 0, -1
-
-
-class TrajectoryElement(BaseModel):
-    state: State
-    reward: float
-    action: Action | None
-
-
-class Trajectory(BaseModel):
-    elements: tuple
 
 
 class Agent:
