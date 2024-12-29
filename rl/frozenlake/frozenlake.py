@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 # project imports
 from rl.frozenlake.agents.rmca import RMCAgent
+from rl.frozenlake.agents.qla import QAgent
 from rl.models import Params
 
 
@@ -34,15 +35,19 @@ def main():
                                             seed=params.seed))
     params.state_size = env.observation_space.n
     params.action_size = env.action_space.n
-    agent = RMCAgent(env, params)
+    rmc_agent = RMCAgent(env, params)
     for episode in range(params.total_episodes):
-        agent.run_episode()
-    agent.update()
+        rmc_agent.run_episode()
+    rmc_agent.update()
 
-    print(agent.qtable)
-    trajectory = agent.generate_trajectory(learning=False)
+    q_agent = QAgent(env, params)
+    for episode in range(params.total_episodes):
+        q_agent.run_episode()
+
+    trajectory = q_agent.generate_trajectory(learning=False)
     for t in trajectory:
         print('state', t.state, 'action:', t.action)
+
     plt.imshow(env.render())
     plt.axis('off')
     plt.show()
