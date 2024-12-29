@@ -1,12 +1,6 @@
-from enum import Enum
 
-
-class Action(Enum):
-    # finite set of actions
-    LEFT = 0
-    DOWN = 1
-    RIGHT = 2
-    UP = 3
+# project imports
+from rl.models import Action
 
 
 class Grid:

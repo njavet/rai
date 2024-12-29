@@ -1,11 +1,8 @@
-from pydantic import BaseModel
 import numpy as np
 
 # project imports
 from rl.grid.environment import Action
-
-
-
+from rl.models import Trajectory
 
 
 class Agent:
