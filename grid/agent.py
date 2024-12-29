@@ -2,11 +2,11 @@ from pydantic import BaseModel
 import numpy as np
 
 # project imports
-from grid.environment import Action, Point
+from grid.environment import Action, State
 
 
 class Trajectory(BaseModel):
-    state: Point
+    state: State
     action: Action
     reward: float
 

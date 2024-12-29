@@ -1,8 +1,6 @@
 {% macro draw_grid(height, width, grid, hsep) %}
-{% for row in range(height) %}
-{{ hsep }}
-| {% for col in range(width) %} {{ grid[row][col] }} |{% endfor %}
-{{ hsep }}
-{% endfor %}
+{{ hsep }} {% for row in range(height) %}
+|{% for col in range(width) %} {{ grid[(row, col)] }} |{% endfor %}
+{{ hsep }} {% endfor %}
 {% endmacro %}
 {{ draw_grid(height, width, grid, hsep) }}
