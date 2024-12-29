@@ -40,8 +40,9 @@ def main():
     agent.update()
 
     print(agent.qtable)
-    trajectory = agent.generate_trajectory(learn=False)
-    print('number of reached goals:', agent.reached_goal)
+    trajectory = agent.generate_trajectory(learning=False)
+    for t in trajectory:
+        print('state', t.state, 'action:', t.action)
     plt.imshow(env.render())
     plt.axis('off')
     plt.show()

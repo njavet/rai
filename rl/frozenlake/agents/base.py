@@ -13,7 +13,7 @@ class Agent(ABC):
     def get_action(self, state, learning):
         raise NotImplementedError
 
-    def generate_trajectory(self, learning=True):
+    def generate_trajectory(self, learning):
         trajectory = []
         state, info = self.env.reset()
         done = False

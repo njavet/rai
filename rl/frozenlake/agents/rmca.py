@@ -2,13 +2,11 @@ import numpy as np
 
 # project imports
 from rl.frozenlake.agents.base import Agent
-from rl.models import Trajectory
 
 
 class RMCAgent(Agent):
     def __init__(self, env, params):
         super().__init__(env, params)
-        self.reached_goal = 0
         self.returns = np.zeros((params.state_size, params.action_size))
         self.counts = np.zeros((params.state_size, params.action_size))
         self.qtable = np.zeros((params.state_size, params.action_size))
@@ -17,8 +15,8 @@ class RMCAgent(Agent):
     def get_action(self, state, learning):
         return self.env.action_space.sample()
 
-    def run_episode(self):
-        trajectory = self.generate_trajectory()
+    def run_episode(self, learning=True):
+        trajectory = self.generate_trajectory(learning)
         episode_reward = 0
         for i, t in enumerate(reversed(trajectory)):
             state, action, reward = t.state, t.action, t.reward
