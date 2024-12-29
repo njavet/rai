@@ -13,7 +13,11 @@ class RMCAgent(Agent):
         self.state_value = np.zeros(params.state_size)
 
     def get_action(self, state, learning):
-        return self.env.action_space.sample()
+        if learning:
+            action = self.env.action_space.sample()
+        else:
+            action = np.argmax(self.qtable[state])
+        return action
 
     def run_episode(self, learning=True):
         trajectory = self.generate_trajectory(learning)

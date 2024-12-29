@@ -9,7 +9,7 @@ class QAgent(Agent):
         super().__init__(env, params)
         self.qtable = np.zeros((params.state_size, params.action_size))
 
-    def get_action(self, state):
+    def get_action(self, state, learning):
         if np.random.random() < self.params.epsilon:
             action = self.env.action_space.sample()
         else:

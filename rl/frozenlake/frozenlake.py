@@ -35,7 +35,7 @@ def main():
     params.state_size = env.observation_space.n
     params.action_size = env.action_space.n
     agent = RMCAgent(env, params)
-    for episode in range(1024):
+    for episode in range(params.total_episodes):
         agent.run_episode()
     agent.update()
 
