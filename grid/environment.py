@@ -16,17 +16,18 @@ class State(BaseModel):
     y: int
     goal: bool = False
     curr: bool = False
+    val: float = 0.
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
     def __str__(self):
         if self.goal:
-            return 'T'
+            return '   T   '
         elif self.curr:
-            return 'X'
+            return '   X   '
         else:
-            return ' '
+            return f'{self.val}:2.1f'
 
 
 class Grid:

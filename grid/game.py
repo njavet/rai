@@ -16,7 +16,9 @@ def main():
     console = Console()
     console.print(output, style='cyan')
     agent = Agent(env)
-    trajectory = agent.generate_trajectory()
+    for eps in range(8):
+        agent.run_episode()
 
-    return trajectory
+
+
 

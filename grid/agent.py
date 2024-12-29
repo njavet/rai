@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import numpy as np
+from collections import defaultdict
 
 # project imports
 from grid.environment import Action, State
@@ -19,6 +20,12 @@ class Agent:
         self.max_steps = max_steps
         self.debug = debug
         self.action_space = [action for action in Action]
+        self.qtable = np.zeros((self.env.height, self.env.width, len(self.action_space)))
+        self.counts = np.zeros((self.env.height, self.env.width, len(self.action_space)))
+        self.action_to_int = {Action.LEFT: 0,
+                              Action.DOWN: 1,
+                              Action.RIGHT: 2,
+                              Action.UP: 3}
 
     def choose_action(self):
         ind = np.random.randint(0, len(self.action_space))
@@ -48,4 +55,15 @@ class Agent:
         for i, t in enumerate(reversed(trajectory)):
             state, action, reward = t.state, t.action, t.reward
             episode_reward += reward
+            x, y = state.x, state.y
+            a = self.action_to_int[action]
+            self.qtable[x, y, a] += episode_reward
+            self.counts[x, y, a] += 1
 
+    def action_value(self, state, action):
+        key = state, action
+        try:
+            val = self.qtable[key] / self.counts[key]
+        except ZeroDivisionError:
+            val = 0.
+        return val
