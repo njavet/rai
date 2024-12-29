@@ -20,8 +20,8 @@ class Agent:
         self.max_steps = max_steps
         self.debug = debug
         self.action_space = [action for action in Action]
-        self.qtable = np.zeros((self.env.height, self.env.width, len(self.action_space)))
-        self.counts = np.zeros((self.env.height, self.env.width, len(self.action_space)))
+        self.qtable = np.zeros((self.env.height, self.env.width, len(self.action_space)), dtype=np.float64)
+        self.counts = np.zeros((self.env.height, self.env.width, len(self.action_space)), dtype=np.int8)
         self.action_to_int = {Action.LEFT: 0,
                               Action.DOWN: 1,
                               Action.RIGHT: 2,
@@ -35,6 +35,7 @@ class Agent:
         trajectory = []
         n_steps = 0
         state, _, _ = self.env.reset()
+        print('state', state.x, state.y)
         terminal = False
         while not terminal:
             action = self.choose_action()
@@ -56,14 +57,15 @@ class Agent:
             state, action, reward = t.state, t.action, t.reward
             episode_reward += reward
             x, y = state.x, state.y
+            if x == 0 and y == 0:
+                print('yo, rewards', reward, episode_reward)
             a = self.action_to_int[action]
             self.qtable[x, y, a] += episode_reward
             self.counts[x, y, a] += 1
 
-    def action_value(self, state, action):
-        key = state, action
+    def action_value(self, x, y, action):
         try:
-            val = self.qtable[key] / self.counts[key]
+            val = self.qtable[x, y, action] / self.counts[x, y, action]
         except ZeroDivisionError:
             val = 0.
         return val
