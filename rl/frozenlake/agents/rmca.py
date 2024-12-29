@@ -7,6 +7,7 @@ from rl.frozenlake.agents.base import Agent, Trajectory
 class RMCAgent(Agent):
     def __init__(self, env):
         super().__init__(env)
+        self.reached_goal = 0
         self.returns = np.zeros((env.observation_space.n,
                                  env.action_space.n))
         self.counts = np.zeros((env.observation_space.n,
@@ -21,18 +22,25 @@ class RMCAgent(Agent):
     def policy(self, state):
         return np.argmax(self.qtable[state])
 
-    def generate_trajectory(self):
+    def generate_trajectory(self, learn=True):
         trajectory = []
         state, info = self.env.reset()
         done = False
         while not done:
-            action = self.get_action(state)
+            if learn:
+                action = self.get_action(state)
+            else:
+                action = self.policy(state)
             next_state, reward, term, trunc, info = self.env.step(action)
+            if not learn:
+                print('state', state, 'action', action, 'next', next_state)
             ts = Trajectory(state=state, action=int(action), reward=reward)
             trajectory.append(ts)
             if term or trunc:
                 done = True
             state = next_state
+        if state == 15:
+            self.reached_goal += 1
         return trajectory
 
     def run_episode(self):
