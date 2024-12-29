@@ -28,9 +28,6 @@ class RMCAgent(Agent):
             self.returns[state, action] += episode_reward
             self.counts[state, action] += 1
 
-    def update_qtable(self, *args):
-        pass
-
     def update(self):
         self.qtable = np.divide(self.returns,
                                 self.counts,

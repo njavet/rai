@@ -9,11 +9,6 @@ class QAgent(Agent):
         super().__init__(env, params)
         self.qtable = np.zeros((params.state_size, params.action_size))
 
-    @staticmethod
-    def random_argmax(arr):
-        arr_max = np.max(arr)
-        return np.random.choice(np.where(arr == arr_max)[0])
-
     def get_action(self, state, learning):
         if np.random.rand() < self.params.epsilon and learning:
             action = self.env.action_space.sample()
@@ -32,7 +27,3 @@ class QAgent(Agent):
 
     def run_episode(self, learning=True):
         trajectory = self.generate_trajectory(learning)
-        episode_reward = 0
-        for i, t in enumerate(reversed(trajectory)):
-            state, action, reward = t.state, t.action, t.reward
-            episode_reward += reward

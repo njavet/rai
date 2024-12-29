@@ -14,7 +14,7 @@ def get_default_params():
                     alpha=0.8,
                     gamma=0.95,
                     epsilon=0.1,
-                    map_size=5,
+                    map_size=4,
                     seed=0x101,
                     is_slippery=False,
                     n_runs=16,
@@ -39,12 +39,16 @@ def main():
     for episode in range(params.total_episodes):
         rmc_agent.run_episode()
     rmc_agent.update()
+    trajectory = rmc_agent.generate_trajectory(learning=False)
+    for t in trajectory:
+        print('state', t.state, 'action:', t.action)
 
     q_agent = QAgent(env, params)
     for episode in range(params.total_episodes):
         q_agent.run_episode()
 
     trajectory = q_agent.generate_trajectory(learning=False)
+    print('QL')
     for t in trajectory:
         print('state', t.state, 'action:', t.action)
 

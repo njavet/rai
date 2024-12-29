@@ -1,5 +1,6 @@
 from abc import ABC
 import gymnasium as gym
+import numpy as np
 
 # project imports
 from rl.models import Params, Trajectory
@@ -16,6 +17,11 @@ class Agent(ABC):
     def update_qtable(self, state, action, reward, next_state):
         pass
 
+    @staticmethod
+    def random_argmax(arr):
+        arr_max = np.max(arr)
+        return np.random.choice(np.where(arr == arr_max)[0])
+
     def generate_trajectory(self, learning):
         trajectory = []
         state, info = self.env.reset()
@@ -30,3 +36,6 @@ class Agent(ABC):
                 self.update_qtable(state, action, reward, next_state)
             state = next_state
         return trajectory
+
+    def run_episode(self, learning=True):
+        raise NotImplementedError
