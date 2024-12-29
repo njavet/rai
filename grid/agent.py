@@ -24,7 +24,7 @@ class Agent:
         ind = np.random.randint(0, len(self.action_space))
         return self.action_space[ind]
 
-    def run(self):
+    def generate_trajectory(self):
         trajectory = []
         n_steps = 0
         state, _, _ = self.env.reset()
@@ -41,3 +41,11 @@ class Agent:
                 print('abort due to too many steps...')
                 terminal = True
         return trajectory
+
+    def run_episode(self):
+        trajectory = self.generate_trajectory()
+        episode_reward = 0
+        for i, t in enumerate(reversed(trajectory)):
+            state, action, reward = t.state, t.action, t.reward
+            episode_reward += reward
+

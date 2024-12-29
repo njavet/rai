@@ -26,9 +26,9 @@ class Grid:
         self.cur_pos = Point(x=0, y=0)
 
     def reset(self):
-        self.goal = Point(x=self.width-1, y=self.height-1)
-        self.cur_pos = Point(x=0, y=0)
-        state = Point(x=0, y=0)
+        self.cur_pos.x = 0
+        self.cur_pos.y = 0
+        state = Point(x=self.cur_pos.x, y=self.cur_pos.y)
         return state, 0, False
 
     def step(self, action: Action):
