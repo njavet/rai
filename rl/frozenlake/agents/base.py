@@ -13,6 +13,9 @@ class Agent(ABC):
     def get_action(self, state, learning):
         raise NotImplementedError
 
+    def update_qtable(self, *args):
+        raise NotImplementedError
+
     def generate_trajectory(self, learning):
         trajectory = []
         state, info = self.env.reset()
@@ -22,7 +25,7 @@ class Agent(ABC):
             next_state, reward, term, trunc, info = self.env.step(action)
             ts = Trajectory(state=state, action=int(action), reward=reward)
             trajectory.append(ts)
-            if term or trunc:
-                done = True
+            done = term or trunc
+            self.update_qtable(state, action, reward, next_state)
             state = next_state
         return trajectory
