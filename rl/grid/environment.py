@@ -20,7 +20,8 @@ class Grid:
         self.cur_pos = 0, 0
         return (0, 0), 0, False
 
-    def get_action_values(self, action: Action):
+    @staticmethod
+    def get_action_values(action: Action):
         if action.value == 0:
             return 0, -1
         elif action.value == 1:

@@ -12,12 +12,11 @@ class Trajectory(BaseModel):
 
 
 class Agent:
-    def __init__(self, env, max_steps: int = 1024, debug: bool = False):
+    def __init__(self, env, max_steps: int = 1024):
         # This would be a schopenhauer agent, since the "world" is part
         # of the agent, not the other way round
         self.env = env
         self.max_steps = max_steps
-        self.debug = debug
         self.action_space = [action for action in Action]
         self.qtable = np.zeros((self.env.height, self.env.width, len(self.action_space)),
                                dtype=np.float64)
