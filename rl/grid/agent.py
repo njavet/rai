@@ -5,10 +5,7 @@ import numpy as np
 from rl.grid.environment import Action
 
 
-class Trajectory(BaseModel):
-    state: tuple[int, int]
-    action: Action
-    reward: float
+
 
 
 class Agent:

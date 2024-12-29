@@ -1,7 +1,8 @@
 import numpy as np
 
 # project imports
-from rl.frozenlake.agents.base import Agent, Trajectory
+from rl.frozenlake.agents.base import Agent
+from rl.models import Trajectory
 
 
 class RMCAgent(Agent):

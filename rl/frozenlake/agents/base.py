@@ -1,12 +1,5 @@
 from abc import ABC
 import gymnasium as gym
-from pydantic import BaseModel
-
-
-class Trajectory(BaseModel):
-    state: int
-    action: int
-    reward: float
 
 
 class Agent(ABC):
