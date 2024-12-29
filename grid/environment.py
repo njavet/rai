@@ -32,14 +32,14 @@ class Grid:
         raise ValueError('invalid action')
 
     def step(self, action: Action):
-        x, y = self.cur_pos.x, self.cur_pos.y
+        x, y = self.cur_pos[0], self.cur_pos[1]
         ax, ay = self.get_action_values(action)
         x1 = max(x + ax, 0)
         y1 = max(y + ay, 0)
-        self.cur_pos.x = min(x1, self.width-1)
-        self.cur_pos.y = min(y1, self.height-1)
-
-        state = self.cur_pos.x, self.cur_pos.y
+        x_new = min(x1, self.width-1)
+        y_new = min(y1, self.height-1)
+        self.cur_pos = x_new, y_new
+        state = x_new, y_new
         reward = -1
         is_terminal = self.cur_pos == self.goal
         return state, reward, is_terminal

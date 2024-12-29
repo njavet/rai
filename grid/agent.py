@@ -1,13 +1,12 @@
 from pydantic import BaseModel
 import numpy as np
-from collections import defaultdict
 
 # project imports
-from grid.environment import Action, State
+from grid.environment import Action
 
 
 class Trajectory(BaseModel):
-    state: State
+    state: tuple[int, int]
     action: Action
     reward: float
 
@@ -20,12 +19,10 @@ class Agent:
         self.max_steps = max_steps
         self.debug = debug
         self.action_space = [action for action in Action]
-        self.qtable = np.zeros((self.env.height, self.env.width, len(self.action_space)), dtype=np.float64)
-        self.counts = np.zeros((self.env.height, self.env.width, len(self.action_space)), dtype=np.int8)
-        self.action_to_int = {Action.LEFT: 0,
-                              Action.DOWN: 1,
-                              Action.RIGHT: 2,
-                              Action.UP: 3}
+        self.qtable = np.zeros((self.env.height, self.env.width, len(self.action_space)),
+                               dtype=np.float64)
+        self.counts = np.zeros((self.env.height, self.env.width, len(self.action_space)),
+                               dtype=np.float64)
 
     def choose_action(self):
         ind = np.random.randint(0, len(self.action_space))
@@ -35,7 +32,6 @@ class Agent:
         trajectory = []
         n_steps = 0
         state, _, _ = self.env.reset()
-        print('state', state.x, state.y)
         terminal = False
         while not terminal:
             action = self.choose_action()
@@ -56,16 +52,33 @@ class Agent:
         for i, t in enumerate(reversed(trajectory)):
             state, action, reward = t.state, t.action, t.reward
             episode_reward += reward
-            x, y = state.x, state.y
-            if x == 0 and y == 0:
-                print('yo, rewards', reward, episode_reward)
-            a = self.action_to_int[action]
-            self.qtable[x, y, a] += episode_reward
-            self.counts[x, y, a] += 1
+            x, y = state
+            self.qtable[x, y, action.value] += episode_reward
+            self.counts[x, y, action.value] += 1
 
     def action_value(self, x, y, action):
-        try:
-            val = self.qtable[x, y, action] / self.counts[x, y, action]
-        except ZeroDivisionError:
-            val = 0.
-        return val
+        div = self.counts[x, y, action]
+        if div == 0:
+            return 0.0
+        return self.qtable[x, y, action] / div
+
+    def policy(self, state):
+        x, y = state
+        ind = np.argmax([self.action_value(x, y, a.value) for a in self.action_space])
+        return self.action_space[ind]
+
+    def run(self):
+        trajectory = []
+        n_steps = 0
+        state, _, _ = self.env.reset()
+        terminal = False
+        while not terminal:
+            action = self.policy(state)
+            next_state, reward, terminal = self.env.step(action)
+            t = Trajectory(state=state, action=action, reward=reward)
+            trajectory.append(t)
+            n_steps += 1
+            state = next_state
+        return trajectory
+
+
