@@ -55,16 +55,16 @@ class Grid:
 
     def __repr__(self):
         hsep = self.width * 3 * '-' + 6 * '-'
-        self.console.print('\n' + hsep, style='cyan')
-        for y in range(self.height):
-            line = '|'
-            for x in range(self.width):
+        res = hsep
+        for x in range(self.height):
+            res += '\n|'
+            for y in range(self.width):
                 if self.cur_pos.x == x and self.cur_pos.y == y:
-                    line += ' x |'
+                    res += ' x |'
                 elif self.goal.x == x and self.goal.y == y:
-                    line += ' T |'
+                    res += ' T |'
                 else:
-                    line += '   |'
-
-            self.console.print(line, style='cyan')
-            self.console.print(hsep, style='cyan')
+                    res += '   |'
+            res += '\n'
+            res += hsep
+        return res
