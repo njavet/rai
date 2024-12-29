@@ -9,13 +9,10 @@ class RMCAgent(Agent):
     def __init__(self, env, params):
         super().__init__(env, params)
         self.reached_goal = 0
-        self.returns = np.zeros((env.observation_space.n,
-                                 env.action_space.n))
-        self.counts = np.zeros((env.observation_space.n,
-                                env.action_space.n))
-        self.qtable = np.zeros((env.observation_space.n,
-                                env.action_space.n))
-        self.state_value = np.zeros(env.observation_space.n)
+        self.returns = np.zeros((params.state_size, params.action_size))
+        self.counts = np.zeros((params.state_size, params.action_size))
+        self.qtable = np.zeros((params.state_size, params.action_size))
+        self.state_value = np.zeros(params.state_size)
 
     def get_action(self, state):
         return self.env.action_space.sample()

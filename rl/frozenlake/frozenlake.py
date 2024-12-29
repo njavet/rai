@@ -1,6 +1,7 @@
 import gymnasium as gym
 from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 # project imports
 from rl.frozenlake.agents.rmca import RMCAgent
@@ -16,9 +17,9 @@ def get_default_params():
                     seed=0x101,
                     is_slippery=False,
                     n_runs=16,
-                    action_size=4,
-                    state_size=25,
-                    proba_frozen=0.,
+                    action_size=None,
+                    state_size=None,
+                    proba_frozen=0.8,
                     savefig_folder=Path('rl', 'figs'))
     return params
 
@@ -31,6 +32,8 @@ def main():
                    desc=generate_random_map(size=params.map_size,
                                             p=params.proba_frozen,
                                             seed=params.seed))
+    params.state_size = env.observation_space.n
+    params.action_size = env.action_space.n
     agent = RMCAgent(env, params)
     for episode in range(1024):
         agent.run_episode()
@@ -39,6 +42,6 @@ def main():
     print(agent.qtable)
     trajectory = agent.generate_trajectory(learn=False)
     print('number of reached goals:', agent.reached_goal)
-    for t in trajectory:
-        print(t.state, t.action, t.reward)
-
+    plt.imshow(env.render())
+    plt.axis('off')
+    plt.show()

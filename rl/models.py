@@ -11,10 +11,10 @@ class Params(BaseModel):
     seed: int
     is_slippery: bool
     n_runs: int
-    action_size: int
-    state_size: int
     proba_frozen: float
     savefig_folder: Path
+    action_size: int | None
+    state_size: int | None
 
 
 class Trajectory(BaseModel):
