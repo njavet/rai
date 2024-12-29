@@ -42,19 +42,3 @@ class Grid:
         reward = -1
         is_terminal = self.cur_pos == self.goal
         return state, reward, is_terminal
-
-    def __repr__(self):
-        hsep = self.width * 3 * '-' + 6 * '-'
-        res = hsep
-        for x in range(self.height):
-            res += '\n|'
-            for y in range(self.width):
-                if self.cur_pos.x == x and self.cur_pos.y == y:
-                    res += ' x |'
-                elif self.goal.x == x and self.goal.y == y:
-                    res += ' T |'
-                else:
-                    res += '   |'
-            res += '\n'
-            res += hsep
-        return res
