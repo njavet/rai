@@ -25,4 +25,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 grid = "rl.grid:main"
+fl = "rl.frozenlake:main"
 
