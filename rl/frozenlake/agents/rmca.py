@@ -6,8 +6,8 @@ from rl.models import Trajectory
 
 
 class RMCAgent(Agent):
-    def __init__(self, env):
-        super().__init__(env)
+    def __init__(self, env, params):
+        super().__init__(env, params)
         self.reached_goal = 0
         self.returns = np.zeros((env.observation_space.n,
                                  env.action_space.n))
