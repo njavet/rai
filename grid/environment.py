@@ -1,6 +1,4 @@
 from enum import Enum
-from rich.console import Console
-from rich.text import Text
 from pydantic import BaseModel
 
 
@@ -20,27 +18,18 @@ class Point(BaseModel):
         return self.x == other.x and self.y == other.y
 
 
-class TrajectoryElement(BaseModel):
-    state: Point
-    reward: float
-    action: Action | None
-
-
-class Trajectory(BaseModel):
-    elements: tuple[TrajectoryElement]
-
-
 class Grid:
     def __init__(self, height: int = 5, width: int = 5):
         self.height = height
         self.width = width
         self.goal = Point(x=self.width-1, y=self.height-1)
         self.cur_pos = Point(x=0, y=0)
-        self.console = Console()
 
     def reset(self):
         self.goal = Point(x=self.width-1, y=self.height-1)
         self.cur_pos = Point(x=0, y=0)
+        state = Point(x=0, y=0)
+        return state, 0, False
 
     def step(self, action: Action):
         x, y = self.cur_pos.x, self.cur_pos.y
@@ -49,9 +38,10 @@ class Grid:
         self.cur_pos.x = min(x1, self.width-1)
         self.cur_pos.y = min(y1, self.height-1)
 
-        is_terminal = self.cur_pos == self.goal
+        state = Point(x=self.cur_pos.x, y=self.cur_pos.y)
         reward = -1
-        return self.cur_pos, reward, is_terminal
+        is_terminal = self.cur_pos == self.goal
+        return state, reward, is_terminal
 
     def __repr__(self):
         hsep = self.width * 3 * '-' + 6 * '-'

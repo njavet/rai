@@ -1,8 +1,11 @@
 
+from grid.environment import Grid
 from grid.agent import Agent
 
 
 def main():
-    agent = Agent()
+    env = Grid()
+    agent = Agent(env)
+    trajectory = agent.run()
+    return trajectory
 
-    agent.generate_trajectories()
