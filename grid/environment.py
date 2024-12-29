@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel
+from itertools import product
 
 
 class Action(Enum):
@@ -10,9 +10,10 @@ class Action(Enum):
     LEFT = 0, -1
 
 
-class Point(BaseModel):
-    x: int
-    y: int
+class State:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -22,14 +23,17 @@ class Grid:
     def __init__(self, height: int = 5, width: int = 5):
         self.height = height
         self.width = width
-        self.goal = Point(x=self.width-1, y=self.height-1)
-        self.cur_pos = Point(x=0, y=0)
+        self.grid = self.construct_grid()
+        self.cur_pos = self.grid[(0, 0)]
+        self.goal = self.grid[(self.height-1, self.width-1)]
+
+    def construct_grid(self):
+        gen = product(range(self.height), range(self.width))
+        g = {(x, y): State(x=x, y=y) for x, y in gen}
+        return g
 
     def reset(self):
-        self.cur_pos.x = 0
-        self.cur_pos.y = 0
-        state = Point(x=self.cur_pos.x, y=self.cur_pos.y)
-        return state, 0, False
+        return self.grid[(0, 0)], 0, False
 
     def step(self, action: Action):
         x, y = self.cur_pos.x, self.cur_pos.y
@@ -38,7 +42,7 @@ class Grid:
         self.cur_pos.x = min(x1, self.width-1)
         self.cur_pos.y = min(y1, self.height-1)
 
-        state = Point(x=self.cur_pos.x, y=self.cur_pos.y)
+        state = self.grid[(self.cur_pos.x, self.cur_pos.y)]
         reward = -1
         is_terminal = self.cur_pos == self.goal
         return state, reward, is_terminal
