@@ -9,14 +9,20 @@ readme = "README.md"
 python = "^3.12"
 pandas = "^2.2.3"
 numpy = "^2.1.2"
-jupyter = "^1.1.1"
 matplotlib = "^3.9.2"
 tqdm = "^4.66.6"
 seaborn = "^0.13.2"
 gymnasium = "^1.0.0"
 pygame = "^2.6.1"
+pydantic = "^2.10.3"
+rich = "^13.9.4"
+jinja2 = "^3.1.5"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+grid = "grid:main"
+
