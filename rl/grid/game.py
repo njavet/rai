@@ -3,8 +3,8 @@ from jinja2 import Environment, FileSystemLoader
 import numpy as np
 
 # project imports
-from grid.environment import Grid
-from grid.agent import Agent
+from rl.grid.environment import Grid
+from rl.grid.agent import Agent
 
 
 def main():
