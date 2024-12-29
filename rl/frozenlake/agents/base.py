@@ -3,7 +3,7 @@ import gymnasium as gym
 import numpy as np
 
 # project imports
-from rl.models import Params, Trajectory
+from rl.models import Params, GymTrajectory
 
 
 class Agent(ABC):
@@ -29,7 +29,7 @@ class Agent(ABC):
         while not done:
             action = self.get_action(state, learning)
             next_state, reward, term, trunc, info = self.env.step(action)
-            ts = Trajectory(state=state, action=int(action), reward=reward)
+            ts = GymTrajectory(state=state, action=int(action), reward=reward)
             trajectory.append(ts)
             done = term or trunc
             if learning:
