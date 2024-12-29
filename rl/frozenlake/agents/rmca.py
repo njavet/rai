@@ -14,32 +14,8 @@ class RMCAgent(Agent):
         self.qtable = np.zeros((params.state_size, params.action_size))
         self.state_value = np.zeros(params.state_size)
 
-    def get_action(self, state):
+    def get_action(self, state, learning):
         return self.env.action_space.sample()
-
-    def policy(self, state):
-        return np.argmax(self.qtable[state])
-
-    def generate_trajectory(self, learn=True):
-        trajectory = []
-        state, info = self.env.reset()
-        done = False
-        while not done:
-            if learn:
-                action = self.get_action(state)
-            else:
-                action = self.policy(state)
-            next_state, reward, term, trunc, info = self.env.step(action)
-            if not learn:
-                print('state', state, 'action', action, 'next', next_state)
-            ts = Trajectory(state=state, action=int(action), reward=reward)
-            trajectory.append(ts)
-            if term or trunc:
-                done = True
-            state = next_state
-        if state == 15:
-            self.reached_goal += 1
-        return trajectory
 
     def run_episode(self):
         trajectory = self.generate_trajectory()
