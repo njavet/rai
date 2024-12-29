@@ -1,4 +1,5 @@
 from abc import ABC
+import gymnasium as gym
 from pydantic import BaseModel
 
 
@@ -9,7 +10,7 @@ class Trajectory(BaseModel):
 
 
 class Agent(ABC):
-    def __init__(self, env):
+    def __init__(self, env: gym.Env):
         self.env = env
 
     def get_action(self, state):

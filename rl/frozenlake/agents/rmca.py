@@ -7,18 +7,23 @@ from rl.frozenlake.agents.base import Agent, Trajectory
 class RMCAgent(Agent):
     def __init__(self, env):
         super().__init__(env)
-        self.returns = np.zeros((env.state_space.n,
+        self.returns = np.zeros((env.observation_space.n,
                                  env.action_space.n))
-        self.counts = np.zeros((env.state_space.n,
+        self.counts = np.zeros((env.observation_space.n,
                                 env.action_space.n))
-        self.state_value = np.zeros(env.state_space.n)
+        self.qtable = np.zeros((env.observation_space.n,
+                                env.action_space.n))
+        self.state_value = np.zeros(env.observation_space.n)
 
     def get_action(self, state):
         return self.env.action_space.sample()
 
+    def policy(self, state):
+        return np.argmax(self.qtable[state])
+
     def generate_trajectory(self):
         trajectory = []
-        state, _, _ = self.env.reset()
+        state, info = self.env.reset()
         done = False
         while not done:
             action = self.get_action(state)
@@ -40,9 +45,8 @@ class RMCAgent(Agent):
             self.counts[state, action] += 1
 
     def update(self):
-        tmp = np.divide(self.returns,
-                        self.counts,
-                        out=np.zeros_like(self.returns),
-                        where=self.counts != 0)
-        self.state_value = np.max(tmp, axis=1)
-
+        self.qtable = np.divide(self.returns,
+                                self.counts,
+                                out=np.zeros_like(self.returns),
+                                where=self.counts != 0)
+        self.state_value = np.max(self.qtable, axis=1)
