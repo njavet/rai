@@ -14,15 +14,6 @@ class RMCAgent(Agent):
         action = self.env.action_space.sample()
         return action
 
-    def run_episode(self):
-        trajectory = self.generate_trajectory(self.get_action)
-        episode_reward = 0
-        for i, t in enumerate(reversed(trajectory)):
-            state, action, reward = t.state, t.action, t.reward
-            episode_reward += reward
-            self.returns[state, action] += episode_reward
-            self.counts[state, action] += 1
-
     def update(self):
         self.qtable = np.divide(self.returns,
                                 self.counts,

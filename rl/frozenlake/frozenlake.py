@@ -48,8 +48,7 @@ def qagent(env, params):
     return q_agent
 
 
-def main():
-    params = get_default_params()
+def get_env(params):
     env = gym.make('FrozenLake-v1',
                    is_slippery=params.is_slippery,
                    render_mode='rgb_array',
@@ -58,6 +57,12 @@ def main():
                                             seed=params.seed))
     params.state_size = env.observation_space.n
     params.action_size = env.action_space.n
+    return env
+
+
+def main():
+    params = get_default_params()
+    env = get_env(params)
     # random monte carlo agent
     rmc_agent = rmc(env, params)
     trajectory = rmc_agent.generate_trajectory(rmc_agent.get_optimal_action)
