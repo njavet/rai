@@ -46,35 +46,13 @@ def merge_down(grid: np.ndarray) -> tuple[np.ndarray, float]:
 
 def simulate_move(grid: np.ndarray, move: int) -> tuple[np.ndarray, float]:
     if move == 0:
-        return merge_up(grid)
+        return merge_left(grid)
     elif move == 1:
         return merge_down(grid)
     elif move == 2:
-        return merge_left(grid)
-    elif move == 3:
         return merge_right(grid)
-
-
-def available_moves(grid: np.ndarray) -> list:
-    moves = []
-    mg0, _ = merge_up(grid)
-    if not np.array_equal(mg0, grid):
-        moves.append(0)
-    mg1, _ = merge_down(grid)
-    if not np.array_equal(mg1, grid):
-        moves.append(1)
-    mg2, _ = merge_left(grid)
-    if not np.array_equal(mg2, grid):
-        moves.append(2)
-    mg3, _ = merge_right(grid)
-    if not np.array_equal(mg3, grid):
-        moves.append(3)
-    return moves
-
-
-def is_move_available(grid: np.ndarray, move: int) -> bool:
-    am = available_moves(grid)
-    return move in am
+    elif move == 3:
+        return merge_up(grid)
 
 
 def print_grid(grid: np.ndarray, console=None) -> None:
