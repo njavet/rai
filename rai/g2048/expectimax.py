@@ -1,18 +1,6 @@
-import random
 import copy
 import numpy as np
-import itertools
 from rich.console import Console
-
-
-def add_random_tile(grid: np.ndarray) -> np.ndarray:
-    inds = [(i, j) for (i, j) in itertools.product(range(4), repeat=2)
-            if grid[i][j] == 0]
-    if len(inds) > 0:
-        i, j = random.choice(inds)
-        value = np.random.choice([2, 4], p=[0.9, 0.1])
-        grid[i, j] = value
-        return grid
 
 
 def merge_left(grid: np.ndarray) -> tuple[np.ndarray, float]:
