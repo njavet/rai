@@ -1,29 +1,5 @@
-from abc import ABC
-import gymnasium as gym
-from collections import defaultdict
-from typing import Callable
-import numpy as np
-
-# project imports
-from rai.rl.models import Params, GymTrajectory
 
 
-class Agent(ABC):
-    def __init__(self, env: gym.Env, params: Params) -> None:
-        self.env = env
-        self.params = params
-
-    def reset_tables(self) -> None:
-        self.vtable = np.zeros(self.params.state_size)
-        self.qtable = np.zeros((self.params.state_size, self.params.action_size))
-
-
-
-    def make_step(self, state: int, action: int) -> tuple[int, GymTrajectory, bool]:
-        next_state, reward, term, trunc, info = self.env.step(action)
-        ts = GymTrajectory(state=state, action=int(action), reward=reward)
-        done = term or trunc
-        return next_state, ts, done
 
     @staticmethod
     def random_argmax(arr: np.ndarray) -> int:

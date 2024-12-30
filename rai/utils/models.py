@@ -18,21 +18,11 @@ class Params(BaseModel):
     state_size: int | None
 
 
-class GymTrajectory(BaseModel):
+class TrajectoryStep(BaseModel):
     state: int
     action: int
     reward: float
 
 
-class Action(Enum):
-    # finite set of actions
-    LEFT = 0
-    DOWN = 1
-    RIGHT = 2
-    UP = 3
-
-
 class Trajectory(BaseModel):
-    state: tuple[int, int]
-    action: Action
-    reward: float
+    steps: list[TrajectoryStep]

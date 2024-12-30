@@ -4,6 +4,7 @@ from collections import defaultdict
 # project imports
 from rai.agents.base import SchopenhauerAgent
 from rai.utils.helpers import random_argmax
+from rai.utils.models import Params
 
 
 class RLAgent(SchopenhauerAgent):
@@ -17,6 +18,11 @@ class RLAgent(SchopenhauerAgent):
         action = random_argmax(self.qtable[state])
         return action
 
+    def exec_step(self, state: int, action: int) -> tuple[int, GymTrajectory, bool]:
+        next_state, reward, term, trunc, info = self.env.step(action)
+        ts = GymTrajectory(state=state, action=int(action), reward=reward)
+        done = term or trunc
+        return next_state, ts, done
 
 class Learner(RLAgent):
     def __init__(self, env, params):
