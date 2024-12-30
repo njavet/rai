@@ -18,7 +18,6 @@ pygame = "^2.6.1"
 seaborn = "^0.13.2"
 tqdm = "^4.67.1"
 matplotlib = "^3.10.0"
-websocket-client = "^1.8.0"
 selenium = "^4.27.1"
 
 [build-system]
@@ -28,5 +27,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 grid = "rai.rl.grid:main"
 fl = "rai.rl.gymenvs:frozenlake"
-g2048 = "rai.rl.rl2048:game"
+g2048 = "rai.g2048:g2048"
 
