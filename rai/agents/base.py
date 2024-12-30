@@ -38,16 +38,13 @@ class Learner(SchopenhauerAgent):
         done = term or trunc
         return next_state, ts, done
 
-    def process_step(self):
+    def process_step(self, *args):
         pass
 
     def process_episode(self, episode):
         pass
 
     def process_episodes(self):
-        pass
-
-    def update_qtable(self, *args):
         pass
 
     def generate_trajectory(self) -> Trajectory:
