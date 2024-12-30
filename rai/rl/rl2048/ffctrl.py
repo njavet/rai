@@ -1,13 +1,9 @@
 import json
 import socket
 
-# Author:      chrn (original by nneonneo)
-# Date:        11.11.2016
-# Copyright:   https://github.com/nneonneo/2048-ai
-# Description: Handles the communication with the firefox browser.
 
-class FirefoxRemoteControl(object):
-    ''' Interact with a web browser running the Remote Control extension. '''
+class FirefoxRemoteControl:
+    """ Interact with a web browser running the Remote Control extension. """
     def __init__(self, port):
         self.sock = socket.socket()
         self.sock.connect(('localhost', port))
