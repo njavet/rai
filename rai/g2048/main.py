@@ -61,15 +61,6 @@ def play_game(gamectrl):
 
 def g2048():
 
-    if args.ctrl_mode == 'keyboard':
-        game_ctrl = Keyboard2048Control(ctrl)
-    elif args.ctrl_mode == 'fast':
-        game_ctrl = Fast2048Control(ctrl)
-    elif args.ctrl_mode == 'hybrid':
-        game_ctrl = Hybrid2048Control(ctrl)
-    else:
-        raise ValueError('wrong control')
-
     if game_ctrl.get_status() == 'ended':
         game_ctrl.restart_game()
 
