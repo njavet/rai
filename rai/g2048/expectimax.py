@@ -65,40 +65,46 @@ def print_grid(grid: np.ndarray, console=None) -> None:
         console.print('\n' + 29*'-')
 
 
-def utility(grid: np.ndarray) -> float:
-    # TODO fix sequence vs grid
-    # number of zeros heuristic
-    zeros = np.sum(grid == 0)
+def utility(grid: np.array) -> float:
 
-    # higher tiles are better
-    rank = np.max(grid)
-    try:
-        rw = 1 / rank
-    except ZeroDivisionError:
-        rw = 1
+    def helper(seq: np.ndarray) -> float:
+        # TODO fix sequence vs grid
 
-    # large tiles on the edge
-    ind = np.where(grid == rank)[0][0]
-    if ind == 0 or ind == 3:
-        edge = 1 - rw
-    else:
-        edge = 0
+        # number of zeros heuristic
+        zeros = np.sum(seq == 0)
 
-    # monotonous
-    mono = 0
-    mon_inc = np.all([val <= grid[i + 1] for i, val in enumerate(grid[:-1])])
-    mon_dec = np.all([grid[i + 1] <= val for i, val in enumerate(grid[:-1])])
-    if mon_inc:
-        mono += 2
-    if mon_dec:
-        mono += 2
+        # higher tiles are better
+        rank = np.max(seq)
+        try:
+            rw = 1 / rank
+        except ZeroDivisionError:
+            rw = 1
 
-    adj = 0
-    for i, val in enumerate(grid[1:]):
-        if np.all(val == grid[i + 1]):
-            adj += 1 - rw
+        # large tiles on the edge
+        ind = np.where(seq == rank)[0][0]
+        if ind == 0 or ind == 3:
+            edge = 1 - rw
+        else:
+            edge = 0
 
-    return zeros + edge + mono + adj
+        # monotonous
+        mono = 0
+        mon_inc = np.all([val <= seq[i + 1] for i, val in enumerate(seq[:-1])])
+        mon_dec = np.all([seq[i + 1] <= val for i, val in enumerate(seq[:-1])])
+        if mon_inc:
+            mono += 2
+        if mon_dec:
+            mono += 2
+
+        adj = 0
+        for i, val in enumerate(seq[1:]):
+            if np.all(val == seq[i + 1]):
+                adj += 1 - rw
+
+        return zeros + edge + mono + adj
+
+    tmp = np.sum([helper(grid[:, i]) for i in range(4)])
+    return tmp + np.sum([helper(grid[i, :]) for i in range(4)])
 
 
 def expectimax(grid: np.ndarray, depth: int, agent_play: bool) -> float:

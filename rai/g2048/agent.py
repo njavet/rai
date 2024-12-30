@@ -16,7 +16,7 @@ def find_best_move(grid):
     return move
 
 
-def score_top_level_move(move, grid, depth=3):
+def score_top_level_move(move, grid, depth=4):
     new_grid, _ = simulate_move(grid, move)
     if np.all(new_grid == grid):
         return 0
