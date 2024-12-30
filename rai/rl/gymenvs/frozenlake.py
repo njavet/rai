@@ -39,7 +39,7 @@ def get_env(params):
     return env
 
 
-def main():
+def frozenlake():
     params = get_default_params()
     env = get_env(params)
     # random monte carlo agent
