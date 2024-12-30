@@ -1,0 +1,30 @@
+
+uninformed search:
+
+tree_search(problem, frontier) returns failure or a solution
+	frontier <- insert(make-node(initial_state(problem)), frontier)
+	loop do
+		if frontier is empty then return failure
+		# choice of picked node defined by strategy
+		node <- remove-front(frontier) 
+		if goal_test(problem) applied to state(node) return node
+		frontier <- insertall(expand(node, problem), frontier)
+  
+
+graph_search(problem, frontier) returns a solution or failure
+	frontier <- insert(make-node(initial_state(problem)), frontier)
+	explored <- empty
+	loop do
+		if frontier is empty then return failure
+		# choice of picked node defined by strategy
+		node <- remove-front(frontier) 
+		explored <- insert(node, explored)
+		if goal_test(problem) applied to state(node) return node
+		# only if not in frontier or explored set
+		frontier <- insertall(expand(node, problem), frontier)
+
+
+
+uniform cost search (dijkstra algorithm)
+
+

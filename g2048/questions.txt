@@ -1,0 +1,8 @@
+
+
+if I only use the heuristics in the leaf node, what is
+with the game score ? if you don't merge in non terminal nodes
+you get a higher score in the leave nodes, but thats not good
+you should merge as fast as possible. 
+
+
