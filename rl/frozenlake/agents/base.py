@@ -51,6 +51,9 @@ class Agent(ABC):
             trajectory.append(ts)
         return trajectory
 
+    def evaluate_trajectories(self):
+        raise NotImplementedError
+
     @staticmethod
     def convert_trajectory(trajectory: list[GymTrajectory]) -> np.ndarray:
         np_traj = np.array([[t.state, t.action, t.reward] for t in trajectory])
@@ -64,6 +67,6 @@ class Agent(ABC):
             self.reset_tables()
             for episode in range(self.params.total_episodes):
                 trajectory = self.generate_trajectory(self.get_action)
-                self.trajectories[(n, episode)] = trajectory
+                self.trajectories[episode].append(trajectory)
             qtables[n, :, :] = self.qtable
         self.qtable = qtables.mean(axis=0)
