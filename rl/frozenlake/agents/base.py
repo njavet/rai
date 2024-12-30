@@ -10,18 +10,19 @@ class Agent(ABC):
     def __init__(self, env: gym.Env, params: Params):
         self.env = env
         self.params = params
-        self.state_value = np.zeros(params.state_size)
+        self.vtable = np.zeros(params.state_size)
         self.qtable = np.zeros((params.state_size, params.action_size))
 
     def reset(self):
-        self.state_value = np.zeros(self.params.state_size)
+        self.vtable = np.zeros(self.params.state_size)
         self.qtable = np.zeros((self.params.state_size, self.params.action_size))
 
     def get_action(self, state):
         raise NotImplementedError
 
     def get_optimal_action(self, state):
-        raise NotImplementedError
+        action = self.random_argmax(self.qtable[state])
+        return action
 
     def make_step(self, state, action):
         next_state, reward, term, trunc, info = self.env.step(action)

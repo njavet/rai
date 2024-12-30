@@ -7,7 +7,6 @@ from rl.frozenlake.agents.base import Agent
 class QAgent(Agent):
     def __init__(self, env, params):
         super().__init__(env, params)
-        self.qtable = np.zeros((params.state_size, params.action_size))
 
     def get_action(self, state):
         if np.random.rand() < self.params.epsilon:

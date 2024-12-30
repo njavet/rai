@@ -9,15 +9,9 @@ class RMCAgent(Agent):
         super().__init__(env, params)
         self.returns = np.zeros((params.state_size, params.action_size))
         self.counts = np.zeros((params.state_size, params.action_size))
-        self.qtable = np.zeros((params.state_size, params.action_size))
-        self.state_value = np.zeros(params.state_size)
 
     def get_action(self, state):
         action = self.env.action_space.sample()
-        return action
-
-    def get_optimal_action(self, state):
-        action = self.random_argmax(self.qtable[state])
         return action
 
     def run_episode(self):
@@ -34,4 +28,4 @@ class RMCAgent(Agent):
                                 self.counts,
                                 out=np.zeros_like(self.returns),
                                 where=self.counts != 0)
-        self.state_value = np.max(self.qtable, axis=1)
+        self.vtable = np.max(self.qtable, axis=1)
