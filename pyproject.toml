@@ -26,4 +26,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 grid = "rai.rl.grid:main"
 fl = "rai.rl.gymenvs:frozenlake"
+g2048 = "rai.rl.rl2048:game"
 

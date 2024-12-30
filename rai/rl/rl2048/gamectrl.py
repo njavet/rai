@@ -1,28 +1,23 @@
-# -*- coding: utf-8 -*-
+import time
 import math
 import re
-import time
 import json
 import numpy as np
 
-# Author:      chrn (original by nneonneo)
-# Date:				 11.11.2016
-# Copyright:	 https://github.com/nneonneo/2048-ai
-# Description: Read information from the browser and send key input to it to control the game.
 
-class Generic2048Control(object):
+class Generic2048Control:
     def __init__(self, ctrl):
         self.ctrl = ctrl
         self.setup()
 
-    def setup():
+    def setup(self):
         raise NotImplementedError()
 
     def execute(self, cmd):
         return self.ctrl.execute(cmd)
 
     def get_status(self):
-        ''' Check if the game is in an unusual state. '''
+        """ Check if the game is in an unusual state. """
         return self.execute('''
             var messageContainer = document.querySelector(".game-message");
             if(messageContainer.className.search(/game-over/) !== -1) {"ended"}
@@ -40,11 +35,12 @@ class Generic2048Control(object):
         self.send_key_event('keyup', 32)
 
     def continue_game(self):
-        ''' Continue the game. Only works if the game is in the 'won' state. '''
+        """Continue the game. Only works if the game is in the 'won' state. """
         self.execute('document.querySelector(".keep-playing-button").click();')
 
     def send_key_event(self, action, key):
-        # Use generic events for compatibility with Chrome, which (for inexplicable reasons) doesn't support setting keyCode on KeyboardEvent objects.
+        # Use generic events for compatibility with Chrome, which
+        # (for inexplicable reasons) doesn't support setting keyCode on KeyboardEvent objects.
         # See http://stackoverflow.com/questions/8942678/keyboardevent-in-chrome-keycode-is-0.
         return self.execute('''
             var keyboardEvent = document.createEventObject ? document.createEventObject() : document.createEvent("Events");
@@ -56,10 +52,12 @@ class Generic2048Control(object):
             element.dispatchEvent ? element.dispatchEvent(keyboardEvent) : element.fireEvent("on%(action)s", keyboardEvent);
             ''' % locals())
 
-class Fast2048Control(Generic2048Control):
-    ''' Control 2048 by hooking the GameManager and executing its move() function.
 
-    This is both safer and faster than the keyboard approach, but it is less compatible with clones. '''
+class Fast2048Control(Generic2048Control):
+    """
+    Control 2048 by hooking the GameManager and executing its move() function.
+    This is both safer and faster than the keyboard approach, but it is less compatible with clones.
+    """
 
     def setup(self):
         # Obtain the GameManager instance by triggering a fake restart.
@@ -76,11 +74,10 @@ class Fast2048Control(Generic2048Control):
         self.send_key_event('keydown', 38)
         time.sleep(0.1)
         self.send_key_event('keyup', 38)
-
         self.execute('GameManager.prototype.isGameTerminated = _func_tmp;')
 
     def get_status(self):
-        ''' Check if the game is in an unusual state. '''
+        """ Check if the game is in an unusual state. """
         return self.execute('''
             if(GameManager._instance.over) {"ended"}
             else if(GameManager._instance.won && !GameManager._instance.keepPlaying) {"won"}
@@ -112,12 +109,13 @@ class Fast2048Control(Generic2048Control):
         move = [0, 2, 3, 1][move]
         self.execute('GameManager._instance.move(%d)' % move)
 
+
 class Keyboard2048Control(Generic2048Control):
-    ''' Control 2048 by accessing the DOM and using key events.
+    """ Control 2048 by accessing the DOM and using key events.
 
     This is relatively slow, and may be prone to race conditions if your
     browser is slow. However, it is more generally compatible with various
-    clones of 2048. '''
+    clones of 2048. """
 
     def setup(self):
         self.execute(
@@ -175,11 +173,12 @@ class Keyboard2048Control(Generic2048Control):
         self.send_key_event('keyup', key)
         time.sleep(0.05)
 
-class Hybrid2048Control(Fast2048Control, Keyboard2048Control):
-    ''' Control 2048 by hooking the GameManager and using keyboard inputs.
 
+class Hybrid2048Control(Fast2048Control, Keyboard2048Control):
+    """
+    Control 2048 by hooking the GameManager and using keyboard inputs.
     This is safe and fast, and correctly generates keyboard events for compatibility.
-    '''
+    """
 
     setup = Fast2048Control.setup
     get_status = Keyboard2048Control.get_status
