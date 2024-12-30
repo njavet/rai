@@ -12,15 +12,16 @@ class RMCAgent(Agent):
         self.qtable = np.zeros((params.state_size, params.action_size))
         self.state_value = np.zeros(params.state_size)
 
-    def get_action(self, state, learning):
-        if learning:
-            action = self.env.action_space.sample()
-        else:
-            action = np.argmax(self.qtable[state])
+    def get_action(self, state):
+        action = self.env.action_space.sample()
+        return action
+
+    def get_optimal_action(self, state):
+        action = self.random_argmax(self.qtable[state])
         return action
 
     def run_episode(self, learning=True):
-        trajectory = self.generate_trajectory(learning)
+        trajectory = self.generate_trajectory()
         episode_reward = 0
         for i, t in enumerate(reversed(trajectory)):
             state, action, reward = t.state, t.action, t.reward

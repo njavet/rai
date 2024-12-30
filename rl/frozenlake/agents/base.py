@@ -10,9 +10,24 @@ class Agent(ABC):
     def __init__(self, env: gym.Env, params: Params):
         self.env = env
         self.params = params
+        self.state_value = np.zeros(params.state_size)
+        self.qtable = np.zeros((params.state_size, params.action_size))
 
-    def get_action(self, state, learning):
+    def reset(self):
+        self.state_value = np.zeros(self.params.state_size)
+        self.qtable = np.zeros((self.params.state_size, self.params.action_size))
+
+    def get_action(self, state):
         raise NotImplementedError
+
+    def get_optimal_action(self, state):
+        raise NotImplementedError
+
+    def make_step(self, state, action):
+        next_state, reward, term, trunc, info = self.env.step(action)
+        ts = GymTrajectory(state=state, action=int(action), reward=reward)
+        done = term or trunc
+        return next_state, ts, done
 
     def update_qtable(self, state, action, reward, next_state):
         pass
@@ -22,19 +37,15 @@ class Agent(ABC):
         arr_max = np.max(arr)
         return np.random.choice(np.where(arr == arr_max)[0])
 
-    def generate_trajectory(self, learning):
+    def generate_trajectory(self, action_selector):
         trajectory = []
         state, info = self.env.reset()
         done = False
         while not done:
-            action = self.get_action(state, learning)
-            next_state, reward, term, trunc, info = self.env.step(action)
-            ts = GymTrajectory(state=state, action=int(action), reward=reward)
-            trajectory.append(ts)
-            done = term or trunc
-            if learning:
-                self.update_qtable(state, action, reward, next_state)
+            action = action_selector(state)
+            next_state, ts, done = self.make_step(state, action)
             state = next_state
+            trajectory.append(ts)
         return trajectory
 
     def run_episode(self, learning=True):
