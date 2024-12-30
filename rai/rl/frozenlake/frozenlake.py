@@ -12,10 +12,10 @@ from rai.utils.models import Params
 
 
 def get_default_params():
-    params = Params(total_episodes=2048,
-                    alpha=0.8,
-                    gamma=0.95,
-                    epsilon=0.1,
+    params = Params(total_episodes=4048,
+                    alpha=0.1,
+                    gamma=0.99,
+                    epsilon=0.3,
                     map_size=4,
                     seed=0x101,
                     is_slippery=False,
@@ -46,9 +46,11 @@ def main():
     rmc_agent = RMCLearner(env, params)
     # rmc_agent.run_env()
     imc_agent = IMCLearner(env, params)
-    imc_agent.run_env()
+    # imc_agent.run_env()
 
-    fig = plot_q_values_map(imc_agent.qtable, env, params.map_size)
+    q_learner = QLearner(env, params)
+    q_learner.run_env()
+    fig = plot_q_values_map(q_learner.qtable, env, params.map_size)
     fig.show()
     plt.show()
     # fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")

@@ -38,7 +38,7 @@ class Learner(SchopenhauerAgent):
         done = term or trunc
         return next_state, ts, done
 
-    def process_step(self, *args):
+    def process_step(self, ts, next_state):
         pass
 
     def process_episode(self, episode):
