@@ -4,7 +4,7 @@ import numpy as np
 from rl.frozenlake.agents.base import Agent
 
 
-class RMCAgent(Agent):
+class IMCAgent(Agent):
     def __init__(self, env, params):
         super().__init__(env, params)
         self.returns = np.zeros((params.state_size, params.action_size))

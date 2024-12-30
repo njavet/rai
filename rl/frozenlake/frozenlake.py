@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 # project imports
 from rl.frozenlake.agents.rmca import RMCAgent
 from rl.frozenlake.agents.qla import QAgent
+from rl.frozenlake.agents.imca import IMCAgent
 from rl.models import Params
 
 
@@ -25,6 +26,28 @@ def get_default_params():
     return params
 
 
+def rmc(env, params):
+    rmc_agent = RMCAgent(env, params)
+    for episode in range(params.total_episodes):
+        rmc_agent.run_episode()
+    rmc_agent.update()
+    return rmc_agent
+
+
+def imc(env, params):
+    imc_agent = IMCAgent(env, params)
+    for episode in range(params.total_episodes):
+        imc_agent.run_episode()
+    return imc_agent
+
+
+def qagent(env, params):
+    q_agent = QAgent(env, params)
+    for episode in range(params.total_episodes):
+        q_agent.run_episode()
+    return q_agent
+
+
 def main():
     params = get_default_params()
     env = gym.make('FrozenLake-v1',
@@ -35,18 +58,22 @@ def main():
                                             seed=params.seed))
     params.state_size = env.observation_space.n
     params.action_size = env.action_space.n
-    rmc_agent = RMCAgent(env, params)
-    for episode in range(params.total_episodes):
-        rmc_agent.run_episode()
-    rmc_agent.update()
+    # random monte carlo agent
+    rmc_agent = rmc(env, params)
     trajectory = rmc_agent.generate_trajectory(rmc_agent.get_optimal_action)
+    print('random mc')
     for t in trajectory:
         print('state', t.state, 'action:', t.action)
 
-    q_agent = QAgent(env, params)
-    for episode in range(params.total_episodes):
-        q_agent.run_episode()
+    # incremental mc
+    imc_agent = imc(env, params)
+    trajectory = imc_agent.generate_trajectory(imc_agent.get_optimal_action)
+    print('inc mc')
+    for t in trajectory:
+        print('state', t.state, 'action:', t.action)
 
+    # incremental mc
+    q_agent = qagent(env, params)
     trajectory = q_agent.generate_trajectory(q_agent.get_optimal_action)
     print('QL')
     for t in trajectory:
