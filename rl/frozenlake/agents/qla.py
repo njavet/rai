@@ -9,8 +9,8 @@ class QAgent(Agent):
         super().__init__(env, params)
         self.qtable = np.zeros((params.state_size, params.action_size))
 
-    def get_action(self, state, learning):
-        if np.random.rand() < self.params.epsilon and learning:
+    def get_action(self, state):
+        if np.random.rand() < self.params.epsilon:
             action = self.env.action_space.sample()
         else:
             action = self.random_argmax(self.qtable[state])
@@ -25,5 +25,5 @@ class QAgent(Agent):
         delta = self.params.alpha * (reward + bfq - self.qtable[state, action])
         self.qtable[state, action] = self.qtable[state, action] + delta
 
-    def run_episode(self, learning=True):
-        trajectory = self.generate_trajectory(learning)
+    def run_episode(self):
+        trajectory = self.generate_trajectory(self.get_action)

@@ -48,5 +48,5 @@ class Agent(ABC):
             trajectory.append(ts)
         return trajectory
 
-    def run_episode(self, learning=True):
+    def run_episode(self):
         raise NotImplementedError

@@ -18,11 +18,10 @@ class Params(BaseModel):
     state_size: int | None
 
 
-# TODO guarantee same length for lists
 class GymTrajectory(BaseModel):
-    state: list[int] = []
-    action: list[int] = []
-    reward: list[float] = []
+    state: int
+    action: int
+    reward: float
 
 
 class Action(Enum):

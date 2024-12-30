@@ -20,8 +20,8 @@ class RMCAgent(Agent):
         action = self.random_argmax(self.qtable[state])
         return action
 
-    def run_episode(self, learning=True):
-        trajectory = self.generate_trajectory()
+    def run_episode(self):
+        trajectory = self.generate_trajectory(self.get_action)
         episode_reward = 0
         for i, t in enumerate(reversed(trajectory)):
             state, action, reward = t.state, t.action, t.reward

@@ -39,7 +39,7 @@ def main():
     for episode in range(params.total_episodes):
         rmc_agent.run_episode()
     rmc_agent.update()
-    trajectory = rmc_agent.generate_trajectory(learning=False)
+    trajectory = rmc_agent.generate_trajectory(rmc_agent.get_optimal_action)
     for t in trajectory:
         print('state', t.state, 'action:', t.action)
 
@@ -47,7 +47,7 @@ def main():
     for episode in range(params.total_episodes):
         q_agent.run_episode()
 
-    trajectory = q_agent.generate_trajectory(learning=False)
+    trajectory = q_agent.generate_trajectory(q_agent.get_optimal_action)
     print('QL')
     for t in trajectory:
         print('state', t.state, 'action:', t.action)
