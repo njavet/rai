@@ -48,7 +48,7 @@ def main():
     imc_agent = IMCLearner(env, params)
     imc_agent.run_env()
 
-    fig = plot_q_values_map(rmc_agent.qtable, env, params.map_size)
+    fig = plot_q_values_map(imc_agent.qtable, env, params.map_size)
     fig.show()
     plt.show()
     # fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")

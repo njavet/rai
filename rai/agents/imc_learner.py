@@ -28,7 +28,8 @@ class IMCLearner(Learner):
         self.update_qtable(returns, counts)
 
     def update_qtable(self, returns, counts):
-        self.qtable = np.divide(returns,
-                                counts,
-                                out=np.zeros_like(returns),
-                                where=counts != 0)
+        qtable = np.divide(returns,
+                           counts,
+                           out=np.zeros_like(returns),
+                           where=counts != 0)
+        self.qtable = (self.qtable + qtable) / 2

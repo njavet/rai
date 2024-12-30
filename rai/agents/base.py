@@ -76,7 +76,6 @@ class Learner(SchopenhauerAgent):
                             self.params.state_size,
                             self.params.action_size))
         for n in range(self.params.n_runs):
-            print('run', n)
             self.reset_q_table()
             for episode in range(self.params.total_episodes):
                 trajectory = self.generate_trajectory()
