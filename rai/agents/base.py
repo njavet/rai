@@ -54,10 +54,10 @@ class Learner(SchopenhauerAgent):
         while not done:
             action = self.get_action(state)
             next_state, ts, done = self.exec_step(state, action)
-            state = next_state
             trajectory.steps.append(ts)
             # the agent might want to do something after each step
-            self.process_step()
+            self.process_step(ts, next_state)
+            state = next_state
         return trajectory
 
     def evaluate_trajectory(self, trajectory: Trajectory) -> tuple[np.ndarray, np.ndarray]:
@@ -76,6 +76,7 @@ class Learner(SchopenhauerAgent):
                             self.params.state_size,
                             self.params.action_size))
         for n in range(self.params.n_runs):
+            print('run', n)
             self.reset_q_table()
             for episode in range(self.params.total_episodes):
                 trajectory = self.generate_trajectory()

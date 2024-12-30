@@ -1,10 +1,7 @@
 import numpy as np
-from collections import defaultdict
 
 # project imports
 from rai.agents.base import Learner
-from rai.utils.helpers import random_argmax
-from rai.utils.models import Params, TrajectoryStep, Trajectory
 
 
 class RMCLearner(Learner):
@@ -19,7 +16,10 @@ class RMCLearner(Learner):
         returns = np.zeros((self.params.state_size, self.params.action_size))
         counts = np.zeros((self.params.state_size, self.params.action_size))
         for episode, trajectories in self.trajectories.items():
-            returns, counts = self.evaluate_trajectories(trajectories)
+            for trajectory in trajectories:
+                rs, cs = self.evaluate_trajectory(trajectory)
+                returns += rs
+                counts += cs
         self.update_qtable(returns, counts)
 
     def update_qtable(self, returns, counts):

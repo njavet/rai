@@ -1,10 +1,8 @@
 import numpy as np
-from collections import defaultdict
 
 # project imports
 from rai.agents.base import Learner
 from rai.utils.helpers import random_argmax
-from rai.utils.models import Params, TrajectoryStep, Trajectory
 
 
 class QLearner(Learner):

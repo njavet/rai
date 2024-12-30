@@ -4,7 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # project imports
-from rai.agents.rl_agent import RMCLearner, IMCLearner, QLearner
+from rai.agents.rmc_learner import RMCLearner
 from rai.utils.models import Params
 
 
@@ -25,7 +25,6 @@ def get_default_params():
 
 
 def rmc(env, params):
-    rmc_agent = RMCLearner(env, params)
     for episode in range(params.total_episodes):
         rmc_agent.run_env()
     return rmc_agent
@@ -61,12 +60,15 @@ def main():
     params = get_default_params()
     env = get_env(params)
     # random monte carlo agent
-    rmc_agent = rmc(env, params)
+    rmc_agent = RMCLearner(env, params)
+    rmc_agent.run_env()
+
     trajectory = rmc_agent.generate_trajectory()
     print('random mc')
     for t in trajectory.steps:
         print('state', t.state, 'action:', t.action)
 
+    return
     # incremental mc
     imc_agent = imc(env, params)
     trajectory = imc_agent.generate_trajectory()
