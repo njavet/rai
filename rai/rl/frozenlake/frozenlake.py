@@ -4,10 +4,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # project imports
-from rai.rl.frozenlake.agents.rmca import RMCAgent
-from rai.rl.frozenlake.agents.qla import QAgent
-from rai.rl.frozenlake.agents.imca import IMCAgent
-from rai.rl.models import Params
+from rai.agents.rl_agent import RMCLearner, IMCLearner, QLearner
+from rai.utils.models import Params
 
 
 def get_default_params():
@@ -27,24 +25,23 @@ def get_default_params():
 
 
 def rmc(env, params):
-    rmc_agent = RMCAgent(env, params)
+    rmc_agent = RMCLearner(env, params)
     for episode in range(params.total_episodes):
-        rmc_agent.run_episode()
-    rmc_agent.update()
+        rmc_agent.run_env()
     return rmc_agent
 
 
 def imc(env, params):
-    imc_agent = IMCAgent(env, params)
+    imc_agent = IMCLearner(env, params)
     for episode in range(params.total_episodes):
-        imc_agent.run_episode()
+        imc_agent.run_env()
     return imc_agent
 
 
 def qagent(env, params):
-    q_agent = QAgent(env, params)
+    q_agent = QLearner(env, params)
     for episode in range(params.total_episodes):
-        q_agent.run_episode()
+        q_agent.run_env()
     return q_agent
 
 
@@ -65,23 +62,23 @@ def main():
     env = get_env(params)
     # random monte carlo agent
     rmc_agent = rmc(env, params)
-    trajectory = rmc_agent.generate_trajectory(rmc_agent.get_optimal_action)
+    trajectory = rmc_agent.generate_trajectory()
     print('random mc')
-    for t in trajectory:
+    for t in trajectory.steps:
         print('state', t.state, 'action:', t.action)
 
     # incremental mc
     imc_agent = imc(env, params)
-    trajectory = imc_agent.generate_trajectory(imc_agent.get_optimal_action)
+    trajectory = imc_agent.generate_trajectory()
     print('inc mc')
-    for t in trajectory:
+    for t in trajectory.steps:
         print('state', t.state, 'action:', t.action)
 
     # incremental mc
     q_agent = qagent(env, params)
-    trajectory = q_agent.generate_trajectory(q_agent.get_optimal_action)
+    trajectory = q_agent.generate_trajectory()
     print('QL')
-    for t in trajectory:
+    for t in trajectory.steps:
         print('state', t.state, 'action:', t.action)
 
     plt.imshow(env.render())
