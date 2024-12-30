@@ -66,7 +66,7 @@ def print_grid(grid: np.ndarray, console=None) -> None:
 
 
 def utility(grid: np.ndarray) -> float:
-
+    # TODO fix sequence vs grid
     # number of zeros heuristic
     zeros = np.sum(grid == 0)
 
@@ -127,4 +127,3 @@ def expectimax(grid: np.ndarray, depth: int, agent_play: bool) -> float:
             ng4[i][j] = 4
             expected_value += 0.1 * expectimax(ng4, depth-1, True)
         return (1 / zeros) * expected_value
-

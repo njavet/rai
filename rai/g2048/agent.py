@@ -8,7 +8,6 @@ from rai.utils.helpers import random_argmax
 
 def find_best_move(grid):
     result = np.array([score_top_level_move(i, grid) for i in range(4)])
-    print(result)
 
     if np.max(result) == 0:
         move = random.choice([0, 1, 2, 3])
@@ -19,7 +18,7 @@ def find_best_move(grid):
 
 def score_top_level_move(move, grid, depth=3):
     new_grid, _ = simulate_move(grid, move)
-    if np.allclose(new_grid, grid):
+    if np.all(new_grid == grid):
         return 0
 
     return expectimax(new_grid, depth, agent_play=False)
