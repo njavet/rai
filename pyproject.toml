@@ -18,6 +18,8 @@ pygame = "^2.6.1"
 seaborn = "^0.13.2"
 tqdm = "^4.67.1"
 matplotlib = "^3.10.0"
+websocket-client = "^1.8.0"
+selenium = "^4.27.1"
 
 [build-system]
 requires = ["poetry-core"]
