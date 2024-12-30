@@ -7,6 +7,17 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.13"
+ipython = "^8.31.0"
+gymnasium = "^1.0.0"
+pandas = "^2.2.3"
+numpy = "^2.2.1"
+pydantic = "^2.10.4"
+jinja2 = "^3.1.5"
+rich = "^13.9.4"
+pygame = "^2.6.1"
+seaborn = "^0.13.2"
+tqdm = "^4.67.1"
+matplotlib = "^3.10.0"
 
 
 [build-system]
