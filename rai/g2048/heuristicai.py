@@ -2,7 +2,7 @@ import random
 import sys
 
 # project imports
-from rai.rl.rl2048 import game
+from rai.g2048 import game
 UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
 

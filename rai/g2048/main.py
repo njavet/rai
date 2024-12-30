@@ -3,12 +3,7 @@ import argparse
 
 
 # project imports
-from rai.rl.rl2048.ffctrl import FirefoxRemoteControl
-from rai.rl.rl2048.chromectrl import ChromeDebuggerControl
-from rai.rl.rl2048.gamectrl import (Fast2048Control,
-                                    Keyboard2048Control,
-                                    Hybrid2048Control)
-import rai.rl.rl2048.heuristicai as ai
+import rai.g2048.heuristicai as ai
 
 
 def print_board(m):
@@ -63,21 +58,8 @@ def play_game(gamectrl):
     print("Game over. Final score %d; highest tile %d." % (score, maxval))
 
 
-def create_parser():
-    parser = argparse.ArgumentParser(
-        description='Use the AI to play 2048 via browser control')
-    parser.add_argument('-c', '--ctrl_mode',
-                        default='hybrid',
-                        dest='ctrl_mode',
-                        choices=('keyboard', 'fast', 'hybrid'),
-                        help='Control mode to use. If the browser control'
-                             'does not seem to work, try changing this.')
-    return parser
-
 
 def g2048():
-    parser = create_parser()
-    args = parser.parse_args()
 
     if args.ctrl_mode == 'keyboard':
         game_ctrl = Keyboard2048Control(ctrl)

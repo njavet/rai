@@ -1,7 +1,7 @@
 import random
 import sys
 
-from rai.rl.rl2048 import game
+from rai.g2048 import game
 
 
 def find_best_move(board):
