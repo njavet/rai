@@ -1,4 +1,3 @@
-import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -35,7 +34,7 @@ class FirefoxControl:
     def get_score(self):
         return int(self.score_element.text.split()[0])
 
-    def get_game_message(self):
+    def get_status(self):
         return self.game_message.text
 
     def send_move(self, move):

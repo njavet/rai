@@ -21,7 +21,8 @@ def play_2048():
             fc.send_move(move)
             score = fc.get_score()
             print('SCORE', score)
-            if 'game over' in fc.get_game_message().lower():
+            status = fc.get_status()
+            if 'game over' in status.lower():
                 break
             time.sleep(0.2)
         board = fc.get_board()
@@ -30,6 +31,8 @@ def play_2048():
             print(row)
 
         print('final score:', score)
+        print('final status:\n\n')
+        print(status)
         time.sleep(5)
     finally:
         fc.driver.quit()
