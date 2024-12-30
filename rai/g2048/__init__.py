@@ -1,1 +1,1 @@
-from .main import g2048
+from .main import play_2048

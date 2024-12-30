@@ -1,6 +1,7 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 
 class FirefoxControl:
@@ -10,6 +11,10 @@ class FirefoxControl:
         self.game_container = None
         self.game_message = None
         self.score_element = None
+        self.moves = {0: Keys.ARROW_LEFT,
+                      1: Keys.ARROW_DOWN,
+                      2: Keys.ARROW_RIGHT,
+                      3: Keys.ARROW_UP}
 
     def get_board(self):
         board = [[0 for _ in range(4)] for _ in range(4)]
@@ -34,20 +39,5 @@ class FirefoxControl:
         return self.game_message.text
 
     def send_move(self, move):
-        self.game_container.send_keys(move)
-
-    def start_game(self):
-        try:
-            self.driver.get(self.url)
-            self.game_container = self.driver.find_element(By.TAG_NAME,
-                                                           'body')
-            self.game_message = self.driver.find_element(By.CLASS_NAME,
-                                                         'game-message')
-            self.score_element = self.driver.find_element(By.CLASS_NAME,
-                                                          'score-container')
-
-            while True:
-                time.sleep(0.1)
-
-        finally:
-            self.driver.quit()
+        key = self.moves[move]
+        self.game_container.send_keys(key)

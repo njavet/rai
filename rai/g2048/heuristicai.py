@@ -3,7 +3,6 @@ import sys
 
 # project imports
 from rai.g2048 import game
-UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
 
 def find_best_move(board):

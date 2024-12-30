@@ -1,67 +1,35 @@
+import numpy as np
+from selenium.webdriver.common.by import By
 import time
-import argparse
-
 
 # project imports
-import rai.g2048.heuristicai as ai
+from rai.g2048.ffctrl import FirefoxControl
 
 
-def print_board(m):
-    for row in m:
-        for c in row:
-            print('%8d' % c, end=' ')
-        print()
+def play_2048():
+    fc = FirefoxControl()
+    moves = list(range(4))
+    try:
+        fc.driver.get(fc.url)
+        fc.game_container = fc.driver.find_element(By.TAG_NAME, 'body')
+        fc.game_container.click()
+        fc.game_message = fc.driver.find_element(By.CLASS_NAME, 'game-message')
+        fc.score_element = fc.driver.find_element(By.CLASS_NAME, 'score-container')
 
-def _to_val(c):
-    if c == 0: return 0
-    return c
+        while True:
+            move = np.random.choice(moves)
+            fc.send_move(move)
+            score = fc.get_score()
+            print('SCORE', score)
+            if 'game over' in fc.get_game_message().lower():
+                break
+            time.sleep(0.2)
+        board = fc.get_board()
+        print('final board:')
+        for row in board:
+            print(row)
 
-def to_val(m):
-    return [[_to_val(c) for c in row] for row in m]
-
-def _to_score(c):
-    if c <= 1:
-        return 0
-    return (c-1) * (2**c)
-
-def to_score(m):
-    return [[_to_score(c) for c in row] for row in m]
-
-def find_best_move(board):
-    return ai.find_best_move(board)
-
-def movename(move):
-    return ['up', 'down', 'left', 'right'][move]
-
-def play_game(gamectrl):
-    moveno = 0
-    start = time.time()
-    while 1:
-        state = gamectrl.get_status()
-        if state == 'ended':
-            break
-        elif state == 'won':
-            time.sleep(0.75)
-            gamectrl.continue_game()
-
-        moveno += 1
-        board = gamectrl.get_board()
-        move = find_best_move(board)
-        if move < 0:
-            break
-        print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
-        gamectrl.execute_move(move)
-
-    score = gamectrl.get_score()
-    board = gamectrl.get_board()
-    maxval = max(max(row) for row in to_val(board))
-    print("Game over. Final score %d; highest tile %d." % (score, maxval))
-
-
-
-def g2048():
-
-    if game_ctrl.get_status() == 'ended':
-        game_ctrl.restart_game()
-
-    play_game(game_ctrl)
+        print('final score:', score)
+        time.sleep(5)
+    finally:
+        fc.driver.quit()
