@@ -1,1 +1,1 @@
-from .game import game
+from .main import game
