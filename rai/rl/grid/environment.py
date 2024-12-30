@@ -1,6 +1,6 @@
 
 # project imports
-from rl.models import Action
+from rai.rl.models import Action
 
 
 class Grid:

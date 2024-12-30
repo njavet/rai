@@ -5,7 +5,7 @@ from typing import Callable
 import numpy as np
 
 # project imports
-from rl.models import Params, GymTrajectory
+from rai.rl.models import Params, GymTrajectory
 
 
 class Agent(ABC):

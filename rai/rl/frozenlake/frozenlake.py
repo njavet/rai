@@ -4,10 +4,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # project imports
-from rl.frozenlake.agents.rmca import RMCAgent
-from rl.frozenlake.agents.qla import QAgent
-from rl.frozenlake.agents.imca import IMCAgent
-from rl.models import Params
+from rai.rl.frozenlake.agents.rmca import RMCAgent
+from rai.rl.frozenlake.agents.qla import QAgent
+from rai.rl.frozenlake.agents.imca import IMCAgent
+from rai.rl.models import Params
 
 
 def get_default_params():

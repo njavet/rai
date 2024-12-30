@@ -1,8 +1,7 @@
 import numpy as np
 
 # project imports
-from rl.grid.environment import Action
-from rl.models import Trajectory
+from rai.rl.models import Trajectory, Action
 
 
 class Agent:

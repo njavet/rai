@@ -1,7 +1,7 @@
 import numpy as np
 
 # project imports
-from rl.frozenlake.agents.base import Agent
+from rai.rl.frozenlake.agents.base import Agent
 
 
 class IMCAgent(Agent):
