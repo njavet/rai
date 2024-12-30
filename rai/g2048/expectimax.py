@@ -5,17 +5,17 @@ import itertools
 from rich.console import Console
 
 
-def add_random_tile(grid):
+def add_random_tile(grid: np.ndarray) -> np.ndarray:
     inds = [(i, j) for (i, j) in itertools.product(range(4), repeat=2)
             if grid[i][j] == 0]
     if len(inds) > 0:
         i, j = random.choice(inds)
         value = np.random.choice([2, 4], p=[0.9, 0.1])
-        grid[i][j] = value
+        grid[i, j] = value
         return grid
 
 
-def merge_left(grid):
+def merge_left(grid: np.ndarray) -> tuple[np.ndarray, float]:
 
     def merge_seq_to_left(seq, acc, seq_r=0):
         if not seq:
@@ -41,22 +41,22 @@ def merge_left(grid):
     return np.array(new_grid, dtype=np.int16), reward
 
 
-def merge_right(grid):
+def merge_right(grid: np.ndarray) -> tuple[np.ndarray, float]:
     new_grid, reward = merge_left(np.array([row[::-1] for row in grid]))
     return np.array([row[::-1] for row in new_grid], dtype=np.int16), reward
 
 
-def merge_up(grid):
+def merge_up(grid: np.ndarray) -> tuple[np.ndarray, float]:
     new_grid, reward = merge_left(grid.transpose())
     return new_grid.transpose(), reward
 
 
-def merge_down(grid):
+def merge_down(grid: np.ndarray) -> tuple[np.ndarray, float]:
     new_grid, reward = merge_right(grid.transpose())
     return new_grid.transpose(), reward
 
 
-def simulate_move(grid, move):
+def simulate_move(grid: np.ndarray, move: int) -> tuple[np.ndarray, float]:
     if move == 0:
         return merge_up(grid)
     elif move == 1:
@@ -67,7 +67,7 @@ def simulate_move(grid, move):
         return merge_right(grid)
 
 
-def available_moves(grid):
+def available_moves(grid: np.ndarray) -> list:
     moves = []
     mg0, _ = merge_up(grid)
     if not np.array_equal(mg0, grid):
@@ -84,12 +84,12 @@ def available_moves(grid):
     return moves
 
 
-def is_move_available(grid, move):
+def is_move_available(grid: np.ndarray, move: int) -> bool:
     am = available_moves(grid)
     return move in am
 
 
-def print_grid(grid, console=None):
+def print_grid(grid: np.ndarray, console=None) -> None:
     if console is None:
         console = Console()
     for row in grid:
@@ -99,20 +99,20 @@ def print_grid(grid, console=None):
         console.print('\n' + 29*'-')
 
 
-def utility(grid):
+def utility(grid: np.ndarray) -> float:
 
     # number of zeros heuristic
-    zeros = grid.count(0)
+    zeros = np.sum(grid == 0)
 
     # higher tiles are better
-    rank = max(grid)
+    rank = np.max(grid)
     try:
         rw = 1 / rank
     except ZeroDivisionError:
         rw = 1
 
     # large tiles on the edge
-    ind = grid.index(rank)
+    ind = np.where(grid == rank)[0][0]
     if ind == 0 or ind == 3:
         edge = 1 - rw
     else:
@@ -120,8 +120,8 @@ def utility(grid):
 
     # monotonous
     mono = 0
-    mon_inc = all([val <= grid[i + 1] for i, val in enumerate(grid[:-1])])
-    mon_dec = all([grid[i + 1] <= val for i, val in enumerate(grid[:-1])])
+    mon_inc = np.all([val <= grid[i + 1] for i, val in enumerate(grid[:-1])])
+    mon_dec = np.all([grid[i + 1] <= val for i, val in enumerate(grid[:-1])])
     if mon_inc:
         mono += 2
     if mon_dec:
@@ -129,21 +129,21 @@ def utility(grid):
 
     adj = 0
     for i, val in enumerate(grid[1:]):
-        if val == grid[i + 1]:
+        if np.all(val == grid[i + 1]):
             adj += 1 - rw
 
     return zeros + edge + mono + adj
 
 
-def expectimax(grid, depth, agent_play):
+def expectimax(grid: np.ndarray, depth: int, agent_play: bool) -> float:
     if depth == 0:
         return utility(grid)
 
     if agent_play:
         alpha = 0
         for move in range(4):
-            new_grid = simulate_move(grid, move)
-            if new_grid != grid:
+            new_grid, _ = simulate_move(grid, move)
+            if not np.equal(new_grid, grid).all():
                 alpha = max(alpha, expectimax(new_grid, depth-1, False))
         return alpha
     else:

@@ -4,11 +4,11 @@ import time
 
 # project imports
 from rai.g2048.ffctrl import FirefoxControl
+from rai.g2048.agent import find_best_move
 
 
 def play_2048():
     fc = FirefoxControl()
-    moves = list(range(4))
     try:
         fc.driver.get(fc.url)
         fc.game_container = fc.driver.find_element(By.TAG_NAME, 'body')
@@ -17,22 +17,21 @@ def play_2048():
         fc.score_element = fc.driver.find_element(By.CLASS_NAME, 'score-container')
 
         while True:
-            move = np.random.choice(moves)
+            board = fc.get_board()
+            grid = np.array(board)
+            move = find_best_move(grid)
             fc.send_move(move)
             score = fc.get_score()
             print('SCORE', score)
             status = fc.get_status()
             if 'game over' in status.lower():
                 break
-            time.sleep(0.2)
-        board = fc.get_board()
+            time.sleep(0.1)
+
         print('final board:')
         for row in board:
             print(row)
-
         print('final score:', score)
-        print('final status:\n\n')
-        print(status)
         time.sleep(5)
     finally:
         fc.driver.quit()
