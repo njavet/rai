@@ -9,7 +9,7 @@ step_size = 0.1
 
 
 def load_model(file_name):
-    with open(file_name, 'r') as f:
+    with open(file_name) as f:
         model = json.load(f)
     return model
 

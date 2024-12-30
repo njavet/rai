@@ -66,19 +66,18 @@ def print_grid(grid: np.ndarray, console=None) -> None:
 
 
 def utility(grid: np.array) -> float:
+    # TODO analyze heuristics
 
     def helper(seq: np.ndarray) -> float:
-        # TODO fix sequence vs grid
-
         # number of zeros heuristic
         zeros = np.sum(seq == 0)
 
         # higher tiles are better
         rank = np.max(seq)
-        try:
-            rw = 1 / rank
-        except ZeroDivisionError:
+        if rank == 0:
             rw = 1
+        else:
+            rw = 1 / rank
 
         # large tiles on the edge
         ind = np.where(seq == rank)[0][0]
