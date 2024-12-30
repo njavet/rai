@@ -19,7 +19,11 @@ seaborn = "^0.13.2"
 tqdm = "^4.67.1"
 matplotlib = "^3.10.0"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+grid = "rai.rl.grid:main"
+fl = "rai.rl.frozenlake:main"
+
