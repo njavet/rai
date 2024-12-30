@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 
 # project imports
 from rai.agents.rmc_learner import RMCLearner
+from rai.agents.imc_learner import IMCLearner
+from rai.agents.q_learner import QLearner
+from rai.utils.helpers import plot_q_values_map
 from rai.utils.models import Params
 
 
@@ -24,26 +27,6 @@ def get_default_params():
     return params
 
 
-def rmc(env, params):
-    for episode in range(params.total_episodes):
-        rmc_agent.run_env()
-    return rmc_agent
-
-
-def imc(env, params):
-    imc_agent = IMCLearner(env, params)
-    for episode in range(params.total_episodes):
-        imc_agent.run_env()
-    return imc_agent
-
-
-def qagent(env, params):
-    q_agent = QLearner(env, params)
-    for episode in range(params.total_episodes):
-        q_agent.run_env()
-    return q_agent
-
-
 def get_env(params):
     env = gym.make('FrozenLake-v1',
                    is_slippery=params.is_slippery,
@@ -61,28 +44,14 @@ def main():
     env = get_env(params)
     # random monte carlo agent
     rmc_agent = RMCLearner(env, params)
-    rmc_agent.run_env()
+    # rmc_agent.run_env()
+    imc_agent = IMCLearner(env, params)
+    imc_agent.run_env()
 
-    trajectory = rmc_agent.generate_trajectory()
-    print('random mc')
-    for t in trajectory.steps:
-        print('state', t.state, 'action:', t.action)
-
-    return
-    # incremental mc
-    imc_agent = imc(env, params)
-    trajectory = imc_agent.generate_trajectory()
-    print('inc mc')
-    for t in trajectory.steps:
-        print('state', t.state, 'action:', t.action)
-
-    # incremental mc
-    q_agent = qagent(env, params)
-    trajectory = q_agent.generate_trajectory()
-    print('QL')
-    for t in trajectory.steps:
-        print('state', t.state, 'action:', t.action)
-
-    plt.imshow(env.render())
-    plt.axis('off')
+    fig = plot_q_values_map(rmc_agent.qtable, env, params.map_size)
+    fig.show()
     plt.show()
+    # fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
+    # plt.imshow(env.render())
+    # plt.axis('off')
+    # plt.show()

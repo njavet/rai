@@ -17,3 +17,18 @@ class IMCLearner(Learner):
         else:
             action = random_argmax(self.qtable[state])
         return action
+
+    def process_episode(self, episode):
+        returns = np.zeros((self.params.state_size, self.params.action_size))
+        counts = np.zeros((self.params.state_size, self.params.action_size))
+        for trajectory in self.trajectories[episode]:
+            rs, cs = self.evaluate_trajectory(trajectory)
+            returns += rs
+            counts += cs
+        self.update_qtable(returns, counts)
+
+    def update_qtable(self, returns, counts):
+        self.qtable = np.divide(returns,
+                                counts,
+                                out=np.zeros_like(returns),
+                                where=counts != 0)
