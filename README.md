@@ -1,0 +1,2 @@
+# rai
+AI practice repo
