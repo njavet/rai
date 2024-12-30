@@ -1,6 +1,5 @@
 import numpy as np
 from collections import defaultdict
-from typing import Callable
 
 # project imports
 from rai.agents.base import SchopenhauerAgent
@@ -9,7 +8,7 @@ from rai.utils.models import Params, TrajectoryStep, Trajectory
 
 
 class RLAgent(SchopenhauerAgent):
-    def __init__(self, env, params):
+    def __init__(self, env, params: Params):
         super().__init__(env, params)
         self.vtable = np.zeros(params.state_size)
         self.qtable = np.zeros((params.state_size, params.action_size))
@@ -28,6 +27,9 @@ class RLAgent(SchopenhauerAgent):
     def process_step(self, *args):
         pass
 
+    def process_episode(self, *args):
+        pass
+
     def generate_trajectory(self) -> Trajectory:
         trajectory = Trajectory(steps=[])
         state, info = self.env.reset()
@@ -40,6 +42,26 @@ class RLAgent(SchopenhauerAgent):
             self.process_step()
         return trajectory
 
+    def evaluate_trajectory(self, trajectory: Trajectory) -> tuple[np.ndarray, np.ndarray]:
+        returns = np.zeros((self.params.state_size, self.params.action_size))
+        counts = np.zeros((self.params.state_size, self.params.action_size))
+        total_reward = 0
+        for t in reversed(trajectory.steps):
+            state, action, reward = t.state, t.action, t.reward
+            total_reward += reward
+            returns[state, action] += total_reward
+            counts[state, action] += 1
+        return returns, counts
+
+    def evaluate_trajectories(self, trajectories: list[Trajectory]):
+        returns = np.zeros((self.params.state_size, self.params.action_size))
+        counts = np.zeros((self.params.state_size, self.params.action_size))
+        for trajectory in trajectories:
+            r, c = self.evaluate_trajectory(trajectory)
+            returns += r
+            counts += c
+        return returns, counts
+
 
 class Learner(RLAgent):
     def __init__(self, env, params):
@@ -51,6 +73,9 @@ class Learner(RLAgent):
     def reset_q_table(self):
         self.qtable = np.zeros((self.params.state_size, self.params.action_size))
 
+    def update_qtable(self, *args):
+        pass
+
     def run_env(self):
         qtables = np.zeros((self.params.n_runs,
                             self.params.state_size,
@@ -60,6 +85,7 @@ class Learner(RLAgent):
             for episode in range(self.params.total_episodes):
                 trajectory = self.generate_trajectory()
                 self.trajectories[episode].append(trajectory)
+            self.process_episode()
             qtables[n, :, :] = self.qtable
         self.qtable = qtables.mean(axis=0)
 
@@ -71,17 +97,9 @@ class RMCLearner(Learner):
     def get_action(self, state):
         action = self.env.action_space.sample()
         return action
-     def evaluate_trajectories(self):
-        returns = np.zeros((self.params.state_size, self.params.action_size))
-        counts = np.zeros((self.params.state_size, self.params.action_size))
-        for episode, trajectories in self.trajectories.items():
-            for trajectory in trajectories:
-                episode_reward = 0
-                for t in reversed(trajectory):
-                    state, action, reward = t.state, t.action, t.reward
-                    episode_reward += reward
-                    returns[state, action] += episode_reward
-                    counts[state, action] += 1
+
+    def process_episode(self, *args):
+        returns, counts = self.evaluate_trajectories(self.trajectories.values())
         self.update_qtable(returns, counts)
 
     def update_qtable(self, returns, counts):
@@ -89,6 +107,7 @@ class RMCLearner(Learner):
                                 counts,
                                 out=np.zeros_like(returns),
                                 where=counts != 0)
+
 
 class IMCAgent(Agent):
     def __init__(self, env, params):
