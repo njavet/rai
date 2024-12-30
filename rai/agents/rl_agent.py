@@ -25,7 +25,7 @@ class RLAgent(SchopenhauerAgent):
         done = term or trunc
         return next_state, ts, done
 
-    def process_step(self):
+    def process_step(self, *args):
         pass
 
     def generate_trajectory(self) -> Trajectory:
@@ -40,23 +40,6 @@ class RLAgent(SchopenhauerAgent):
             self.process_step()
         return trajectory
 
-    def run_env(self):
-        pass
-
-
-
-    def run(self):
-        qtables = np.zeros((self.params.n_runs,
-                            self.params.state_size,
-                            self.params.action_size))
-        for n in range(self.params.n_runs):
-            self.reset_tables()
-            for episode in range(self.params.total_episodes):
-                trajectory = self.generate_trajectory(self.get_action)
-                self.trajectories[episode].append(trajectory)
-            qtables[n, :, :] = self.qtable
-        self.qtable = qtables.mean(axis=0)
-
 
 class Learner(RLAgent):
     def __init__(self, env, params):
@@ -64,3 +47,96 @@ class Learner(RLAgent):
 
     def get_action(self, state: int) -> int:
         raise NotImplementedError
+
+    def reset_q_table(self):
+        self.qtable = np.zeros((self.params.state_size, self.params.action_size))
+
+    def run_env(self):
+        qtables = np.zeros((self.params.n_runs,
+                            self.params.state_size,
+                            self.params.action_size))
+        for n in range(self.params.n_runs):
+            self.reset_q_table()
+            for episode in range(self.params.total_episodes):
+                trajectory = self.generate_trajectory()
+                self.trajectories[episode].append(trajectory)
+            qtables[n, :, :] = self.qtable
+        self.qtable = qtables.mean(axis=0)
+
+
+class RMCLearner(Learner):
+    def __init__(self, env, params):
+        super().__init__(env, params)
+
+    def get_action(self, state):
+        action = self.env.action_space.sample()
+        return action
+     def evaluate_trajectories(self):
+        returns = np.zeros((self.params.state_size, self.params.action_size))
+        counts = np.zeros((self.params.state_size, self.params.action_size))
+        for episode, trajectories in self.trajectories.items():
+            for trajectory in trajectories:
+                episode_reward = 0
+                for t in reversed(trajectory):
+                    state, action, reward = t.state, t.action, t.reward
+                    episode_reward += reward
+                    returns[state, action] += episode_reward
+                    counts[state, action] += 1
+        self.update_qtable(returns, counts)
+
+    def update_qtable(self, returns, counts):
+        self.qtable = np.divide(returns,
+                                counts,
+                                out=np.zeros_like(returns),
+                                where=counts != 0)
+
+class IMCAgent(Agent):
+    def __init__(self, env, params):
+        super().__init__(env, params)
+        self.returns = np.zeros((params.state_size, params.action_size))
+        self.counts = np.zeros((params.state_size, params.action_size))
+
+    def get_action(self, state):
+        if np.random.rand() < self.params.epsilon:
+            action = self.env.action_space.sample()
+        else:
+            action = self.get_optimal_action(state)
+        return action
+
+    def run_episode(self):
+        trajectory = self.generate_trajectory(self.get_action)
+        episode_reward = 0
+        for i, t in enumerate(reversed(trajectory)):
+            state, action, reward = t.state, t.action, t.reward
+            episode_reward += reward
+            self.returns[state, action] += episode_reward
+            self.counts[state, action] += 1
+        self.update()
+
+    def update(self):
+        self.qtable = np.divide(self.returns,
+                                self.counts,
+                                out=np.zeros_like(self.returns),
+                                where=self.counts != 0)
+        self.vtable = np.max(self.qtable, axis=1)
+
+
+class QLearner(Learner):
+    def __init__(self, env, params):
+        super().__init__(env, params)
+
+    def get_action(self, state):
+        if np.random.rand() < self.params.epsilon:
+            action = self.env.action_space.sample()
+        else:
+            action = random_argmax(self.qtable[state])
+        return action
+
+    def process_step(self, state, action, reward, next_state):
+        """ Q-function update
+             Q_update(s,a):= Q(s,a) + learning_rate * delta
+                 delta =  [R(s,a) + gamma * max Q(s',a') - Q(s,a)] """
+        # Compute the temporal difference (TD) target
+        bfq = self.params.gamma * np.argmax(self.qtable[next_state])
+        delta = self.params.alpha * (reward + bfq - self.qtable[state, action])
+        self.qtable[state, action] = self.qtable[state, action] + delta
