@@ -19,7 +19,7 @@ def create_parser():
 
 
 def get_default_params():
-    params = Params(total_episodes=4,
+    params = Params(total_episodes=2**16,
                     alpha=0.1,
                     gamma=0.98,
                     epsilon=0.8,
@@ -84,7 +84,7 @@ def main():
                     else:
                         env.state[action] = 2
                         invalid = False
-
+            env.determine_winner()
             # print new state, evaluate game
             if turn == 1:
                 tt = 'X'

@@ -58,6 +58,10 @@ class T3Agent(Learner):
         val = self.vtable.get(state, 0.5)
         tmp = reward + self.params.gamma * next_val - val
         self.vtable[state] = val + self.params.alpha * tmp
+        if reward == -1:
+            self.vtable[state] = 0
+        elif reward == 1:
+            self.vtable[state] = 1
 
     def run_env(self):
         print('will run:', self.params.total_episodes)
