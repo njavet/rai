@@ -23,6 +23,6 @@ class QLearner(Learner):
         # Compute the temporal difference (TD) target
         ts = self.trajectory.steps[-1]
         state, action, reward = ts.state, ts.action, ts.reward
-        bfq = self.params.gamma * np.argmax(self.qtable[next_state])
+        bfq = self.params.gamma * np.max(self.qtable[next_state])
         delta = self.params.alpha * (reward + bfq - self.qtable[state, action])
         self.qtable[state, action] = self.qtable[state, action] + delta

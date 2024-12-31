@@ -29,7 +29,7 @@ class Agent(Life):
             json.dump(model, f, indent=2)
 
     def policy(self, state: int) -> int:
-        
+
 
     def get_best_action(board, model, turn, debug=False):
         free_fields = engine.get_free_fields(board)

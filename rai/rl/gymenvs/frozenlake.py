@@ -11,17 +11,17 @@ from rai.utils.models import Params
 
 
 def get_default_params():
-    params = Params(total_episodes=2048,
+    params = Params(total_episodes=4*4096,
                     alpha=0.1,
                     gamma=0.99,
-                    epsilon=0.3,
-                    map_size=4,
+                    epsilon=0.2,
+                    map_size=5,
                     seed=0x101,
                     is_slippery=False,
-                    n_runs=16,
+                    n_runs=4*8,
                     action_size=None,
                     state_size=None,
-                    proba_frozen=0.8,
+                    proba_frozen=0.75,
                     savefig_folder=Path('rl', 'figs'))
     return params
 
@@ -47,10 +47,10 @@ def frozenlake():
     fig = plot_q_values_map(mc_agent.qtable, env, params.map_size)
     fig.show()
 
-    #q_learner = QLearner(env, params)
-    #q_learner.run_env()
-    #fig = plot_q_values_map(q_learner.qtable, env, params.map_size)
-    #fig.show()
+    q_learner = QLearner(env, params)
+    q_learner.run_env()
+    fig = plot_q_values_map(q_learner.qtable, env, params.map_size)
+    fig.show()
     plt.show()
     # fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
     # plt.imshow(env.render())
