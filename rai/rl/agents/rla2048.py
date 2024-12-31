@@ -33,7 +33,7 @@ class Agent:
 
     def expectimax(self, grid: np.ndarray, depth: int, agent_play: bool) -> float:
         if depth == 0:
-            return self.utility(grid)
+            return self.noe_utility(grid)
 
         if agent_play:
             alpha = 0
