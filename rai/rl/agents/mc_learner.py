@@ -5,7 +5,7 @@ from rai.rl.agents.learner import Learner
 from rai.utils.helpers import random_argmax
 
 
-class IMCLearner(Learner):
+class MCLearner(Learner):
     def __init__(self, env, params):
         super().__init__(env, params)
 
@@ -17,10 +17,7 @@ class IMCLearner(Learner):
         return action
 
     def process_episode(self, episode):
-        returns, count = super().process_episode(episode)
-        self.update_qtable(returns, count)
-
-    def update_qtable(self, returns, counts):
+        returns, counts = super().process_episode(episode)
         qtable = np.divide(returns,
                            counts,
                            out=np.zeros_like(returns),

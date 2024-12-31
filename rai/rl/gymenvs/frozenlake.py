@@ -4,8 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # project imports
-from rai.rl.agents.rmc_learner import RMCLearner
-from rai.rl.agents.imc_learner import IMCLearner
+from rai.rl.agents.mc_learner import MCLearner
 from rai.rl.agents.q_learner import QLearner
 from rai.utils.helpers import plot_q_values_map
 from rai.utils.models import Params
@@ -42,12 +41,10 @@ def get_env(params):
 def frozenlake():
     params = get_default_params()
     env = get_env(params)
-    # random monte carlo agent
-    rmc_agent = RMCLearner(env, params)
-    # rmc_agent.run_env()
-    imc_agent = IMCLearner(env, params)
-    imc_agent.run_env()
-    fig = plot_q_values_map(imc_agent.qtable, env, params.map_size)
+
+    mc_agent = MCLearner(env, params)
+    mc_agent.run_env()
+    fig = plot_q_values_map(mc_agent.qtable, env, params.map_size)
     fig.show()
 
     #q_learner = QLearner(env, params)

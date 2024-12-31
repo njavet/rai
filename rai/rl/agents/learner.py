@@ -2,10 +2,10 @@ import numpy as np
 from collections import defaultdict
 
 # project imports
-from rai.rl.agents.schopenhauer import SchopenhauerAgent
+from rai.rl.life import Life
 
 
-class Learner(SchopenhauerAgent):
+class Learner(Life):
     def __init__(self, env, params):
         super().__init__(env, params)
         self.vtable = np.zeros(params.state_size)
