@@ -9,4 +9,3 @@ for playing 2048 you need to install geckodriver
 cd rai
 poetry install
 ```
-

@@ -2,7 +2,7 @@
 name = "rai"
 version = "0.1.0"
 description = ""
-authors = ["Noe Javet <np.javet@gmail.com>"]
+authors = ["Noe Javet <javetnoe@students.zhaw.ch>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -32,4 +32,3 @@ build-backend = "poetry.core.masonry.api"
 grid = "rai.rl.grid:main"
 fl = "rai.rl.gymenvs:frozenlake"
 play_2048 = "rai.g2048:play_2048"
-
