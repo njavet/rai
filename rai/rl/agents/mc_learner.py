@@ -10,7 +10,8 @@ class MCLearner(Learner):
         super().__init__(env, params)
 
     def policy(self, state):
-        if np.random.rand() < self.params.epsilon:
+        epsilon = max(self.params.epsilon_min, self.params.epsilon * self.params.decay)
+        if np.random.rand() < epsilon:
             action = self.env.action_space.sample()
         else:
             action = random_argmax(self.qtable[state])

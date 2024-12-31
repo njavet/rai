@@ -11,14 +11,15 @@ from rai.utils.models import Params
 
 
 def get_default_params():
-    params = Params(total_episodes=4*4096,
+    params = Params(total_episodes=2**14,
                     alpha=0.1,
                     gamma=0.99,
-                    epsilon=0.2,
-                    map_size=5,
+                    epsilon=0.8,
+                    decay=0.99,
+                    map_size=6,
                     seed=0x101,
-                    is_slippery=False,
-                    n_runs=4*8,
+                    is_slippery=True,
+                    n_runs=64,
                     action_size=None,
                     state_size=None,
                     proba_frozen=0.75,
