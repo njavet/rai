@@ -4,11 +4,12 @@ import time
 
 # project imports
 from rai.g2048.ffctrl import FirefoxControl
-from rai.g2048.agent import find_best_move
+from rai.g2048.agent import Agent
 
 
 def play_2048():
     fc = FirefoxControl()
+    agent = Agent()
     try:
         fc.driver.get(fc.url)
         fc.game_container = fc.driver.find_element(By.TAG_NAME, 'body')
@@ -18,8 +19,7 @@ def play_2048():
 
         while True:
             board = fc.get_board()
-            grid = np.array(board)
-            move = find_best_move(grid)
+            move = agent.find_best_move(board)
             fc.send_move(move)
             score = fc.get_score()
             print('SCORE', score)
