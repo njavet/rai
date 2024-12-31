@@ -7,6 +7,8 @@ class Params(BaseModel):
     alpha: float
     gamma: float
     epsilon: float
+    epsilon_min: float
+    decay: float
     map_size: int
     seed: int
     is_slippery: bool

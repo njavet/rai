@@ -15,7 +15,7 @@ class BaseEnv(ABC):
         self.goal_pos = 15
         self.agent_pos = 0
 
-    def reset(self):
+    def reset(self) -> tuple[int, str]:
         raise NotImplementedError
 
     def step(self, action):

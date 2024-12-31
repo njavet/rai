@@ -1,38 +1,81 @@
 from rich.console import Console
+import numpy as np
 from rich.text import Text
 
 # project imports
-from rai.rl.envs.base import BaseEnv, ObservationSpace, ActionSpace
+from rai.rl.envs.base import BaseEnv
 
 
 class T3Env(BaseEnv):
     def __init__(self):
         super().__init__('tictactoe')
         self.console = Console()
+        self.size = 9
+        self.state = np.zeros(self.size, dtype=np.int8)
         self.winner = None
+
+    def reset(self) -> tuple[int, str]:
+        self.state = np.zeros(9, dtype=np.int8)
+        return 0, 'reset'
+
+    # TODO different than other envs, move restrictions
+    def available_moves(self) -> list[int]:
+        pass
+
+    def step(self, action):
+        if np.where(self.state == 0)[0].size % 2 == 0:
+            player = 2
+        else:
+            player = 1
+        self.state[action] = player
+        self.determine_winner()
+        if self.winner == 1:
+            term = True
+            reward = 1
+        elif self.winner == 2:
+            term = True
+            reward = -1
+        elif self.game_over:
+            term = True
+            reward = 0
+        else:
+            term = False
+            reward = 0
+        return self.encode_state(), reward, term, False, None
+
+    def encode_state(self) -> int:
+        tern = np.array([3**(self.size - i) for i in range(1, self.size + 1)])
+        return int(np.sum(self.state * tern))
+
+    def determine_winner(self):
+        # rows
+        if self.state[0:3] == 1 or self.state[3:6] == 1 or self.state[6:] == 1:
+            self.winner = 1
+        elif self.state[0:3] == 2 or self.state[3:6] == 2 or self.state[6:] == 2:
+            self.winner = 2
+
+        # cols
+        elif self.state[0::3] == 1 or self.state[1::3] == 1 or self.state[2::3] == 1:
+            self.winner = 1
+        elif self.state[0::3] == 2 or self.state[1::3] == 2 or self.state[2::3] == 2:
+            self.winner = 2
+
+        # diags
+        elif self.state[0::4] == 1 or self.state[2:-1:2] == 1:
+            self.winner = 1
+        elif self.state[0::4] == 2 or self.state[2:-1:2] == 2:
+            self.winner = 2
+        else:
+            self.winner = None
 
     @property
     def game_over(self):
         if self.winner:
             return True
-        free_cells = self.state.get_free_cells()
-        if not free_cells:
-            return True
-
-        return False
-
-    def is_valid_action(self, action):
-        free_cells = self.state.get_free_cells()
-        if action in free_cells:
+        elif np.sum(np.where(self.state == 0)) == 0:
             return True
         else:
             return False
-
-    def execute_action(self, action, sym):
-        old_board = self.state.board
-        new_board = old_board[0:action] + sym + old_board[action+1:]
-        self.state.board = new_board
-        return self.state
 
     def pprint_board(self):
         """
@@ -41,9 +84,9 @@ class T3Env(BaseEnv):
         respective field numbers.
         """
         hl = 13 * '-'
-        r0 = ' | '.join(self.env.state.board[0:3])
-        r1 = ' | '.join(self.env.state.board[3:6])
-        r2 = ' | '.join(self.env.state.board[6:9])
+        r0 = ' | '.join(self.state[0:3])
+        r1 = ' | '.join(self.state[3:6])
+        r2 = ' | '.join(self.state[6:9])
 
         self.console.print(hl, style='#6312ff')
         self.console.print('| ' + r0 + ' |', style='cyan')
@@ -53,10 +96,6 @@ class T3Env(BaseEnv):
         self.console.print('| ' + r2 + ' |', style='cyan')
         self.console.print(hl, style='#6312ff')
 
-        if with_numbers:
-            # replace ' ' by field-number
-            board = ''.join([str(i) if board[i] == ' ' else board[i] for i in range(9)])
-
         t0 = Text('|'.join([*board[0:3]]) + '\n-----\n')
         t1 = Text('|'.join([*board[3:6]]) + '\n-----\n')
         t2 = Text('|'.join([*board[6:9]]))
@@ -65,72 +104,3 @@ class T3Env(BaseEnv):
             '|'.join([*board[3:6]]),
             '|'.join([*board[6:9]])
         ]))
-
-
-class ObsSpace(ObservationSpace):
-    def __init__(self):
-        super().__init__(size=9, start=None, terminal=None)
-
-    def get_free_cells(self):
-        free_cells = []
-        for i, cell in enumerate(self.board):
-            if cell == ' ':
-                free_cells.append(i)
-        return free_cells
-
-    def get_winner(self):
-        # check rows
-        rows = [self.board[0:3], self.board[3:6], self.board[6:]]
-        if any([row == 'XXX' for row in rows]):
-            return 'X'
-        elif any([row == 'OOO' for row in rows]):
-            return 'O'
-        # check columns
-        cols = [self.board[0::3], self.board[1::3], self.board[2::3]]
-        if any([col == 'XXX' for col in cols]):
-            return 'X'
-        elif any([col == 'OOO' for col in cols]):
-            return 'O'
-
-        if self.board[0::4] == 'OOO':
-            return 'O'
-        elif self.board[0::4] == 'XXX':
-            return 'X'
-
-        if self.board[2::2] == 'OOO':
-            return 'O'
-        elif self.board[2::2] == 'XXX':
-            return 'X'
-
-
-
-def evaluate(board):
-
-    # check rows
-    rows = [board[0:3], board[3:6], board[6:9]]
-    if any(r == 'XXX' for r in rows):
-        return True, 'X', 1
-    elif any(r == 'OOO' for r in rows):
-        return True, 'O', -1
-
-    # check cols
-    cols = [board[::3], board[1::3], board[2::3]]
-    if any(c == 'XXX' for c in cols):
-        return True, 'X', 1
-    elif any(c == 'OOO' for c in cols):
-        return True, 'O', -1
-
-    # check diags
-    diags = [board[::4], board[2:-1:2]]
-    if any(d == 'XXX' for d in diags):
-        return True, 'X', 1
-    elif any(d == 'OOO' for d in diags):
-        return True, 'O', -1
-
-    # check draw (board full):
-    if count_symbol(board, ' ') == 0:
-        return True, 'Nobody', 0
-
-    # otherwise: game not over
-    return False, 'Nobody', 0
-

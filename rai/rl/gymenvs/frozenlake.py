@@ -15,6 +15,7 @@ def get_default_params():
                     alpha=0.1,
                     gamma=0.99,
                     epsilon=0.8,
+                    epsilon_min=0.05,
                     decay=0.99,
                     map_size=6,
                     seed=0x101,

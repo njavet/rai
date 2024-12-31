@@ -9,9 +9,9 @@ class Grid(BaseEnv):
         self.m = m
         self.n = n
 
-    def reset(self):
-        # TODO good practice ?
-        return Grid(self.m, self.n), 'No info yet'
+    def reset(self) -> tuple[int, str]:
+        self.agent_pos = 0
+        return self.agent_pos, 'No info yet'
 
     def pos_to_tuple(self):
         """ convert integer position to grid position"""
