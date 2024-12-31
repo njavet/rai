@@ -1,16 +1,13 @@
 import numpy as np
 
 # project imports
-from rai.rl.models import Trajectory, Action
+from rai.rl.agents.base import SchopenhauerAgent
+from rai.utils.models import Trajectory, TrajectoryStep
 
 
-class Agent:
-    def __init__(self, env, max_steps: int = 1024):
-        # This would be a schopenhauer agent, since the "world" is part
-        # of the agent, not the other way round
-        self.env = env
-        self.max_steps = max_steps
-        self.action_space = [action for action in Action]
+class Agent(SchopenhauerAgent):
+    def __init__(self, env, params):
+        super().__init__(env, params)
         self.qtable = np.zeros((self.env.height, self.env.width, len(self.action_space)),
                                dtype=np.float64)
         self.counts = np.zeros((self.env.height, self.env.width, len(self.action_space)),

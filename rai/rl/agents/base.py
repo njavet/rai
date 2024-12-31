@@ -18,6 +18,18 @@ class SchopenhauerAgent(ABC):
         self.env = env
         self.params = params
 
+    def exec_step(self, state: int, action: int) -> tuple[int, TrajectoryStep, bool]:
+        next_state, reward, term, trunc, info = self.env.step(action)
+        ts = TrajectoryStep(state=state, action=int(action), reward=reward)
+        done = term or trunc
+        return next_state, ts, done
+
+    def process_step(self, ts, next_state):
+        pass
+
+    def process_episode(self, episode):
+        pass
+
 
 class Learner(SchopenhauerAgent):
     def __init__(self, env, params):
@@ -31,18 +43,6 @@ class Learner(SchopenhauerAgent):
 
     def get_action(self, state: int) -> int:
         raise NotImplementedError
-
-    def exec_step(self, state: int, action: int) -> tuple[int, TrajectoryStep, bool]:
-        next_state, reward, term, trunc, info = self.env.step(action)
-        ts = TrajectoryStep(state=state, action=int(action), reward=reward)
-        done = term or trunc
-        return next_state, ts, done
-
-    def process_step(self, ts, next_state):
-        pass
-
-    def process_episode(self, episode):
-        pass
 
     def process_episodes(self):
         pass
