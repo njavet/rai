@@ -2,23 +2,23 @@ import unittest
 import numpy as np
 
 # project imports
-from rai.g2048.expectimax import (merge_up,
-                                  merge_down,
-                                  merge_left,
-                                  merge_right)
+from rai.g2048.agent import Simulator
 
+# TODO vim practice
 
 class TestMerge(unittest.TestCase):
     def setUp(self):
-        self.grid0 = np.array([[2, 2, 2, 2],
-                               [4, 4, 0, 0],
-                               [2, 4, 8, 16],
-                               [2, 0, 2, 4]])
+        grid0 = np.array([[2, 2, 2, 2],
+                          [4, 4, 0, 0],
+                          [2, 4, 8, 16],
+                          [2, 0, 2, 4]])
+        self.simulator0 = Simulator(grid0)
 
-        self.grid1 = np.array([[2, 2, 4, 2],
-                               [8, 4, 4, 16],
-                               [8, 0, 0, 16],
-                               [0, 0, 0, 32]])
+        grid1 = np.array([[2, 2, 4, 2],
+                          [8, 4, 4, 16],
+                          [8, 0, 0, 16],
+                          [0, 0, 0, 32]])
+        self.simulator1 = Simulator(grid1)
 
     def test_merge_left_grid0(self):
         grid, _ = merge_left(self.grid0)
