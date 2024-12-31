@@ -67,5 +67,22 @@ def main():
                 break
 
 
+
+def print_help(console=None):
+    """
+    Print a help text for a potential user as how to address fields in the
+    board.
+    """
+    if console is None:
+        console = Console()
+
+    console.print("The fields in the board are addressed with "
+                  "single numbers in the following way:")
+    console.print('0|1|2')
+    console.print('-----')
+    console.print('3|4|5')
+    console.print('-----')
+    console.print('6|7|8')
+
 if __name__ == '__main__':
     main()
