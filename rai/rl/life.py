@@ -10,8 +10,8 @@ class Life:
         self.params = params
         self.trajectory = Trajectory()
 
-    # TODO policy should be from the agent
-    #  problem it an agent should have learners, but therefore they
+    # TODO policy should come from the agent
+    #  problem is an agent should have learners, but therefore they
     #  should not inherit from the agent class itself
     def policy(self, state: int) -> int:
         raise NotImplementedError
