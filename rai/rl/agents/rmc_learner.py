@@ -1,14 +1,14 @@
 import numpy as np
 
 # project imports
-from rai.agents.base import Learner
+from rai.rl.agents.base import Learner
 
 
 class RMCLearner(Learner):
     def __init__(self, env, params):
         super().__init__(env, params)
 
-    def get_action(self, state):
+    def policy(self, state):
         action = self.env.action_space.sample()
         return action
 
@@ -17,7 +17,7 @@ class RMCLearner(Learner):
         counts = np.zeros((self.params.state_size, self.params.action_size))
         for episode, trajectories in self.trajectories.items():
             for trajectory in trajectories:
-                rs, cs = self.evaluate_trajectory(trajectory)
+                rs, cs = self.process_episode(episode)
                 returns += rs
                 counts += cs
         self.update_qtable(returns, counts)

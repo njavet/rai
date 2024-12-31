@@ -11,7 +11,7 @@ class BaseEnv(ABC):
         self.name = name
         # TODO generalize
         self.obs_space = ObservationSpace(size=16, start=0, terminal=15)
-        self.act_space = ActionSpace(size=4)
+        self.action_space = ActionSpace(size=4)
         self.goal_pos = 15
         self.agent_pos = 0
 

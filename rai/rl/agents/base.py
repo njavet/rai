@@ -83,8 +83,8 @@ class Learner(SchopenhauerAgent):
         for n in range(self.params.n_runs):
             self.reset_q_table()
             for episode in range(self.params.total_episodes):
-                trajectory = self.generate_trajectory()
-                self.trajectories[episode].append(trajectory)
+                self.generate_trajectory()
+                self.trajectories[episode].append(self.trajectory)
                 # the agent might want to do something after each episode
                 self.process_episode(episode)
             # the agent might want to do something after all episodes
