@@ -30,15 +30,15 @@ def get_default_params():
                     seed=0x101,
                     is_slippery=True,
                     n_runs=64,
-                    action_size=None,
-                    state_size=None,
+                    action_size=9,
+                    state_size=3,
                     proba_frozen=0.75,
                     savefig_folder=Path('rl', 'figs'))
     return params
 
 
 def main():
-    args = parse_args(sys.argv[1:])
+    args = parse_args()
     training_mode = args.t
     console = Console()
     random.seed()
@@ -75,20 +75,30 @@ def main():
                 env.step(action)
             else:
                 # get player's input (until valid) and make the respective move
-                valid = True
-                while not valid:
+                invalid = True
+                while invalid:
                     field = input("Which field to set? ")
                     action = int(field)
                     if action not in env.available_moves():
-                        valid = False
+                        print('invalid move')
+                        print('moves:', env.available_moves())
                     else:
                         env.state[action] = 2
+                        invalid = False
 
             # print new state, evaluate game
-            print('Game after ' + turn + "'s move: ")
+            if turn == 1:
+                tt = 'X'
+            else:
+                tt = 'O'
+            print('Game after ' + tt + "'s move: ")
             env.pprint_board()
 
-        print('The game is over. ' + env.winner + ' won.')
+        if env.winner == 1:
+            tt = 'X'
+        else:
+            tt = 'O'
+        print('The game is over. ' + tt + ' won.')
 
 
 def print_help(console=None):

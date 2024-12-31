@@ -26,7 +26,7 @@ class T3Agent(Learner):
         for i in range(num_cells - 1, -1, -1):
             board[i] = state % base
             state //= base
-        return board.reshape((board_size, board_size))
+        return board
 
     def encode_state(self, state) -> int:
         tern = np.array([3**(9 - i) for i in range(1, 9 + 1)])

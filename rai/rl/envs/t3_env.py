@@ -20,7 +20,7 @@ class T3Env(BaseEnv):
 
     # TODO different than other envs, move restrictions
     def available_moves(self) -> list[int]:
-        return list(np.where(self.state == 0)[0])
+        return [int(a) for a in np.where(self.state == 0)[0]]
 
     def whos_turn(self):
         if np.where(self.state == 0)[0].size % 2 == 0:
@@ -55,25 +55,18 @@ class T3Env(BaseEnv):
         return int(np.sum(self.state * tern))
 
     def determine_winner(self):
-        # rows
-        if self.state[0:3] == 1 or self.state[3:6] == 1 or self.state[6:] == 1:
-            self.winner = 1
-        elif self.state[0:3] == 2 or self.state[3:6] == 2 or self.state[6:] == 2:
-            self.winner = 2
-
-        # cols
-        elif self.state[0::3] == 1 or self.state[1::3] == 1 or self.state[2::3] == 1:
-            self.winner = 1
-        elif self.state[0::3] == 2 or self.state[1::3] == 2 or self.state[2::3] == 2:
-            self.winner = 2
-
-        # diags
-        elif self.state[0::4] == 1 or self.state[2:-1:2] == 1:
-            self.winner = 1
-        elif self.state[0::4] == 2 or self.state[2:-1:2] == 2:
-            self.winner = 2
-        else:
-            self.winner = None
+        board = [int(a) for a in self.state]
+        winning = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ]
+        for combo in winning:
+            if board[combo[0]] == board[combo[1]] == board[combo[2]] != 0:
+                self.winner = board[combo[0]]
+                break
+            else:
+                self.winner = None
 
     @property
     def game_over(self):
@@ -90,10 +83,14 @@ class T3Env(BaseEnv):
         state). If IF_NUMBERS == True, the emtpy fields are printed with their
         respective field numbers.
         """
+        dix = {0: ' ',
+               1: 'X',
+               2: 'O'}
+
         hl = 13 * '-'
-        r0 = ' | '.join(map(lambda x: str(x), self.state[0:3]))
-        r1 = ' | '.join(map(lambda x: str(x), self.state[3:6]))
-        r2 = ' | '.join(map(lambda x: str(x), self.state[6:9]))
+        r0 = ' | '.join(map(lambda x: dix[x], self.state[0:3]))
+        r1 = ' | '.join(map(lambda x: dix[x], self.state[3:6]))
+        r2 = ' | '.join(map(lambda x: dix[x], self.state[6:9]))
 
         self.console.print(hl, style='#6312ff')
         self.console.print('| ' + r0 + ' |', style='cyan')
