@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from pathlib import Path
-from enum import Enum
 
 
 class Params(BaseModel):
