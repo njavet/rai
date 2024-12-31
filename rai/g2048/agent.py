@@ -33,7 +33,7 @@ class Agent:
 
     def expectimax(self, grid: np.ndarray, depth: int, agent_play: bool) -> float:
         if depth == 0:
-            return self.utility(grid)
+            return self.noe_utility(grid)
 
         if agent_play:
             alpha = 0
@@ -59,6 +59,22 @@ class Agent:
                 ng4[i][j] = 4
                 expected_value += 0.1 * self.expectimax(ng4, depth-1, True)
             return (1 / zeros) * expected_value
+
+    @staticmethod
+    def noe_utility(grid: np.array) -> float:
+        """
+        how I recently played the game:
+        zero tiles are not involved, neither is reward nor larger tiles
+        only the monotony and keeping the largest tile in the corner
+         """
+        mono = 0
+        mon_dec0 = np.all([grid[0][i + 1] <= val for i, val in enumerate(grid[0][:-1])])
+        mon_dec1 = np.all([grid[1][i + 1] <= val for i, val in enumerate(grid[1][:-1])])
+        if mon_dec0:
+            mono += 2
+        if mon_dec1:
+            mono += 1
+        return mono
 
     @staticmethod
     def utility(grid: np.array) -> float:
