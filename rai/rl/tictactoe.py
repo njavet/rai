@@ -1,5 +1,4 @@
 import random
-import sys
 from rich.text import Text
 from pathlib import Path
 from rich.console import Console
@@ -11,18 +10,18 @@ from rai.rl.agents.t3_agent import T3Agent
 from rai.rl.envs.t3_env import T3Env
 
 
-def parse_args(argv):
+def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', help='training mode (default: False)', action='store_const', const=True, default=False)
+    parser.add_argument('-t', help='training mode (default: False)', type=int)
     parser.add_argument('-n', help='number of games in self play', default=10000)
     parser.add_argument('-m', help='model file', default='model.json')
-    return parser.parse_args(argv)
+    return parser
 
 
 def get_default_params():
-    params = Params(total_episodes=2**14,
+    params = Params(total_episodes=4,
                     alpha=0.1,
-                    gamma=0.99,
+                    gamma=0.98,
                     epsilon=0.8,
                     epsilon_min=0.05,
                     decay=0.99,
@@ -38,10 +37,9 @@ def get_default_params():
 
 
 def main():
-    args = parse_args()
-    training_mode = args.t
+    parser = create_parser()
+    args = parser.parse_args()
     console = Console()
-    random.seed()
 
     console.print('Welcome to the Tic-Tac-Toe self-play RL agent environment.')
     print_help(console)
@@ -51,25 +49,26 @@ def main():
     agent = T3Agent(env, params)
 
     # train a RL agent by self-play
-    if training_mode:
+    if args.t == 1:
+        agent.actions = env.available_moves()
         agent.run_env()
 
     # apply a trained RL agent in a game against a human
     else: 
         board = env.state
         try:
-            model = agent.load_model()
+            agent.load_model()
+            agent.params.epsilon = 0
         except FileNotFoundError:
             print('There is no model...')
-            model = {}
 
         print('You are player O, the computer starts.')
         
         while not env.game_over:
             turn = env.whos_turn()
-            agent.actions = env.available_moves()
             # X -> agent
             if turn == 1:
+                agent.actions = env.available_moves()
                 state = agent.encode_state(board)
                 action = agent.policy(state)
                 env.step(action)
@@ -77,11 +76,11 @@ def main():
                 # get player's input (until valid) and make the respective move
                 invalid = True
                 while invalid:
-                    field = input("Which field to set? ")
-                    action = int(field)
-                    if action not in env.available_moves():
+                    actions = env.available_moves()
+                    action = int(input('Which field to set?'))
+                    if action not in actions:
                         print('invalid move')
-                        print('moves:', env.available_moves())
+                        print('moves:', actions)
                     else:
                         env.state[action] = 2
                         invalid = False
@@ -93,11 +92,14 @@ def main():
                 tt = 'O'
             print('Game after ' + tt + "'s move: ")
             env.pprint_board()
+            print('state:', env.encode_state())
 
         if env.winner == 1:
             tt = 'X'
-        else:
+        elif env.winner == 2:
             tt = 'O'
+        else:
+            tt = 'nobody'
         print('The game is over. ' + tt + ' won.')
 
 

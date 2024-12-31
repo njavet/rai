@@ -14,7 +14,8 @@ class T3Agent(Learner):
 
     def load_model(self):
         with open('vtable.json') as f:
-            self.vtable = json.load(f)
+            self.vtable = {int(k): v for k, v in json.load(f).items()}
+        print('model loaded...')
 
     def decode_state(self, state):
         base = 3
@@ -45,17 +46,21 @@ class T3Agent(Learner):
             sim_state = self.encode_state(sim_board)
             val = self.vtable.get(sim_state, 0.5)
             acts.append((val, action))
-        return sorted(acts, reverse=True)[0][1]
+        act = sorted(acts, reverse=True)[0][1]
+        return act
 
     def process_step(self, next_state):
         # Compute the temporal difference (TD) target
         ts = self.trajectory.steps[-1]
         state, action, reward = ts.state, ts.action, ts.reward
+
         next_val = self.vtable.get(next_state, 0.5)
-        tmp = reward + self.params.gamme * next_val - self.vtable[state]
-        self.vtable[state] += self.params.alpha * tmp
+        val = self.vtable.get(state, 0.5)
+        tmp = reward + self.params.gamma * next_val - val
+        self.vtable[state] = val + self.params.alpha * tmp
 
     def run_env(self):
+        print('will run:', self.params.total_episodes)
         for episode in range(self.params.total_episodes):
             self.generate_trajectory()
         with open('vtable.json', 'w') as f:

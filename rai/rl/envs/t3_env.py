@@ -30,8 +30,11 @@ class T3Env(BaseEnv):
         return player
 
     def step(self, action):
+        self.pprint_board()
         if np.where(self.state == 0)[0].size % 2 == 0:
             player = 2
+            actions = self.available_moves()
+            action = np.random.choice(actions)
         else:
             player = 1
         self.state[action] = player
