@@ -1,7 +1,7 @@
 import numpy as np
 
 # project imports
-from rai.rl.agents.base import SchopenhauerAgent
+from rai.rl.agents.schopenhauer import SchopenhauerAgent
 from rai.utils.models import Trajectory, TrajectoryStep
 
 

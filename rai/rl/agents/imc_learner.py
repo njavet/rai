@@ -1,7 +1,7 @@
 import numpy as np
 
 # project imports
-from rai.rl.agents.base import Learner
+from rai.rl.agents.learner import Learner
 from rai.utils.helpers import random_argmax
 
 
