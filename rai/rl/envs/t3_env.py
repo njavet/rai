@@ -20,7 +20,7 @@ class T3Env(BaseEnv):
 
     # TODO different than other envs, move restrictions
     def available_moves(self) -> list[int]:
-        pass
+        return list(np.where(self.state == 0)[0])
 
     def step(self, action):
         if np.where(self.state == 0)[0].size % 2 == 0:
@@ -84,9 +84,9 @@ class T3Env(BaseEnv):
         respective field numbers.
         """
         hl = 13 * '-'
-        r0 = ' | '.join(self.state[0:3])
-        r1 = ' | '.join(self.state[3:6])
-        r2 = ' | '.join(self.state[6:9])
+        r0 = ' | '.join(map(lambda x: str(x), self.state[0:3]))
+        r1 = ' | '.join(map(lambda x: str(x), self.state[3:6]))
+        r2 = ' | '.join(map(lambda x: str(x), self.state[6:9]))
 
         self.console.print(hl, style='#6312ff')
         self.console.print('| ' + r0 + ' |', style='cyan')
@@ -95,12 +95,3 @@ class T3Env(BaseEnv):
         self.console.print(hl, style='#6312ff')
         self.console.print('| ' + r2 + ' |', style='cyan')
         self.console.print(hl, style='#6312ff')
-
-        t0 = Text('|'.join([*board[0:3]]) + '\n-----\n')
-        t1 = Text('|'.join([*board[3:6]]) + '\n-----\n')
-        t2 = Text('|'.join([*board[6:9]]))
-        console.print('\n-----\n'.join([
-            '|'.join([*board[0:3]]),
-            '|'.join([*board[3:6]]),
-            '|'.join([*board[6:9]])
-        ]))
