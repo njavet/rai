@@ -13,6 +13,7 @@ jupyter = "^1.1.1"
 imageio = "^2.36.1"
 numpy = "^2.2.0"
 gymnasium = "^1.0.0"
+rich = "^13.9.4"
 
 
 [build-system]
