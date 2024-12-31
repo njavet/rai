@@ -1,6 +1,8 @@
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 
 def random_argmax(arr: np.ndarray) -> int:
@@ -49,11 +51,6 @@ def plot_q_values_map(qtable, env, map_size):
         spine.set_linewidth(0.7)
         spine.set_color("black")
     return fig
-import numpy as np
-import random
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
 
 
 def postprocess(episodes, params, rewards, steps, map_size):
@@ -77,7 +74,7 @@ def postprocess(episodes, params, rewards, steps, map_size):
     return res, st
 
 
-def qtable_directions_map(qtable, map_size):
+def _qtable_directions_map(qtable, map_size):
     """We want to plot the policy the agent has learned in the end. To do that
     we will: 1. extract the best Q-values from the Q-table for each state,
     2. get the corresponding best action for those Q-values, 3. map each
@@ -99,7 +96,7 @@ def qtable_directions_map(qtable, map_size):
     return qtable_val_max, qtable_directions
 
 
-def plot_q_values_map(qtable, env, map_size, params, img_label):
+def _plot_q_values_map(qtable, env, map_size, params, img_label):
     """With the following function, we'll plot on the left the last frame of
     the simulation. If the agent learned a good policy to solve the task, we
     expect to see it on the tile of the treasure in the last frame of the
@@ -138,7 +135,7 @@ def plot_q_values_map(qtable, env, map_size, params, img_label):
     # plt.show()
 
 
-def plot_states_actions_distribution(states, actions, map_size, params, img_label):
+def _plot_states_actions_distribution(states, actions, map_size, params, img_label):
     """As a sanity check, we can plot the distributions of states and actions
     with the following function:
     """
@@ -158,7 +155,7 @@ def plot_states_actions_distribution(states, actions, map_size, params, img_labe
     # plt.show()
 
 
-def plot_steps_and_rewards(rewards_df, steps_df, params, img_label):
+def _plot_steps_and_rewards(rewards_df, steps_df, params, img_label):
     """This function plots the cumulated sum of
     rewards, as well as the number of steps needed until the end of the
     episode."""
@@ -181,7 +178,7 @@ def plot_steps_and_rewards(rewards_df, steps_df, params, img_label):
     # plt.show()
 
 
-def record_video(env, qtable, params, fname, fps=1):
+def _record_video(env, qtable, params, fname, fps=1):
     """
   Generate a replay video of the agent
   :param env

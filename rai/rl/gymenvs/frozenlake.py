@@ -4,15 +4,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # project imports
-from rai.agents.rmc_learner import RMCLearner
-from rai.agents.imc_learner import IMCLearner
-from rai.agents.q_learner import QLearner
+from rai.rl.agents.rmc_learner import RMCLearner
+from rai.rl.agents.imc_learner import IMCLearner
+from rai.rl.agents.q_learner import QLearner
 from rai.utils.helpers import plot_q_values_map
 from rai.utils.models import Params
 
 
 def get_default_params():
-    params = Params(total_episodes=4048,
+    params = Params(total_episodes=2048,
                     alpha=0.1,
                     gamma=0.99,
                     epsilon=0.3,
@@ -46,12 +46,14 @@ def frozenlake():
     rmc_agent = RMCLearner(env, params)
     # rmc_agent.run_env()
     imc_agent = IMCLearner(env, params)
-    # imc_agent.run_env()
-
-    q_learner = QLearner(env, params)
-    q_learner.run_env()
-    fig = plot_q_values_map(q_learner.qtable, env, params.map_size)
+    imc_agent.run_env()
+    fig = plot_q_values_map(imc_agent.qtable, env, params.map_size)
     fig.show()
+
+    #q_learner = QLearner(env, params)
+    #q_learner.run_env()
+    #fig = plot_q_values_map(q_learner.qtable, env, params.map_size)
+    #fig.show()
     plt.show()
     # fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
     # plt.imshow(env.render())
