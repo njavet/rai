@@ -14,9 +14,11 @@ class SchopenhauerAgent(ABC):
     part of the environment. The third Agent type would be a mix of both.
     """
     def __init__(self, env, params):
-        """ params could be seen as given by nature / god"""
+        """ params could be seen as given by nature / god """
         self.env = env
         self.params = params
+        # every agent has a trajectory (for humans it would be from birth to death)
+        self.trajectory = Trajectory()
 
     def exec_step(self, state: int, action: int) -> tuple[int, TrajectoryStep, bool]:
         next_state, reward, term, trunc, info = self.env.step(action)

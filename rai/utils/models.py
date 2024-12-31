@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pathlib import Path
 
 
@@ -24,4 +24,4 @@ class TrajectoryStep(BaseModel):
 
 
 class Trajectory(BaseModel):
-    steps: list[TrajectoryStep]
+    steps: list[TrajectoryStep] = Field(default_factory=list)
