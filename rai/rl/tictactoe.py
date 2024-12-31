@@ -1,11 +1,14 @@
 import random
 import sys
 from rich.text import Text
+from pathlib import Path
 from rich.console import Console
 import argparse
 
-import t3_agent as agent
-import t3_engine as engine
+# project imports
+from rai.utils.models import Params
+from rai.rl.agents.t3_agent import T3Agent
+from rai.rl.envs.t3_env import T3Env
 
 
 def parse_args(argv):
@@ -16,6 +19,24 @@ def parse_args(argv):
     return parser.parse_args(argv)
 
 
+def get_default_params():
+    params = Params(total_episodes=2**14,
+                    alpha=0.1,
+                    gamma=0.99,
+                    epsilon=0.8,
+                    epsilon_min=0.05,
+                    decay=0.99,
+                    map_size=6,
+                    seed=0x101,
+                    is_slippery=True,
+                    n_runs=64,
+                    action_size=None,
+                    state_size=None,
+                    proba_frozen=0.75,
+                    savefig_folder=Path('rl', 'figs'))
+    return params
+
+
 def main():
     args = parse_args(sys.argv[1:])
     training_mode = args.t
@@ -23,49 +44,51 @@ def main():
     random.seed()
 
     console.print('Welcome to the Tic-Tac-Toe self-play RL agent environment.')
-    engine.print_help(console)
+    print_help(console)
+
+    env = T3Env()
+    params = get_default_params()
+    agent = T3Agent(env, params)
 
     # train a RL agent by self-play
     if training_mode:
-        agent.train_model(args.n, args.m)
-            
+        agent.run_env()
+
     # apply a trained RL agent in a game against a human
     else: 
-        board = engine.get_initial_board()
+        board = env.state
         try:
-            model = agent.load_model(args.m)
+            model = agent.load_model()
         except FileNotFoundError:
             print('There is no model...')
             model = {}
 
         print('You are player O, the computer starts.')
         
-        while True:
-            turn = engine.whos_turn(board)
-            if turn == 'X':
-                #field = agent.get_best_action(board, model, turn, debug=True)
-                #field = agent.get_minimax_action(board)
-                field = agent.get_expectimax_action(board)
-                board = engine.make_move(board, field, turn)
-                assert(board != '')
+        while not env.game_over:
+            turn = env.whos_turn()
+            agent.actions = env.available_moves()
+            # X -> agent
+            if turn == 1:
+                state = agent.encode_state(board)
+                action = agent.policy(state)
+                env.step(action)
             else:
                 # get player's input (until valid) and make the respective move
-                while True: 
+                valid = True
+                while not valid:
                     field = input("Which field to set? ")
-                    board0 = engine.make_move(board, field, turn)
-                    if board0 != '':
-                        board = board0
-                        break
-            
+                    action = int(field)
+                    if action not in env.available_moves():
+                        valid = False
+                    else:
+                        env.state[action] = 2
+
             # print new state, evaluate game
             print('Game after ' + turn + "'s move: ")
-            engine.print_board(board, console, False)
-            game_over, who_won, reward = engine.evaluate(board)
-            
-            if game_over:
-                print('The game is over. ' + who_won + ' won.')
-                break
+            env.pprint_board()
 
+        print('The game is over. ' + env.winner + ' won.')
 
 
 def print_help(console=None):
@@ -83,6 +106,7 @@ def print_help(console=None):
     console.print('3|4|5')
     console.print('-----')
     console.print('6|7|8')
+
 
 if __name__ == '__main__':
     main()

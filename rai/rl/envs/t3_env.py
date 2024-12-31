@@ -22,6 +22,13 @@ class T3Env(BaseEnv):
     def available_moves(self) -> list[int]:
         return list(np.where(self.state == 0)[0])
 
+    def whos_turn(self):
+        if np.where(self.state == 0)[0].size % 2 == 0:
+            player = 2
+        else:
+            player = 1
+        return player
+
     def step(self, action):
         if np.where(self.state == 0)[0].size % 2 == 0:
             player = 2

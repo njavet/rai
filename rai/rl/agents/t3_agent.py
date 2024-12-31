@@ -1,16 +1,20 @@
-import random
+import json
 import numpy as np
 
 # project imports
-from rai.rl.life import Life
+from rai.rl.agents.learner import Learner
 
 
-class T3Agent(Life):
+class T3Agent(Learner):
     def __init__(self, env, params):
         super().__init__(env, params)
         self.vtable = {}
         # TODO action space is mutable
         self.actions = None
+
+    def load_model(self):
+        with open('vtable.json') as f:
+            self.vtable = json.load(f)
 
     def decode_state(self, state):
         base = 3
@@ -50,3 +54,9 @@ class T3Agent(Life):
         next_val = self.vtable.get(next_state, 0.5)
         tmp = reward + self.params.gamme * next_val - self.vtable[state]
         self.vtable[state] += self.params.alpha * tmp
+
+    def run_env(self):
+        for episode in range(self.params.total_episodes):
+            self.generate_trajectory()
+        with open('vtable.json', 'w') as f:
+            json.dump(self.vtable, f, indent=2)
