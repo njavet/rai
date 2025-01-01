@@ -4,7 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # project imports
-from rai.rl.agents.mc_learner import MCLearner
+from rai.rl.agents.mc_learner import MonteCarloLearner
 from rai.rl.agents.q_learner import QLearner
 from rai.utils.helpers import plot_q_values_map
 from rai.utils.models import Params
