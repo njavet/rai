@@ -5,7 +5,7 @@ from rai.rl.agents.learner import Learner
 from rai.utils.helpers import random_argmax
 
 
-class QLearner(Learner):
+class Q2Learner(Learner):
     def __init__(self, env, params):
         super().__init__(env, params)
         self.alpha = params.alpha

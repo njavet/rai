@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 # project imports
 from rai.rl.agents.mcev import MonteCarloEV
 from rai.rl.agents.mcfv import MonteCarloFV
-from rai.rl.agents.ql import
-from rai.rl.agents.q2l import
+from rai.rl.agents.ql import QLearner
+from rai.rl.agents.q2l import Q2Learner
 from rai.utils.helpers import plot_q_values_map
 from rai.utils.models import Params
 
 
 def get_default_params():
-    params = Params(total_episodes=2**14,
+    params = Params(total_episodes=2**12,
                     alpha=0.1,
                     gamma=0.99,
                     epsilon=0.8,
@@ -46,17 +46,30 @@ def frozenlake():
     params = get_default_params()
     env = get_env(params)
 
-    mc_agent = MCLearner(env, params)
-    mc_agent.run_env()
-    print('mc agent done...')
-    fig = plot_q_values_map(mc_agent.qtable, env, params.map_size)
+    mcev_agent = MonteCarloEV(env, params)
+    mcev_agent.learn()
+    print('mcev agent done...')
+    fig = plot_q_values_map(mcev_agent.qtable, env, params.map_size)
+    fig.show()
+
+    mcfv_agent = MonteCarloFV(env, params)
+    mcfv_agent.learn()
+    print('mcfv agent done...')
+    fig = plot_q_values_map(mcfv_agent.qtable, env, params.map_size)
     fig.show()
 
     q_learner = QLearner(env, params)
-    q_learner.run_env()
+    q_learner.learn()
     fig = plot_q_values_map(q_learner.qtable, env, params.map_size)
     fig.show()
+    print('q agent done...')
+
+    q2_learner = Q2Learner(env, params)
+    q2_learner.learn()
+    fig = plot_q_values_map(q2_learner.qtable, env, params.map_size)
+    fig.show()
     plt.show()
+
     # fig.savefig(params.savefig_folder / img_title, bbox_inches="tight")
     # plt.imshow(env.render())
     # plt.axis('off')
