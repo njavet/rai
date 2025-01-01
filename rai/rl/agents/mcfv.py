@@ -29,7 +29,7 @@ class MonteCarloFV(Learner):
     def process_trajectory(self, episode):
         total_reward = 0
         visited_state_actions = set()
-        for ts in reversed(self.trajectory):
+        for ts in reversed(self.trajectory.steps):
             s, a, r = ts.state, ts.action, ts.reward
             total_reward = self.gamma * total_reward + r
             if (s, a) not in visited_state_actions:

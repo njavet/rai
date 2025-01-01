@@ -29,7 +29,7 @@ class MonteCarloEV(Learner):
 
     def process_trajectory(self, episode):
         total_reward = 0
-        for ts in reversed(self.trajectory):
+        for ts in reversed(self.trajectory.steps):
             s, a, r = ts.state, ts.action, ts.reward
             total_reward = self.gamma * total_reward + r
             self.counts[(s, a)] += 1
