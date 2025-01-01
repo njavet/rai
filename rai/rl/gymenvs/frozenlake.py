@@ -17,10 +17,10 @@ def get_default_params():
                     epsilon=0.8,
                     epsilon_min=0.05,
                     decay=0.99,
-                    map_size=6,
+                    map_size=4,
                     seed=0x101,
-                    is_slippery=True,
-                    n_runs=64,
+                    is_slippery=False,
+                    n_runs=16,
                     action_size=None,
                     state_size=None,
                     proba_frozen=0.75,
@@ -46,6 +46,7 @@ def frozenlake():
 
     mc_agent = MCLearner(env, params)
     mc_agent.run_env()
+    print('mc agent done...')
     fig = plot_q_values_map(mc_agent.qtable, env, params.map_size)
     fig.show()
 
