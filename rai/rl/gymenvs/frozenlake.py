@@ -22,7 +22,7 @@ def get_default_params():
                     map_size=4,
                     seed=0x101,
                     is_slippery=False,
-                    n_runs=16,
+                    n_runs=8,
                     action_size=None,
                     state_size=None,
                     proba_frozen=0.75,
