@@ -1,26 +1,48 @@
 import numpy as np
+from collections import defaultdict
 
 # project imports
 from rai.rl.agents.learner import Learner
 from rai.utils.helpers import random_argmax
 
 
-class MCLearner(Learner):
+class MonteCarloLearner(Learner):
     def __init__(self, env, params):
         super().__init__(env, params)
+        self.gamma = params.gamma
+        self.eps = params.epsilon
+        self.eps_min = params.epsilon_min
+        self.decay = params.decay
+        self.qtable = np.zeros((params.state_size, params.action_size))
+        self.returns = defaultdict(list)
 
     def policy(self, state):
-        epsilon = max(self.params.epsilon_min, self.params.epsilon * self.params.decay)
+        epsilon = max(self.eps_min, self.eps * self.decay)
         if np.random.rand() < epsilon:
             action = self.env.action_space.sample()
         else:
             action = random_argmax(self.qtable[state])
         return action
 
-    def process_episode(self, episode):
-        returns, counts = super().process_episode(episode)
-        qtable = np.divide(returns,
-                           counts,
-                           out=np.zeros_like(returns),
-                           where=counts != 0)
-        self.qtable = (self.qtable + qtable) / 2
+    def process_trajectory(self, episode):
+        total_reward = 0
+        visited_state_actions = set()
+        for ts in reversed(self.trajectory):
+            s, a, r = ts.state, ts.action, ts.reward
+            total_reward = self.gamma * total_reward + r
+            if (s, a) not in visited_state_actions:
+                visited_state_actions.add((s, a))
+                self.returns[(s, a)].append(total_reward)
+                self.qtable[s, a] = np.mean(self.returns[(s, a)])
+
+    def learn(self):
+        qtables = np.zeros((self.params.n_runs,
+                            self.params.state_size,
+                            self.params.action_size))
+        for n in range(self.params.n_runs):
+            self.qtable = np.zeros((self.params.state_size, self.params.action_size))
+            for episode in range(self.params.total_episodes):
+                self.generate_trajectory()
+                self.process_trajectory(episode)
+                qtables[n, :, :] = self.qtable
+        self.qtable = np.mean(qtables, axis=0)

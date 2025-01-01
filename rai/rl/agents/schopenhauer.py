@@ -47,5 +47,5 @@ class SchopenhauerAgent(ABC):
             self.process_step()
             state = ts.next_state
 
-    def process_episode(self, episode):
+    def process_trajectory(self, episode):
         pass
