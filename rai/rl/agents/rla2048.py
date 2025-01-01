@@ -1,4 +1,4 @@
-import random
+from collections import defaultdict
 import copy
 import numpy as np
 from rich.console import Console
@@ -7,11 +7,12 @@ from rich.console import Console
 from rai.utils.helpers import random_argmax
 
 
-class Agent:
+class RLA2048:
     def __init__(self, depth: int = 3) -> None:
         self.depth = depth
         self.state = None
         self.simulator = Simulator()
+        self.qtable = defaultdict(float)
         self.console = Console()
 
     def find_best_move(self, board: list[list[int]]) -> int:
@@ -19,7 +20,7 @@ class Agent:
         result = np.array([self.score_top_level_move(i) for i in range(4)])
 
         if np.max(result) == 0:
-            move = random.choice([0, 1, 2, 3])
+            move = int(np.random.choice([0, 1, 2, 3]))
         else:
             move = random_argmax(result)
         return move
@@ -33,7 +34,7 @@ class Agent:
 
     def expectimax(self, grid: np.ndarray, depth: int, agent_play: bool) -> float:
         if depth == 0:
-            return self.noe_utility(grid)
+            return self.utility(grid)
 
         if agent_play:
             alpha = 0
@@ -61,45 +62,72 @@ class Agent:
             return (1 / zeros) * expected_value
 
     @staticmethod
-    def utility(grid: np.array) -> float:
-        # TODO analyze heuristics
+    def max_tile_heuristic(grid: np.array):
+        return int(np.log2(np.max(grid)))
 
-        def helper(seq: np.ndarray) -> float:
-            # number of zeros heuristic
-            zeros = np.sum(seq == 0)
+    @staticmethod
+    def zero_tile_heuristic(grid: np.array):
+        return 16 - np.count_nonzero(grid)
 
-            # higher tiles are better
-            rank = np.max(seq)
-            if rank == 0:
-                rw = 1
-            else:
-                rw = 1 / rank
+    @staticmethod
+    def smoothness_heuristic(grid: np.array):
+        smoothness = 0
 
-            # large tiles on the edge
-            ind = np.where(seq == rank)[0][0]
-            if ind == 0 or ind == 3:
-                edge = 1 - rw
-            else:
-                edge = 0
+        for row in grid:
+            for i in range(len(row) - 1):
+                if row[i] > 0 and row[i + 1] > 0:
+                    smoothness += abs(row[i] - row[i + 1])
 
-            # monotonous
-            mono = 0
-            mon_inc = np.all([val <= seq[i + 1] for i, val in enumerate(seq[:-1])])
-            mon_dec = np.all([seq[i + 1] <= val for i, val in enumerate(seq[:-1])])
-            if mon_inc:
-                mono += 2
-            if mon_dec:
-                mono += 2
+        for col in grid.transpose():
+            for i in range(len(col) - 1):
+                if col[i] > 0 and col[i + 1] > 0:
+                    smoothness += abs(col[i] - col[i + 1])
+        return smoothness
 
-            adj = 0
-            for i, val in enumerate(seq[1:]):
-                if np.all(val == seq[i + 1]):
-                    adj += 1 - rw
+    @staticmethod
+    def monotonicity_heuristic(grid: np.ndarray):
+        monotonicity = 0
 
-            return zeros + edge + mono + adj
+        def calculate_monotonicity(array):
+            increasing, decreasing = 0, 0
+            for i in range(len(array) - 1):
+                if array[i] >= array[i + 1]:
+                    decreasing += array[i] - array[i + 1]
+                elif array[i] <= array[i + 1]:
+                    increasing += array[i + 1] - array[i]
+            return increasing, decreasing
 
-        tmp = np.sum([helper(grid[:, i]) for i in range(4)])
-        return tmp + np.sum([helper(grid[i, :]) for i in range(4)])
+        # Calculate monotonicity for rows
+        for row in grid:
+            monotonicity += min(calculate_monotonicity(row))
+
+        # Calculate monotonicity for columns
+        monotonicity += calculate_monotonicity(grid.transpose()[0])[1] * 10
+        for col in grid.transpose()[1:]:
+            monotonicity += min(calculate_monotonicity(col))
+        return monotonicity
+
+    @staticmethod
+    def corner_heuristic(grid: np.array):
+        weights = np.array([[8, 0, 0, 0],
+                            [3, -1, -1, -1],
+                            [2, -1, -1, -1],
+                            [1, 1, -1, -1]])
+        return int(np.sum(grid * weights))
+
+    def utility(self, grid: np.array) -> float:
+        max_tile = self.max_tile_heuristic(grid)
+        zeros = self.zero_tile_heuristic(grid)
+        smooth = self.smoothness_heuristic(grid)
+        mono = self.monotonicity_heuristic(grid)
+        corner = self.corner_heuristic(grid)
+
+        print('maxtile', max_tile,
+              'zeros', zeros,
+              'smooth', smooth,
+              'mono', mono,
+              'corner', corner)
+        return mono + corner + zeros + max_tile
 
     def print_grid(self):
         for row in self.state:

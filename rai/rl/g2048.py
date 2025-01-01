@@ -4,8 +4,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 
 # project imports
-from rai.g2048.ffctrl import FirefoxControl
-from rai.g2048.agent import Agent
+from rai.rl.agents.rla2048 import RLA2048
 
 
 class G2048:
@@ -15,7 +14,7 @@ class G2048:
         self.game_container = None
         self.game_message = None
         self.score_element = None
-        self.agent = Agent()
+        self.agent = RLA2048()
         self.moves = {0: Keys.ARROW_LEFT,
                       1: Keys.ARROW_DOWN,
                       2: Keys.ARROW_RIGHT,
