@@ -16,7 +16,6 @@ class MonteCarloFV(Learner):
         self.decay = params.decay
         self.qtable = np.zeros((params.state_size, params.action_size))
         self.returns = defaultdict(list)
-        self.trajectories = defaultdict(list)
 
     def policy(self, state):
         epsilon = max(self.eps_min, self.eps * self.decay)
@@ -35,7 +34,9 @@ class MonteCarloFV(Learner):
             if (s, a) not in visited_state_actions:
                 visited_state_actions.add((s, a))
                 self.returns[(s, a)].append(total_reward)
-                self.qtable[s, a] = np.mean(self.returns[(s, a)])
+        for (s, a), rewards in self.returns.items():
+            if rewards:
+                self.qtable[s, a] = np.mean(rewards)
 
     def learn(self):
         qtables = np.zeros((self.params.n_runs,

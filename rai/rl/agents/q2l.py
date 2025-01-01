@@ -32,11 +32,11 @@ class Q2Learner(Learner):
         alpha = self.params.alpha
 
         if np.random.random() <= 0.5:
-            a_max = random_argmax(self.q0[ns, a])
+            a_max = random_argmax(self.q0[ns])
             tmp = alpha * (r + gamma * self.q1[ns, a_max] - self.q0[s, a])
             self.q0[s, a] = self.q0[s, a] + tmp
         else:
-            a_max = random_argmax(self.q1[ns, a])
+            a_max = random_argmax(self.q1[ns])
             tmp = alpha * (r + gamma * self.q0[ns, a_max] - self.q1[s, a])
             self.q1[s, a] = self.q1[s, a] + tmp
         self.qtable = (self.q0 + self.q1) / 2

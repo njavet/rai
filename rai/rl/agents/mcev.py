@@ -34,7 +34,10 @@ class MonteCarloEV(Learner):
             total_reward = self.gamma * total_reward + r
             self.counts[(s, a)] += 1
             self.returns[(s, a)].append(total_reward)
-            self.qtable[s, a] = np.mean(self.returns[(s, a)]) / self.counts[(s, a)]
+
+        for (s, a), rewards in self.returns.items():
+            if rewards:
+                self.qtable[s, a] = np.mean(rewards) / self.counts[(s, a)]
 
     def learn(self):
         qtables = np.zeros((self.params.n_runs,
