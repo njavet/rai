@@ -4,8 +4,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # project imports
-from rai.rl.agents.mc_learner import MonteCarloLearner
-from rai.rl.agents.q_learner import QLearner
+from rai.rl.agents.mcev import MonteCarloEV
+from rai.rl.agents.mcfv import MonteCarloFV
+from rai.rl.agents.ql import
+from rai.rl.agents.q2l import
 from rai.utils.helpers import plot_q_values_map
 from rai.utils.models import Params
 
