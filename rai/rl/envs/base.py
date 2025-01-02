@@ -10,10 +10,8 @@ class BaseEnv(ABC):
     def __init__(self, name: str):
         self.name = name
         # TODO generalize
-        self.obs_space = ObservationSpace(size=16, start=0, terminal=15)
+        self.obs_space = ObservationSpace(size=16, start=0)
         self.action_space = ActionSpace(size=4)
-        self.goal_pos = 15
-        self.agent_pos = 0
 
     def reset(self) -> tuple[int, str]:
         raise NotImplementedError
@@ -23,10 +21,10 @@ class BaseEnv(ABC):
 
 
 class ObservationSpace:
-    def __init__(self, size, start, terminal):
+    def __init__(self, size, start, terminal=None):
         self.size = size
         self.start = start
-        self.terminal = terminal
+        self.terminal = None
 
 
 class ActionSpace:
