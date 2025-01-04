@@ -1,4 +1,5 @@
 import gymnasium as gym
+from gymnasium.core import RenderFrame
 from gymnasium.spaces import Discrete
 
 
@@ -17,6 +18,15 @@ class DungeonEnv(gym.Env):
         self.agent_position = 0
         self.has_gpu = False
         return 0, 'start position'
+
+    def render(self) -> RenderFrame | list[RenderFrame] | None:
+        grid = [['0', '0', '0', '1'],
+                ['0', '1', '0', '0'],
+                ['0', '0', '1', '0'],
+                ['1', '0', '1', 'G']]
+        a, b = divmod(self.agent_position, 4)
+        grid[a][b] = 'A'
+        print(grid)
 
     def step(self, action):
         reward = -0.5

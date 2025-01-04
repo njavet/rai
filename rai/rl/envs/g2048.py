@@ -1,7 +1,9 @@
 import numpy as np
+import gymnasium as gym
 import random
 
 
+class Env2048()
 class Game2048:
     def __init__(self):
         self.board = np.zeros((4, 4), dtype=int)
