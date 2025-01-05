@@ -12,7 +12,7 @@ class SchopenhauerAgent(ABC):
     only inside the agent. Another type would be a Cartesian Agent that is
     part of the environment. The third Agent type would be a mix of both.
     """
-    def __init__(self, env: gym.Env, *args):
+    def __init__(self, env: gym.Env):
         """ params could be seen as given by nature / god """
         self.env = env
         self.trajectory: Trajectory = Trajectory()
