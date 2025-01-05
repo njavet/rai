@@ -1,4 +1,5 @@
 from abc import ABC
+from gymnasium.spaces import Discrete
 import torch
 
 # project imports
@@ -6,9 +7,10 @@ from rai.utils.models import LearnerParams, Trajectory
 
 
 class Learner(ABC):
-    def __init__(self, params: LearnerParams, model=None):
+    def __init__(self, params: LearnerParams, action_space: Discrete, model=None):
         self.params = params
         self.model = model
+        self.action_space = action_space
         self.trajectory: Trajectory = Trajectory()
 
     def reset_trajectory(self) -> None:

@@ -6,18 +6,16 @@ from rai.rl.agents.learner import Learner
 from rai.utils.helpers import random_argmax
 
 
-class MonteCarloEV(Learner):
-    """ first visit monte carlo learner """
-    def __init__(self, env, params):
-        super().__init__(env, params)
+class DP(Learner):
+    """ dynamic programming learner """
+    def __init__(self, params, action_space, model):
+        super().__init__(params, action_space, model)
         self.gamma = params.gamma
         self.eps = params.epsilon
         self.eps_min = params.epsilon_min
         self.decay = params.decay
-        self.qtable = np.zeros((params.state_size, params.action_size))
-        self.returns = defaultdict(list)
-        self.counts = defaultdict(int)
-        self.trajectories = defaultdict(list)
+        # self.qtable = np.zeros((params.state_size, action_space.n))
+        self.vtable = np.zeros((16, action_space.n))
 
     def policy(self, state):
         epsilon = max(self.eps_min, self.eps * self.decay)
@@ -29,23 +27,22 @@ class MonteCarloEV(Learner):
 
     def process_episode(self, episode):
         total_reward = 0
+        visited_state_actions = set()
         for ts in reversed(self.trajectory.steps):
             s, a, r = ts.state, ts.action, ts.reward
             total_reward = self.gamma * total_reward + r
-            self.counts[(s, a)] += 1
-            self.returns[(s, a)].append(total_reward)
-
+            if (s, a) not in visited_state_actions:
+                visited_state_actions.add((s, a))
+                self.returns[(s, a)].append(total_reward)
         for (s, a), rewards in self.returns.items():
             if rewards:
-                self.qtable[s, a] = np.mean(rewards) / self.counts[(s, a)]
+                self.qtable[s, a] = np.mean(rewards)
 
     def learn(self):
         qtables = np.zeros((self.params.n_runs,
                             self.params.state_size,
                             self.params.action_size))
         for n in range(self.params.n_runs):
-            self.returns = defaultdict(list)
-            self.counts = defaultdict(int)
             self.qtable = np.zeros((self.params.state_size, self.params.action_size))
             for episode in range(self.params.total_episodes):
                 self.generate_trajectory()
