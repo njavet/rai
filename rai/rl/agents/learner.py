@@ -2,7 +2,7 @@ from abc import ABC
 import torch
 
 # project imports
-from rla2048.schemas import LearnerParams, Trajectory
+from rai.utils.models import LearnerParams, Trajectory
 
 
 class Learner(ABC):

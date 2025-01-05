@@ -1,12 +1,6 @@
 from typing import Any
-import numpy as np
 import gymnasium as gym
-from gymnasium import spaces
-import pygame
-from gymnasium.core import RenderFrame, ObsType
-
-
-# project imports
+from gymnasium.core import ObsType
 
 
 class GridEnv(gym.Env):
