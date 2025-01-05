@@ -1,30 +1,46 @@
-import torch
+from typing import Any
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 import pygame
-from gymnasium.core import RenderFrame
+from gymnasium.core import RenderFrame, ObsType
+
 
 # project imports
 
 
 class GridEnv(gym.Env):
-    def __init__(self, m: int = 5, n: int = 5):
-        super().__init__('grid')
+    def __init__(self, m: int = 4, n: int = 4, max_steps: int = 300, render_mode=None):
+        super().__init__(render_mode)
         self.m = m
         self.n = n
-
-    def reset(self) -> tuple[int, str]:
         self.agent_pos = 0
-        return self.agent_pos, 'No info yet'
+        self.term = m * n - 1
+        self.steps = 0
+        self.max_steps = max_steps
+
+    def reset(
+        self,
+        *,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[ObsType, dict[str, Any]]:
+        self.steps = 0
+        self.agent_pos = 0
+        return self.agent_pos, {'start': 0}
 
     def pos_to_tuple(self):
         """ convert integer position to grid position"""
         x, y = divmod(self.agent_pos, self.m)
         return x, y
 
-    def update_agent_position(self, x, y):
-        self.agent_pos = x * self.m + y
+    def update_agent_position(self, ax, ay):
+        x, y = self.pos_to_tuple()
+        x1 = max(x + ax, 0)
+        y1 = max(y + ay, 0)
+        x_new = min(x1, self.m - 1)
+        y_new = min(y1, self.n - 1)
+        self.agent_pos = x_new * self.m + y_new
 
     @staticmethod
     def get_action_values(action):
@@ -39,15 +55,10 @@ class GridEnv(gym.Env):
         raise ValueError('invalid action')
 
     def step(self, action):
-        x, y = self.pos_to_tuple()
+        self.steps += 1
         ax, ay = self.get_action_values(action)
-        x1 = max(x + ax, 0)
-        y1 = max(y + ay, 0)
-        x_new = min(x1, self.m - 1)
-        y_new = min(y1, self.n - 1)
-        self.update_agent_position(x_new, y_new)
-
-        state = x_new, y_new
+        self.update_agent_position(ax, ay)
         reward = -1
-        is_terminal = self.agent_pos == self.goal_pos
-        return state, reward, is_terminal, False, None
+        is_terminal = self.agent_pos == self.term
+        trunc = self.steps >= self.max_steps
+        return self.agent_pos, reward, is_terminal, trunc, None
