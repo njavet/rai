@@ -1,4 +1,5 @@
 from abc import ABC
+import gymnasium as gym
 
 # project imports
 from rai.utils.models import Trajectory, TrajectoryStep
@@ -11,7 +12,7 @@ class SchopenhauerAgent(ABC):
     only inside the agent. Another type would be a Cartesian Agent that is
     part of the environment. The third Agent type would be a mix of both.
     """
-    def __init__(self, env, params):
+    def __init__(self, env: gym.Env, params=None):
         """ params could be seen as given by nature / god """
         self.env = env
         self.params = params
@@ -20,13 +21,13 @@ class SchopenhauerAgent(ABC):
     def policy(self, state: int) -> int:
         raise NotImplementedError
 
-    def reset_trajectory(self):
+    def reset(self):
         self.trajectory = Trajectory()
 
     def exec_step(self, state: int, action: int) -> tuple[TrajectoryStep, bool]:
         next_state, reward, term, trunc, info = self.env.step(action)
         ts = TrajectoryStep(state=state,
-                            action=int(action),
+                            action=action,
                             reward=reward,
                             next_state=next_state)
         done = term or trunc
@@ -36,7 +37,7 @@ class SchopenhauerAgent(ABC):
         pass
 
     def generate_trajectory(self):
-        self.reset_trajectory()
+        self.reset()
         state, info = self.env.reset()
         done = False
         while not done:
@@ -47,5 +48,5 @@ class SchopenhauerAgent(ABC):
             self.process_step()
             state = ts.next_state
 
-    def process_trajectory(self, episode):
+    def process_episode(self, episode):
         pass

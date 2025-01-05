@@ -43,7 +43,7 @@ class T3Agent(Learner):
         for action in self.actions:
             sim_board = np.copy(board)
             sim_board[action] = 1
-            sim_state = self.encode_state(sim_board)trajectory
+            sim_state = self.encode_state(sim_board)
             val = self.vtable.get(sim_state, 0.5)
             acts.append((val, action))
         act = sorted(acts, reverse=True)[0][1]
