@@ -15,7 +15,7 @@ class Learner(ABC):
         self.params = params
         self.trajectory: Trajectory = Trajectory()
 
-    def reset_trajectory(self) -> None:
+    def reset(self) -> None:
         self.trajectory = Trajectory()
 
     def policy(self, state: int) -> int:

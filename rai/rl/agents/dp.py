@@ -6,72 +6,37 @@ from rai.rl.agents.learner import Learner
 from rai.utils.helpers import random_argmax
 
 
-class DP:
+class DP(Learner):
     """ dynamic programming learner """
-    def __init__(self):
-        # self.qtable = np.zeros((params.state_size, action_space.n))
-        self.vtable = np.zeros(16)
-        self.policy = defaultdict(int)
+    def __init__(self, state_space, action_space, params=None):
+        super().__init__(state_space, action_space, params)
+        self.values = np.zeros(self.state_space.n)
+        self.qtable = np.zeros((self.state_space.n, self.action_space.n))
+        self.pi = defaultdict(int)
 
-    @staticmethod
-    def reward_table(state, next_state):
-        if (state, next_state) in [(0, 1),
-                                     (1, 2),
-                                     (2, 3),
-                                     (3, 7),
-                                     (7, 6),
-                                     (6, 5),
-                                     (5, 4),
-                                     (4, 8),
-                                     (8, 9),
-                                     (9, 10),
-                                     (10, 11),
-                                     (11, 15)]:
-            return 1
-        else:
-            return 0
+    def reset(self):
+        super().reset()
+        self.values = np.zeros(self.state_space.n)
+        self.qtable = np.zeros((self.state_space.n, self.action_space.n))
 
-    def pos_to_tuple(self, state):
-        """ convert integer position to grid position"""
-        x, y = divmod(state, 4)
-        return x, y
+    def policy(self, state: int) -> int:
+        return self.pi[state]
 
-    @staticmethod
-    def get_action_values(action):
-        if action == 0:
-            return 0, -1
-        elif action == 1:
-            return 1, 0
-        elif action == 2:
-            return 0, 1
-        elif action == 3:
-            return -1, 0
-        raise ValueError('invalid action')
+    def compute_optimal_value_function(self, n_iter: int) -> None:
+        # V(s) = 0
+        self.reset()
+        for i in range(n_iter):
+            for state in range(self.state_space.n):
+                lst0 = []
+                for action in range(self.action_space.n):
+                    val = self._compute_state_action_value(state, action)
+                    lst0.append((action, val))
+                lst1 = sorted(lst0, key=lambda x: x[1], reverse=True)
+                a, v = lst1[0]
+                self.values[state] = v
+                self.pi[state] = a
 
-    def get_next_state(self, state, action):
-        x, y = self.pos_to_tuple(state)
-        ax, ay = self.get_action_values(action)
-        x1 = max(x + ax, 0)
-        y1 = max(y + ay, 0)
-        x_new = min(x1, 3)
-        y_new = min(y1, 3)
-        return x_new * 4 + y_new
+    def _compute_state_action_value(self, state: int, action: int) -> float:
+        # TODO params
+        pass
 
-    def compute_optimal_value_function(self, h):
-        # v0
-        self.vtable = np.zeros(16)
-        for i in range(h):
-            # vk = max(R(state, action, nextstate) + gamma * vk-1(nextstate)
-            for state in range(16):
-                lst = []
-                for action in range(4):
-                    ns = self.get_next_state(state, action)
-                    r = self.reward_table(state, ns)
-                    curr = r + self.vtable[ns]
-                    lst.append((action, r, curr))
-                lst = sorted(lst, key=lambda x: x[1], reverse=True)
-                a, r, v = lst[0]
-                print('state', state, 'action', a, 'v', v)
-                self.vtable[state] = v
-                self.policy[state] = a
-        return self.vtable.reshape((4, 4))
