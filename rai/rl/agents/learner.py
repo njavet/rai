@@ -2,12 +2,15 @@ import gymnasium as gym
 
 # project imports
 from rai.rl.agents.schopenhauer import SchopenhauerAgent
-from rai.utils.models import Trajectory
 
 
 class Learner(SchopenhauerAgent):
-    def __init__(self, env: gym.Env, params=None):
-        super().__init__(env, params)
+    def __init__(self, env: gym.Env, n_runs: int, n_episodes: int):
+        super().__init__(env)
+        self.n_runs = n_runs
+        self.n_episodes = n_episodes
 
     def learn(self):
-        raise NotImplementedError
+        for n in range(self.n_episodes):
+            self.generate_trajectory()
+            self.process_episode(n)

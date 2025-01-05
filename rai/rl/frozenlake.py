@@ -3,6 +3,7 @@ from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 import matplotlib.pyplot as plt
 
 # project imports
+from rai.rl.agents.orchestrator import Orchestrator
 from rai.rl.agents.dp import DP
 from rai.utils.helpers import plot_q_values_map
 
@@ -24,6 +25,9 @@ def frozenlake():
               'map_size': 4,
               'render_mode': 'human'}
     env = get_env(params)
+
+    orchestrator = Orchestrator()
+
     dp = DP(env.observation_space, env.action_space)
 
     mcev_agent = MonteCarloEV(env, params)

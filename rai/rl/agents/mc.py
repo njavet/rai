@@ -6,8 +6,7 @@ from rai.rl.agents.learner import Learner
 from rai.utils.helpers import random_argmax
 
 
-class MonteCarloEV(Learner):
-    """ first visit monte carlo learner """
+class MonteCarlo(Learner):
     def __init__(self, env, params):
         super().__init__(env, params)
         self.gamma = params.gamma
@@ -22,7 +21,7 @@ class MonteCarloEV(Learner):
     def policy(self, state):
         epsilon = max(self.eps_min, self.eps * self.decay)
         if np.random.rand() < epsilon:
-            action = self.action_space.sample()
+            action = self.env.action_space.sample()
         else:
             action = random_argmax(self.qtable[state])
         return action
