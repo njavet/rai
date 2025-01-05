@@ -45,14 +45,14 @@ class MonteCarlo(Learner):
 
     def _process_fv(self):
         total_reward = 0
+        visited_states = set()
         for ts in reversed(self.trajectory.steps):
             s, a, r = ts.state, ts.action, ts.reward
             total_reward = self.gamma * total_reward + r
-            if not (s, a) in self.returns:
+            if s not in visited_states:
+                visited_states.add(s)
                 self.returns[(s, a)].append(total_reward)
-        for (s, a), rewards in self.returns.items():
-            if rewards:
-                self.qtable[s, a] = np.mean(rewards)
+                self.qtable[s, a] = np.mean(self.returns[(s, a)])
 
     def _process_ev(self):
         total_reward = 0

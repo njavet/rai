@@ -3,7 +3,7 @@ from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 import matplotlib.pyplot as plt
 
 # project imports
-from rai.rl.agents.dp import DP
+from rai.rl.agents.mc import MonteCarlo
 from rai.utils.helpers import plot_q_values_map
 
 
@@ -17,37 +17,43 @@ def get_env(params):
     return env
 
 
+def train_and_show(agent, env, map_size):
+    agent.learn()
+    print('mcfv agent done...')
+    fig = plot_q_values_map(agent.qtable, env, map_size)
+    fig.show()
+
+
 def frozenlake():
-    params = {'is_slippery': False,
+    params = {'is_slippery': True,
               'proba_frozen': 0.8,
               'seed': 0x101,
-              'map_size': 4,
-              'render_mode': 'human'}
+              'map_size': 6,
+              'render_mode': 'rgb_array'}
     env = get_env(params)
 
-    dp = DP(env, n_runs=16, n_episodes=1024)
+    mcfv = MonteCarlo(env,
+                      n_runs=16,
+                      n_episodes=1024000,
+                      gamma=0.99,
+                      epsilon=1,
+                      epsilon_min=0.05,
+                      decay=0.99,
+                      fv=True)
+    train_and_show(mcfv, env, params['map_size'])
+    return
 
-    mcev_agent = MonteCarloEV(env, params)
-    mcev_agent.learn()
+    mcev = MonteCarlo(env,
+                      n_runs=16,
+                      n_episodes=1024,
+                      gamma=0.99,
+                      epsilon=1,
+                      epsilon_min=0.05,
+                      decay=0.99,
+                      fv=False)
+    mcev.learn()
     print('mcev agent done...')
-    fig = plot_q_values_map(mcev_agent.qtable, env, params.map_size)
-    fig.show()
-
-    mcfv_agent = MonteCarloFV(env, params)
-    mcfv_agent.learn()
-    print('mcfv agent done...')
-    fig = plot_q_values_map(mcfv_agent.qtable, env, params.map_size)
-    fig.show()
-
-    q_learner = QLearner(env, params)
-    q_learner.learn()
-    fig = plot_q_values_map(q_learner.qtable, env, params.map_size)
-    fig.show()
-    print('q agent done...')
-
-    q2_learner = Q2Learner(env, params)
-    q2_learner.learn()
-    fig = plot_q_values_map(q2_learner.qtable, env, params.map_size)
+    fig = plot_q_values_map(mcev.qtable, env, params['map_size'])
     fig.show()
     plt.show()
 
