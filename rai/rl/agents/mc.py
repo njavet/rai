@@ -15,12 +15,14 @@ class MonteCarlo(Learner):
                  gamma: float,
                  epsilon: float,
                  epsilon_min: float,
-                 decay: float) -> None:
+                 decay: float,
+                 fv: bool) -> None:
         super().__init__(env, n_runs, n_episodes)
         self.gamma = gamma
         self.eps = epsilon
         self.eps_min = epsilon_min
         self.decay = decay
+        self.fv = fv
         self.qtable = np.zeros((env.observation_space.n,
                                 env.action_space.n))
         self.returns = defaultdict(list)
@@ -36,6 +38,23 @@ class MonteCarlo(Learner):
         return action
 
     def process_episode(self, episode):
+        if self.fv:
+            self._process_fv()
+        else:
+            self._process_ev()
+
+    def _process_fv(self):
+        total_reward = 0
+        for ts in reversed(self.trajectory.steps):
+            s, a, r = ts.state, ts.action, ts.reward
+            total_reward = self.gamma * total_reward + r
+            if not (s, a) in self.returns:
+                self.returns[(s, a)].append(total_reward)
+        for (s, a), rewards in self.returns.items():
+            if rewards:
+                self.qtable[s, a] = np.mean(rewards)
+
+    def _process_ev(self):
         total_reward = 0
         for ts in reversed(self.trajectory.steps):
             s, a, r = ts.state, ts.action, ts.reward
