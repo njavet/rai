@@ -1,9 +1,8 @@
 import gymnasium as gym
-import torch
 
 # project imports
-from rla2048.schemas import OrchestratorParams, TrajectoryStep
-from rla2048.agents.learner import Learner
+from rai.utils.models import OrchestratorParams, TrajectoryStep
+from rai.rl.agents.learner import Learner
 
 
 class Orchestrator:
@@ -26,8 +25,7 @@ class Orchestrator:
             ts = TrajectoryStep(state=state,
                                 action=action,
                                 reward=reward,
-                                next_state=next_state,
-                                done=torch.tensor(terminated, device='cuda'))
+                                next_state=next_state)
             self.agent.trajectory.steps.append(ts)
             self.agent.process_step()
             state = next_state
