@@ -1,4 +1,3 @@
-from .rl.envs.grid import GridEnv
 from gymnasium.envs.registration import register
 
 register(

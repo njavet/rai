@@ -4,28 +4,31 @@ from gymnasium.core import ObsType
 
 
 class GridEnv(gym.Env):
-    def __init__(self, m: int = 4, n: int = 4, max_steps: int = 300, render_mode=None):
+    def __init__(self,
+                 m: int = 4,
+                 n: int = 4,
+                 max_steps: int = 300,
+                 render_mode=None) -> None:
         super().__init__(render_mode)
         self.m = m
         self.n = n
-        self.agent_pos = 0
-        self.term = m * n - 1
-        self.steps = 0
         self.max_steps = max_steps
-
-    def reset(
-        self,
-        *,
-        seed: int | None = None,
-        options: dict[str, Any] | None = None,
-    ) -> tuple[ObsType, dict[str, Any]]:
         self.steps = 0
-        self.agent_pos = 0
-        return self.agent_pos, {'start': 0}
+        self.state = 0
+        self.terminal_state = None
+
+    def reset(self,
+              *,
+              seed: int | None = None,
+              options: dict[str, Any] | None = None
+              ) -> tuple[ObsType, dict[str, Any]]:
+        self.steps = 0
+        self.state = 0
+        return self.state, {'start': 0}
 
     def pos_to_tuple(self):
         """ convert integer position to grid position"""
-        x, y = divmod(self.agent_pos, self.m)
+        x, y = divmod(self.state, self.m)
         return x, y
 
     def update_agent_position(self, ax, ay):
