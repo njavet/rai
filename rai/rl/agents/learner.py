@@ -1,31 +1,13 @@
-from abc import ABC
-from gymnasium.spaces import Discrete
+import gymnasium as gym
 
 # project imports
+from rai.rl.agents.schopenhauer import SchopenhauerAgent
 from rai.utils.models import Trajectory
 
 
-class Learner(ABC):
-    def __init__(self,
-                 obs_space: Discrete,
-                 action_space: Discrete,
-                 params=None):
-        self.obs_space = obs_space
-        self.action_space = action_space
-        self.params = params
-        self.trajectory: Trajectory = Trajectory()
-
-    def reset(self) -> None:
-        self.trajectory = Trajectory()
-
-    def policy(self, state: int) -> int:
-        raise NotImplementedError
-
-    def process_step(self) -> None:
-        raise NotImplementedError
-
-    def process_episode(self, episode: int) -> None:
-        raise NotImplementedError
+class Learner(SchopenhauerAgent):
+    def __init__(self, env: gym.Env, params=None):
+        super().__init__(env, params)
 
     def learn(self):
         raise NotImplementedError

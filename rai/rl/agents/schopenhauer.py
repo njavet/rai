@@ -16,7 +16,7 @@ class SchopenhauerAgent(ABC):
         """ params could be seen as given by nature / god """
         self.env = env
         self.params = params
-        self.trajectory = Trajectory()
+        self.trajectory: Trajectory = Trajectory()
 
     def policy(self, state: int) -> int:
         raise NotImplementedError
