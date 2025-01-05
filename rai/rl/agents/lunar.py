@@ -24,10 +24,14 @@ class Agent:
         self.memory = ReplayMemory(capacity=capacity)
         self.epsilon = 1.0
         self.eps_min = 0.05
-        self.decay = 0.999
-        self.gamma = 0.95
+        self.decay = 0.995
+        self.gamma = 0.99
         self.batch_size = batch_size
         self.steps = 0
+
+    def optimal_policy(self, state):
+        with torch.no_grad():
+            return self.target_net(torch.FloatTensor(state)).argmax().item()
 
     def select_action(self, state):
         if random.random() < self.epsilon:
