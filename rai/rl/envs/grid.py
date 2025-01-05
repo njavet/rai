@@ -54,11 +54,34 @@ class GridEnv(gym.Env):
             return -1, 0
         raise ValueError('invalid action')
 
+    @staticmethod
+    def reward_table(state, next_state):
+        if state == next_state:
+            return -0.5
+        elif (state, next_state) in [(0, 1),
+                                     (1, 2),
+                                     (2, 3),
+                                     (3, 7),
+                                     (7, 11),
+                                     (11, 10),
+                                     (10, 9),
+                                     (9, 8),
+                                     (8, 4),
+                                     (4, 5),
+                                     (5, 6),
+                                     (6, 7),
+                                     (11, 15)]:
+            return 1
+        else:
+            return 0
+
     def step(self, action):
         self.steps += 1
         ax, ay = self.get_action_values(action)
+        state = self.agent_pos
         self.update_agent_position(ax, ay)
-        reward = -1
+        next_state = self.agent_pos
+        reward = self.reward_table(state, next_state)
         is_terminal = self.agent_pos == self.term
         trunc = self.steps >= self.max_steps
         return self.agent_pos, reward, is_terminal, trunc, None
