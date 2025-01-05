@@ -8,8 +8,8 @@ from rai.rl.agents.learner import Learner
 
 class DP(Learner):
     """ dynamic programming learner """
-    def __init__(self, env: gym.Env, n_runs: int, n_episodes: int, seed: int):
-        super().__init__(env, n_runs, n_episodes, seed)
+    def __init__(self, env: gym.Env, n_runs: int, n_episodes: int):
+        super().__init__(env, n_runs, n_episodes)
         self.values = np.zeros(self.env.observation_space.n)
         self.qtable = np.zeros((self.env.observation_space.n,
                                 self.env.action_space.n))

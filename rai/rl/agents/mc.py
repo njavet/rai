@@ -1,4 +1,5 @@
 import numpy as np
+import gymnasium as gym
 from collections import defaultdict
 
 # project imports
@@ -7,13 +8,21 @@ from rai.utils.helpers import random_argmax
 
 
 class MonteCarlo(Learner):
-    def __init__(self, env, params):
-        super().__init__(env, params)
-        self.gamma = params.gamma
-        self.eps = params.epsilon
-        self.eps_min = params.epsilon_min
-        self.decay = params.decay
-        self.qtable = np.zeros((params.state_size, params.action_size))
+    def __init__(self,
+                 env: gym.Env,
+                 n_runs: int,
+                 n_episodes: int,
+                 gamma: float,
+                 epsilon: float,
+                 epsilon_min: float,
+                 decay: float) -> None:
+        super().__init__(env, n_runs, n_episodes)
+        self.gamma = gamma
+        self.eps = epsilon
+        self.eps_min = epsilon_min
+        self.decay = decay
+        self.qtable = np.zeros((env.observation_space.n,
+                                env.action_space.n))
         self.returns = defaultdict(list)
         self.counts = defaultdict(int)
         self.trajectories = defaultdict(list)
@@ -39,17 +48,18 @@ class MonteCarlo(Learner):
                 self.qtable[s, a] = np.mean(rewards) / self.counts[(s, a)]
 
     def learn(self):
-        qtables = np.zeros((self.params.n_runs,
-                            self.params.state_size,
-                            self.params.action_size))
-        for n in range(self.params.n_runs):
+        qtables = np.zeros((self.n_runs,
+                            self.env.observation_space.n,
+                            self.env.action_space.n))
+        for n in range(self.n_runs):
             self.returns = defaultdict(list)
             self.counts = defaultdict(int)
-            self.qtable = np.zeros((self.params.state_size, self.params.action_size))
-            for episode in range(self.params.total_episodes):
+            self.qtable = np.zeros((self.env.observation_space.n,
+                                    self.env.action_space.n))
+            for episode in range(self.n_episodes):
                 self.generate_trajectory()
                 # collect all trajectories
                 self.trajectories[(n, episode)] = self.trajectory
-                self.process_trajectory(episode)
+                self.process_episode(episode)
                 qtables[n, :, :] = self.qtable
         self.qtable = np.mean(qtables, axis=0)
