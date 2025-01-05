@@ -1,20 +1,13 @@
-from typing import Any
 import gymnasium as gym
-from gymnasium.core import ObsType
+
+# project imports
+from rai.rl.models.base import BaseGridModel
 
 
-class GridEnv(gym.Env):
-    def __init__(self,
-                 m: int = 4,
-                 n: int = 4,
-                 max_steps: int = 300,
-                 render_mode=None) -> None:
-        super().__init__(render_mode)
-        self.m = m
-        self.n = n
-        self.max_steps = max_steps
-        self.steps = 0
-        self.state = 0
+class FLModel(BaseGridModel):
+    def __init__(self, m: int, n: int, env: gym.Env) -> None:
+        super().__init__(m, n)
+        self.env = env
         self.terminal_state = None
 
     def reset(self,

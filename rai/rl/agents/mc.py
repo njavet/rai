@@ -82,6 +82,8 @@ class MonteCarlo(Learner):
                 self.trajectories[(n, episode)] = self.trajectory
                 self.process_episode(episode)
                 qtables[n, :, :] = self.qtable
+                if episode % 1000 == 0:
+                    print(f'episode {episode}, steps: {len(self.trajectory.steps)}')
             qtable = np.mean(qtables, axis=0)
             vtable = np.sum(qtable, axis=1)
             print(f'run {n} done...')

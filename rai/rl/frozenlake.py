@@ -34,8 +34,8 @@ def frozenlake():
     env = get_env(params)
 
     mcfv = MonteCarlo(env,
-                      n_runs=16,
-                      n_episodes=50000,
+                      n_runs=1,
+                      n_episodes=100000,
                       gamma=0.90,
                       epsilon=1,
                       epsilon_min=0.05,
