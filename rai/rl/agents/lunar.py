@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from collections import deque
 import torch
 import torch.nn.functional as F
@@ -17,28 +18,28 @@ class Agent:
                  batch_size: int):
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.policy_net = DQN(state_dim, action_dim)
-        self.target_net = DQN(state_dim, action_dim)
+        self.policy_net = DQN(state_dim, action_dim).to('cuda')
+        self.target_net = DQN(state_dim, action_dim).to('cuda')
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.optimizer = Adam(self.policy_net.parameters(), lr=lr)
         self.memory = ReplayMemory(capacity=capacity)
         self.epsilon = 1.0
         self.eps_min = 0.05
-        self.decay = 0.995
+        self.decay = 0.9995
         self.gamma = 0.99
         self.batch_size = batch_size
         self.steps = 0
 
     def optimal_policy(self, state):
         with torch.no_grad():
-            return self.target_net(torch.FloatTensor(state)).argmax().item()
+            return self.target_net(torch.tensor(state, device='cuda')).argmax().item()
 
     def select_action(self, state):
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
         else:
             with torch.no_grad():
-                return self.policy_net(torch.FloatTensor(state)).argmax().item()
+                return self.policy_net(torch.tensor(state, device='cuda')).argmax().item()
 
     def optimize_model(self):
         if len(self.memory) < self.batch_size:
@@ -46,11 +47,11 @@ class Agent:
 
         batch = self.memory.sample(self.batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
-        states = torch.FloatTensor(states)
-        actions = torch.LongTensor(actions).unsqueeze(1)
-        rewards = torch.FloatTensor(rewards)
-        next_states = torch.FloatTensor(next_states)
-        dones = torch.FloatTensor(dones)
+        states = torch.tensor(np.array(states), device='cuda', dtype=torch.float32)
+        actions = torch.tensor(np.array(actions), device='cuda', dtype=torch.long).unsqueeze(1)
+        rewards = torch.tensor(np.array(rewards), device='cuda', dtype=torch.float32)
+        next_states = torch.tensor(np.array(next_states), device='cuda', dtype=torch.float32)
+        dones = torch.tensor(np.array(dones), device='cuda', dtype=torch.float32)
 
         q_values = self.policy_net(states).gather(1, actions)
         next_q_values = self.target_net(next_states).max(1)[0].detach()
