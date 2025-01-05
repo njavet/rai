@@ -29,22 +29,20 @@ def frozenlake():
     params = {'is_slippery': True,
               'proba_frozen': 0.8,
               'seed': 0x101,
-              'map_size': 4,
+              'map_size': 8,
               'render_mode': 'rgb_array'}
     env = get_env(params)
 
-    dp = DP(env, 0, 0, 1)
-    dp.compute_optimal_value_function()
-
     mcfv = MonteCarlo(env,
                       n_runs=16,
-                      n_episodes=1024000,
-                      gamma=0.99,
+                      n_episodes=100000,
+                      gamma=0.90,
                       epsilon=1,
                       epsilon_min=0.05,
                       decay=0.99,
                       fv=True)
     train_and_show(mcfv, env, params['map_size'])
+    plt.show()
     return
 
     mcev = MonteCarlo(env,

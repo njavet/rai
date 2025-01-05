@@ -10,6 +10,9 @@ class Learner(SchopenhauerAgent):
         self.n_runs = n_runs
         self.n_episodes = n_episodes
 
+    def epsilon_decay(self):
+        raise NotImplementedError
+
     def learn(self):
         for n in range(self.n_episodes):
             self.generate_trajectory()

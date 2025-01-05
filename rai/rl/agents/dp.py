@@ -27,11 +27,12 @@ class DP(Learner):
         self.pi = defaultdict(int)
         self.get_info()
 
-    def reward_func(self, state):
-        if state == self.size * self.size - 1:
-            return 1
-        else:
-            return 0
+    def reward_func(self, state, next_state):
+        st = self.size * self.size - 1
+        if state == st - 1 or state == st - self.size:
+            if next_state == st:
+                return 1
+        return 0
 
     def get_info(self):
         arr = self.env.unwrapped.desc.astype(str)
@@ -70,7 +71,7 @@ class DP(Learner):
         self.reset()
         for i in range(n_iter):
             for state in range(self.env.observation_space.n):
-                if state in self.holes:
+                if state in self.holes or state == self.size * self.size - 1:
                     self.values[state] = 0
                     continue
                 lst0 = []
@@ -89,12 +90,9 @@ class DP(Learner):
         else:
             actions = [0, action, 2]
 
-        states = []
-        rewards = []
+        res = 0
         for a in actions:
             ns = self.get_next_state(state, a)
-            states.append(ns)
-            rs = self.reward_func(ns)
-            rewards.append(rs)
-        return sum([tprob * (r + self.gamma * self.values[n])
-                    for r, n in zip(rewards, states)])
+            rs = self.reward_func(state, ns)
+            res += tprob * (rs + self.gamma * self.values[ns])
+        return res

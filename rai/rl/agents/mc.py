@@ -30,8 +30,7 @@ class MonteCarlo(Learner):
         self.trajectories = defaultdict(list)
 
     def policy(self, state):
-        epsilon = max(self.eps_min, self.eps * self.decay)
-        if np.random.rand() < epsilon:
+        if np.random.rand() < self.eps:
             action = self.env.action_space.sample()
         else:
             action = random_argmax(self.qtable[state])
@@ -42,6 +41,7 @@ class MonteCarlo(Learner):
             self._process_fv()
         else:
             self._process_ev()
+        self.eps = max(self.eps_min, self.decay * self.eps)
 
     def _process_fv(self):
         total_reward = 0
@@ -75,10 +75,14 @@ class MonteCarlo(Learner):
             self.counts = defaultdict(int)
             self.qtable = np.zeros((self.env.observation_space.n,
                                     self.env.action_space.n))
+            self.eps = 1.
             for episode in range(self.n_episodes):
                 self.generate_trajectory()
                 # collect all trajectories
                 self.trajectories[(n, episode)] = self.trajectory
                 self.process_episode(episode)
                 qtables[n, :, :] = self.qtable
+            qtable = np.mean(qtables, axis=0)
+            vtable = np.sum(qtable, axis=1)
+            print(f'run {n} done...')
         self.qtable = np.mean(qtables, axis=0)
