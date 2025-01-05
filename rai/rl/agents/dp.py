@@ -9,8 +9,14 @@ from rai.rl.agents.learner import Learner
 class DP(Learner):
     """ dynamic programming learner for frozenlake"""
 
-    def __init__(self, env: gym.Env, n_runs: int, n_episodes: int, model=None):
+    def __init__(self,
+                 env: gym.Env,
+                 n_runs: int,
+                 n_episodes: int,
+                 gamma: float,
+                 model=None):
         super().__init__(env, n_runs, n_episodes)
+        self.gamma = gamma
         self.model = model
         self.size = None
         self.holes = None
@@ -20,6 +26,34 @@ class DP(Learner):
                                 self.env.action_space.n))
         self.pi = defaultdict(int)
         self.get_info()
+
+    def reward_func(self, state):
+        if state == self.size * self.size - 1:
+            return 1
+        else:
+            return 0
+
+    def get_info(self):
+        arr = self.env.unwrapped.desc.astype(str)
+        self.size = arr.shape[0]
+        self.holes = np.argwhere(arr == 'H').tolist()
+
+    def get_next_state(self, state, action):
+        m, n = divmod(state, self.size)
+        if action == 0:
+            am, an = 0, -1
+        elif action == 1:
+            am, an = 1, 0
+        elif action == 2:
+            am, an = 0, 1
+        elif action == 3:
+            am, an = -1, 0
+
+        m1 = max(m + am, 0)
+        n1 = max(n + an, 0)
+        m_new = min(m1, self.size - 1)
+        n_new = min(n1, self.size - 1)
+        return m_new * self.size + n_new
 
     def reset(self):
         super().reset()
@@ -44,23 +78,19 @@ class DP(Learner):
                 self.values[state] = v
                 self.pi[state] = a
 
-    def get_position(self, state: int) -> tuple[int, int]:
-        m, n = divmod(state, self.size)
-        return m, n
-    def get_info(self):
-        arr = self.env.unwrapped.desc.astype(str)
-        self.size = arr.shape[0]
-        self.holes = np.argwhere(arr == 'H').tolist()
-
-    def get_perpendicular_actions(self, action: int):
-        if action == 0 or action == 2:
-            return 1, 3
-        elif action == 1 or action == 3:
-            return 0, 2
-
     def _compute_state_action_value(self, state: int, action: int) -> float:
-        # TODO params transistion probas
-        p0, p1 = self.model.get_per
+        tprob = 1 / 3
+        if action == 0 or action == 2:
+            actions = [1, action, 3]
+        else:
+            actions = [0, action, 2]
 
-        pass
-
+        states = []
+        rewards = []
+        for a in actions:
+            ns = self.get_next_state(state, a)
+            states.append(ns)
+            rs = self.reward_func(ns)
+            rewards.append(rs)
+        return sum([tprob * (r + self.gamma * self.values[n])
+                    for r, n in zip(rewards, states)])
