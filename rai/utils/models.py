@@ -1,22 +1,18 @@
 from pydantic import BaseModel, Field
-from pathlib import Path
 
 
-class Params(BaseModel):
-    total_episodes: int
+class LearnerParams(BaseModel):
     alpha: float
     gamma: float
     epsilon: float
     epsilon_min: float
     decay: float
-    map_size: int
-    seed: int
-    is_slippery: bool
+
+
+class OrchestratorParams(BaseModel):
     n_runs: int
-    proba_frozen: float
-    savefig_folder: Path
-    action_size: int | None
-    state_size: int | None
+    n_episodes: int
+    seed: int
 
 
 class TrajectoryStep(BaseModel):
