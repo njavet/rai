@@ -36,7 +36,8 @@ class DP(Learner):
     def get_info(self):
         arr = self.env.unwrapped.desc.astype(str)
         self.size = arr.shape[0]
-        self.holes = np.argwhere(arr == 'H').tolist()
+        hs = np.argwhere(arr == 'H').tolist()
+        self.holes = [t[0] * self.size + t[1] for t in hs]
 
     def get_next_state(self, state, action):
         m, n = divmod(state, self.size)
@@ -69,6 +70,9 @@ class DP(Learner):
         self.reset()
         for i in range(n_iter):
             for state in range(self.env.observation_space.n):
+                if state in self.holes:
+                    self.values[state] = 0
+                    continue
                 lst0 = []
                 for action in range(self.env.action_space.n):
                     val = self._compute_state_action_value(state, action)

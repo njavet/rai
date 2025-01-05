@@ -3,6 +3,7 @@ from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 import matplotlib.pyplot as plt
 
 # project imports
+from rai.rl.agents.dp import DP
 from rai.rl.agents.mc import MonteCarlo
 from rai.utils.helpers import plot_q_values_map
 
@@ -28,9 +29,12 @@ def frozenlake():
     params = {'is_slippery': True,
               'proba_frozen': 0.8,
               'seed': 0x101,
-              'map_size': 6,
+              'map_size': 4,
               'render_mode': 'rgb_array'}
     env = get_env(params)
+
+    dp = DP(env, 0, 0, 1)
+    dp.compute_optimal_value_function()
 
     mcfv = MonteCarlo(env,
                       n_runs=16,
