@@ -1,9 +1,14 @@
+import torch
+import numpy as np
+import gymnasium as gym
+from gymnasium import spaces
+import pygame
+from gymnasium.core import RenderFrame
 
 # project imports
-from rai.rl.envs.base import BaseEnv
 
 
-class Grid(BaseEnv):
+class GridEnv(gym.Env):
     def __init__(self, m: int = 5, n: int = 5):
         super().__init__('grid')
         self.m = m
