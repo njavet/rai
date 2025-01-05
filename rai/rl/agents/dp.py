@@ -37,6 +37,7 @@ class DP(Learner):
                 self.pi[state] = a
 
     def _compute_state_action_value(self, state: int, action: int) -> float:
-        # TODO params
+        # TODO params transistion probas
+
         pass
 

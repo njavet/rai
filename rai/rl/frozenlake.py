@@ -24,7 +24,7 @@ def frozenlake():
               'map_size': 4,
               'render_mode': 'human'}
     env = get_env(params)
-    dp = DP(env.state_space)
+    dp = DP(env.observation_space, env.action_space)
 
     mcev_agent = MonteCarloEV(env, params)
     mcev_agent.learn()
