@@ -7,10 +7,10 @@ from rai.utils.models import Trajectory
 
 class Learner(ABC):
     def __init__(self,
-                 state_space: Discrete,
+                 obs_space: Discrete,
                  action_space: Discrete,
                  params=None):
-        self.state_space = state_space
+        self.obs_space = obs_space
         self.action_space = action_space
         self.params = params
         self.trajectory: Trajectory = Trajectory()
