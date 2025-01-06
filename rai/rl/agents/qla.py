@@ -23,6 +23,7 @@ class QAgent(SchopenhauerAgent):
         self.eps_min = epsilon_min
         self.decay = decay
         self.double_q = double_q
+        self.qtable = np.zeros((env.observation_space.n, env.action_space.n))
         self.q0 = np.zeros((env.observation_space.n, env.action_space.n))
         self.q1 = np.zeros((env.observation_space.n, env.action_space.n))
         self.trajectories = defaultdict(list)
@@ -45,12 +46,12 @@ class QAgent(SchopenhauerAgent):
             tmp = r - self.q0[s, a]
             self.q0[s, a] += self.alpha * tmp
         elif np.random.rand() < 0.5:
-            q1_action = random_argmax(self.q1[ns])
-            tmp = r + self.gamma * self.q0[ns, q1_action] - self.q0[s, a]
+            q0_action = random_argmax(self.q0[ns])
+            tmp = r + self.gamma * self.q1[ns, q0_action] - self.q0[s, a]
             self.q0[s, a] += self.alpha * tmp
         else:
-            q0_action = random_argmax(self.q0[ns])
-            tmp = r + self.gamma * self.q1[ns, q0_action] - self.q1[s, a]
+            q1_action = random_argmax(self.q1[ns])
+            tmp = r + self.gamma * self.q0[ns, q1_action] - self.q1[s, a]
             self.q1[s, a] += self.alpha * tmp
 
     def process_episode(self, episode: int) -> None:
@@ -74,4 +75,4 @@ class QAgent(SchopenhauerAgent):
                 self.process_episode(episode)
                 qtables[run, :, :] = np.mean(self.q0 + self.q1)
             print(f'run {run} done...')
-        self.q0 = np.mean(qtables, axis=0)
+        self.qtable = np.mean(qtables, axis=0)
