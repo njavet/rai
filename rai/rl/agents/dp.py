@@ -3,10 +3,10 @@ import gymnasium as gym
 from collections import defaultdict
 
 # project imports
-from rai.rl.agents.learner import Learner
+from rai.rl.agents.schopenhauer import SchopenhauerAgent
 
 
-class DP(Learner):
+class DP(SchopenhauerAgent):
     """ dynamic programming learner for frozenlake"""
 
     def __init__(self,

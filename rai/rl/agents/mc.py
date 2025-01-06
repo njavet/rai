@@ -3,21 +3,19 @@ import gymnasium as gym
 from collections import defaultdict
 
 # project imports
-from rai.rl.agents.learner import Learner
+from rai.rl.agents.schopenhauer import SchopenhauerAgent
 from rai.utils.helpers import random_argmax
 
 
-class MonteCarlo(Learner):
+class MonteCarlo(SchopenhauerAgent):
     def __init__(self,
                  env: gym.Env,
-                 n_runs: int,
-                 n_episodes: int,
                  gamma: float,
                  epsilon: float,
                  epsilon_min: float,
                  decay: float,
                  fv: bool) -> None:
-        super().__init__(env, n_runs, n_episodes)
+        super().__init__(env)
         self.gamma = gamma
         self.eps = epsilon
         self.eps_min = epsilon_min
@@ -29,21 +27,21 @@ class MonteCarlo(Learner):
         self.counts = defaultdict(int)
         self.trajectories = defaultdict(list)
 
-    def policy(self, state):
+    def policy(self, state: int) -> int:
         if np.random.rand() < self.eps:
             action = self.env.action_space.sample()
         else:
             action = random_argmax(self.qtable[state])
         return action
 
-    def process_episode(self, episode):
+    def process_episode(self, episode: int) -> None:
         if self.fv:
             self._process_fv()
         else:
             self._process_ev()
         self.eps = max(self.eps_min, self.decay * self.eps)
 
-    def _process_fv(self):
+    def _process_fv(self) -> None:
         total_reward = 0
         visited_states = set()
         for ts in reversed(self.trajectory.steps):
@@ -54,7 +52,7 @@ class MonteCarlo(Learner):
                 self.returns[(s, a)].append(total_reward)
                 self.qtable[s, a] = np.mean(self.returns[(s, a)])
 
-    def _process_ev(self):
+    def _process_ev(self) -> None:
         total_reward = 0
         for ts in reversed(self.trajectory.steps):
             s, a, r = ts.state, ts.action, ts.reward
@@ -66,25 +64,21 @@ class MonteCarlo(Learner):
             if rewards:
                 self.qtable[s, a] = np.mean(rewards) / self.counts[(s, a)]
 
-    def learn(self):
-        qtables = np.zeros((self.n_runs,
+    def learn(self, n_runs, n_episodes):
+        qtables = np.zeros((n_runs,
                             self.env.observation_space.n,
                             self.env.action_space.n))
-        for n in range(self.n_runs):
+        for run in range(n_runs):
             self.returns = defaultdict(list)
             self.counts = defaultdict(int)
             self.qtable = np.zeros((self.env.observation_space.n,
                                     self.env.action_space.n))
             self.eps = 1.
-            for episode in range(self.n_episodes):
+            for episode in range(n_episodes):
                 self.generate_trajectory()
                 # collect all trajectories
-                self.trajectories[(n, episode)] = self.trajectory
+                self.trajectories[(run, episode)] = self.trajectory
                 self.process_episode(episode)
-                qtables[n, :, :] = self.qtable
-                if episode % 1000 == 0:
-                    print(f'episode {episode}, steps: {len(self.trajectory.steps)}')
-            qtable = np.mean(qtables, axis=0)
-            vtable = np.sum(qtable, axis=1)
-            print(f'run {n} done...')
+                qtables[run, :, :] = self.qtable
+            print(f'run {run} done...')
         self.qtable = np.mean(qtables, axis=0)
