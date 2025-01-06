@@ -26,7 +26,6 @@ class DQNAgent:
         self.policy_net = DQN(self.obs_dim, self.action_dim).to(self.dev)
         self.target_net = DQN(self.obs_dim, self.action_dim).to(self.dev)
         self.target_net.load_state_dict(self.policy_net.state_dict())
-        # self.target_net.eval()
         self.memory = ReplayMemory(self.dev, capacity=memory_size)
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=lr)
         self.batch_size = batch_size
@@ -47,6 +46,7 @@ class DQNAgent:
         return actions
 
     def train(self):
+        self.steps += 1
         if len(self.memory) < self.batch_size:
             return
         states, actions, rewards, next_states, dones = self.memory.sample(self.batch_size)

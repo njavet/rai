@@ -24,6 +24,7 @@ scikit-learn = "^1.6.0"
 scipy = "^1.14.1"
 torch = "^2.5.1"
 copier = "^9.4.1"
+stable-baselines3 = {extras = ["extra"], version = "^2.4.0"}
 
 [build-system]
 requires = ["poetry-core"]
@@ -33,4 +34,5 @@ build-backend = "poetry.core.masonry.api"
 grid = "rai.rl.grid:main"
 fl = "rai.rl.frozenlake:frozenlake"
 play_2048 = "rai.rl.g2048:play_2048"
-lunar = "rai.rl.lunar:evaluate"
+lunar = "rai.rl.lunar:train_agent"
+leval = "rai.rl.lunar:evaluate"
