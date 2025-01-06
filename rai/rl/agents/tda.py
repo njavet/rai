@@ -34,18 +34,14 @@ class TDAgent(SchopenhauerAgent):
         return action
 
     def process_step(self) -> None:
-        # temporal difference learning
         # q learning
         ts = self.trajectory.steps[-1]
         s, a, r, ns = ts.state, ts.action, ts.reward, ts.next_state
         if ts.terminal:
-            tmp = r - self.vtable[s]
-            tmp_q = r - self.qtable[s, a]
+            tmp = r - self.qtable[s, a]
         else:
-            tmp = r + self.gamma * self.vtable[ns] - self.vtable[s]
-            tmp_q = r + self.gamma * np.max(self.qtable[ns]) - self.qtable[s, a]
-        self.vtable[s] = self.vtable[s] + self.alpha * tmp
-        self.qtable[s, a] = self.qtable[s, a] + self.alpha * tmp_q
+            tmp = r + self.gamma * np.max(self.qtable[ns]) - self.qtable[s, a]
+        self.qtable[s, a] += self.alpha * tmp
 
     def process_episode(self, episode: int) -> None:
         self.eps = max(self.eps_min, self.decay * self.eps)
@@ -54,18 +50,14 @@ class TDAgent(SchopenhauerAgent):
         qtables = np.zeros((n_runs,
                             self.env.observation_space.n,
                             self.env.action_space.n))
-        vtables = np.zeros((n_runs, self.env.observation_space.n))
         for run in range(n_runs):
             self.qtable = np.zeros((self.env.observation_space.n,
                                     self.env.action_space.n))
-            self.vtable = np.zeros(self.env.observation_space.n)
             self.eps = 1.
             for episode in range(n_episodes):
                 self.generate_trajectory()
                 self.trajectories[(run, episode)] = self.trajectory
                 self.process_episode(episode)
                 qtables[run, :, :] = self.qtable
-                vtables[run, :] = self.vtable
             print(f'run {run} done...')
-        self.vtable = np.mean(vtables, axis=0)
         self.qtable = np.mean(qtables, axis=0)

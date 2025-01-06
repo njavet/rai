@@ -60,4 +60,3 @@ class SchopenhauerAgent(ABC):
 
     def process_episode(self, episode: int) -> None:
         pass
-
