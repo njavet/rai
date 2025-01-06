@@ -1,6 +1,5 @@
 from abc import ABC
 import gymnasium as gym
-import numpy as np
 
 # project imports
 from rai.utils.models import Trajectory, TrajectoryStep
@@ -24,16 +23,13 @@ class SchopenhauerAgent(ABC):
     def reset(self):
         self.trajectory = Trajectory()
 
-    def exec_step(self,
-                  state: np.ndarray,
-                  action: np.ndarray) -> tuple[TrajectoryStep, bool]:
+    def exec_step(self, state: int, action: int) -> tuple[TrajectoryStep, bool]:
         next_state, reward, term, trunc, info = self.env.step(action)
+        ts = TrajectoryStep(state=state,
+                            action=action,
+                            reward=reward,
+                            next_state=next_state)
         done = term or trunc
-        ts = TrajectoryStep(state=np.array(state, dtype=np.float32),
-                            action=np.array(action, dtype=np.long),
-                            reward=np.array(reward, dtype=np.float32),
-                            next_state=np.array(next_state, dtype=np.float32),
-                            done=np.array(done, dtype=np.float32))
         return ts, done
 
     def process_step(self):
