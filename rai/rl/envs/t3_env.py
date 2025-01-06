@@ -1,20 +1,19 @@
 from typing import Any
-
 import gymnasium as gym
 from gymnasium.core import ObsType
-from gymnasium.spaces import Discrete, MultiDiscrete
-from rich.console import Console
+from gymnasium.spaces import Discrete, MultiBinary
 import numpy as np
-from rich.text import Text
 
 # project imports
 
 
 class T3Env(gym.Env):
-    def __init__(self, render_mode=None):
+    def __init__(self, player: str = 'X', size: int = 9, render_mode=None):
         self.render_mode = render_mode
-        self.observation_space = Discrete(9)
-        self.action_space = Discrete(9)
+        self.player = player
+        self.size = size
+        self.observation_space = MultiBinary(3 * self.size * self.size)
+        self.action_space = Discrete(self.size * self.size)
 
     def reset(
         self,
@@ -22,6 +21,9 @@ class T3Env(gym.Env):
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[ObsType, dict[str, Any]]:
+
+    def get_obs(self):
+        pass
 
     # TODO different than other envs, move restrictions
     def available_moves(self) -> list[int]:

@@ -9,6 +9,7 @@ class TrajectoryStep(BaseModel):
     action: int
     reward: float
     next_state: int
+    terminal: bool
 
 
 class Trajectory(BaseModel):
@@ -38,7 +39,8 @@ class SchopenhauerAgent(ABC):
         ts = TrajectoryStep(state=state,
                             action=action,
                             reward=reward,
-                            next_state=next_state)
+                            next_state=next_state,
+                            terminal=term)
         done = term or trunc
         return ts, done
 
