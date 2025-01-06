@@ -1,8 +1,18 @@
+""" agent for basic gym envs, integer states """
 from abc import ABC
+from pydantic import BaseModel, Field
 import gymnasium as gym
 
-# project imports
-from rai.utils.models import Trajectory, TrajectoryStep
+
+class TrajectoryStep(BaseModel):
+    state: int
+    action: int
+    reward: float
+    next_state: int
+
+
+class Trajectory(BaseModel):
+    steps: list[TrajectoryStep] = Field(default_factory=list)
 
 
 class SchopenhauerAgent(ABC):
@@ -12,15 +22,15 @@ class SchopenhauerAgent(ABC):
     only inside the agent. Another type would be a Cartesian Agent that is
     part of the environment. The third Agent type would be a mix of both.
     """
-    def __init__(self, env: gym.Env):
+    def __init__(self, env: gym.Env) -> None:
         """ params could be seen as given by nature / god """
         self.env = env
         self.trajectory: Trajectory = Trajectory()
 
-    def policy(self, state):
+    def policy(self, state: int) -> int:
         raise NotImplementedError
 
-    def reset(self):
+    def reset(self) -> None:
         self.trajectory = Trajectory()
 
     def exec_step(self, state: int, action: int) -> tuple[TrajectoryStep, bool]:
@@ -32,10 +42,10 @@ class SchopenhauerAgent(ABC):
         done = term or trunc
         return ts, done
 
-    def process_step(self):
+    def process_step(self) -> None:
         pass
 
-    def generate_trajectory(self, max_iter=None):
+    def generate_trajectory(self) -> None:
         self.reset()
         state, info = self.env.reset()
         done = False
@@ -46,5 +56,6 @@ class SchopenhauerAgent(ABC):
             self.process_step()
             state = ts.next_state
 
-    def process_episode(self, episode):
+    def process_episode(self, episode: int) -> None:
         pass
+
