@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # project imports
 from rai.rl.agents.mc import MonteCarlo
-from rai.rl.agents.tda import TDAgent
+from rai.rl.agents.qla import QAgent
 from rai.utils.helpers import plot_q_values_map
 
 
@@ -39,12 +39,12 @@ def frozenlake():
                       decay=0.995,
                       fv=True)
     train_and_show(mcfv, env, params['map_size'])
-    tda = TDAgent(env,
-                  alpha=0.2,
-                  gamma=0.85,
-                  epsilon=1,
-                  epsilon_min=0.01,
-                  decay=0.995)
+    tda = QAgent(env,
+                 alpha=0.2,
+                 gamma=0.85,
+                 epsilon=1,
+                 epsilon_min=0.01,
+                 decay=0.995)
     train_and_show(tda, env, params['map_size'])
     plt.show()
     return
