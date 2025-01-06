@@ -14,6 +14,4 @@ class Learner(SchopenhauerAgent):
         raise NotImplementedError
 
     def learn(self):
-        for n in range(self.n_episodes):
-            self.generate_trajectory()
-            self.process_episode(n)
+        raise NotImplementedError
