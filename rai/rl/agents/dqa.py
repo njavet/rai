@@ -6,14 +6,13 @@ import torch
 import torch.optim as optim
 
 # project imports
-from rai.rl.dqn import DQN
+from rai.rl.dqns import DQN
 
 
 class DQNAgent:
     def __init__(self,
-                 env: gym.Env,
-                 n_runs: int,
-                 n_episodes: int,
+                 obs_dim,
+                 action_dim,
                  memory_size: int,
                  batch_size: int,
                  target_update_steps: int,
@@ -22,10 +21,9 @@ class DQNAgent:
                  min_epsilon: float,
                  decay: float,
                  lr: float) -> None:
-        super().__init__(env, n_runs, n_episodes)
         self.dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.obs_dim = env.observation_space.shape[0]
-        self.action_dim = env.action_space.n
+        self.obs_dim = obs_dim
+        self.action_dim = action_dim
         self.policy_net = DQN(self.obs_dim, self.action_dim).to(self.dev)
         self.target_net = DQN(self.obs_dim, self.action_dim).to(self.dev)
         self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -40,10 +38,6 @@ class DQNAgent:
         self.decay = decay
         self.steps = 0
 
-    def optimal_policy(self, state):
-        with torch.no_grad():
-            return self.target_net(torch.tensor(state, device='cuda')).argmax().item()
-
     def select_actions(self, states):
         if random.random() < self.epsilon:
             return np.random.rand(self.action_dim, len(states))
@@ -52,9 +46,6 @@ class DQNAgent:
             q_values = self.policy_net(states)
         actions = q_values.argmax(dim=1).detach().cpu().numpy()
         return actions
-
-    def epsilon_decay(self):
-        self.epsilon = max(self.epsilon * self.decay, self.min_epsilon)
 
     def train(self):
         if len(self.memory) < self.batch_size:
@@ -72,8 +63,8 @@ class DQNAgent:
     def update_target_net(self):
         self.target_net.load_state_dict(self.policy_net.state_dict())
 
-    def process_episode(self, episode):
-        self.epsilon_decay()
+    def epsilon_decay(self):
+        self.epsilon = max(self.epsilon * self.decay, self.min_epsilon)
 
 
 class ReplayMemory:

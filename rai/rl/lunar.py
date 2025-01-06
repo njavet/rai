@@ -3,17 +3,25 @@ from gymnasium.wrappers import RecordVideo
 import torch
 
 # project imports
-from rai.rl.agents.lunar import Agent
+from rai.rl.agents.dqa import DQNAgent
 
 
 def train_agent():
-    env = gym.make('LunarLander-v3')
+    train_env = gym.make('LunarLander-v3')
+    obs_dim = train_env.observation_space.shape[0]
+    action_dim = train_env.action_space.n
 
-    agent = Agent(state_dim,
-                  action_dim,
-                  lr=0.001,
-                  capacity=1000000,
-                  batch_size=512)
+    agent = DQNAgent(obs_dim,
+                     action_dim,
+                     memory_size=1000000,
+                     batch_size=512,
+                     target_update_steps=101,
+                     gamma=0.99,
+                     epsilon=1.0,
+                     min_epsilon=0.01,
+                     decay=0.995,
+                     lr=0.001)
+
     for episode in range(1000):
         state = env.reset()[0]
         total_reward = 0

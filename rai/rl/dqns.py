@@ -1,6 +1,4 @@
 import torch.nn as nn
-import torch.nn.functional as F
-
 
 class DQN(nn.Module):
     def __init__(self, obs_dim, action_dim):
@@ -10,6 +8,7 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(128, action_dim)
 
     def forward(self, x):
-        x = F.relu(self.fc0(x))
-        x = F.relu(self.fc1(x))
+        x = nn.functional.relu(self.fc0(x))
+        x = nn.functional.relu(self.fc1(x))
         return self.fc2(x)
+
