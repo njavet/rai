@@ -1,5 +1,7 @@
 from abc import ABC
 import gymnasium as gym
+import torch
+import numpy as np
 
 # project imports
 from rai.utils.models import Trajectory, TrajectoryStep
@@ -15,6 +17,7 @@ class SchopenhauerAgent(ABC):
     def __init__(self, env: gym.Env):
         """ params could be seen as given by nature / god """
         self.env = env
+        self.dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.trajectory: Trajectory = Trajectory()
 
     def policy(self, state):
@@ -23,9 +26,27 @@ class SchopenhauerAgent(ABC):
     def reset(self):
         self.trajectory = Trajectory()
 
-    def exec_step(self, state, action) -> TrajectoryStep:
+    def exec_int_step(self, state: int, action: int) -> TrajectoryStep:
         next_state, reward, term, trunc, info = self.env.step(action)
         done = term or trunc
+        ts = TrajectoryStep(state=state,
+                            action=action,
+                            reward=reward,
+                            next_state=next_state,
+                            done=done)
+        return ts
+
+    def exec_tensor_step(self,
+                         state: np.ndarray,
+                         action: np.int64) -> TrajectoryStep:
+        next_state, reward, term, trunc, info = self.env.step(action)
+        done = term or trunc
+        # convert to torch tensors
+        state = torch.tensor(state, dtype=torch.float32, device=self.dev)
+        action = torch.tensor(state, dtype=torch.long, device=self.dev)
+        reward = torch.tensor(state, dtype=torch.float32, device=self.dev)
+        next_state = torch.tensor(next_state, dtype=torch.float32, device=self.dev)
+        done = torch.tensor(done, dtype=torch.float32, device=self.dev)
         ts = TrajectoryStep(state=state,
                             action=action,
                             reward=reward,
@@ -36,13 +57,16 @@ class SchopenhauerAgent(ABC):
     def process_step(self):
         pass
 
-    def generate_trajectory(self):
+    def generate_trajectory(self, max_iter=None, dtype=None):
         self.reset()
         state, info = self.env.reset()
         done = False
         while not done:
             action = self.policy(state)
-            ts = self.exec_step(state, action)
+            if dtype is None:
+                ts = self.exec_int_step(state, action)
+            else:
+                ts = self.exec_tensor_step(state, action)
             self.trajectory.steps.append(ts)
             self.process_step()
             state = ts.next_state
