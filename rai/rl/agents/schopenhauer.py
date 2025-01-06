@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import Union
 import gymnasium as gym
 import numpy as np
 

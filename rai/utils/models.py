@@ -1,16 +1,11 @@
 from pydantic import BaseModel, Field
-import numpy as np
 
 
 class TrajectoryStep(BaseModel):
-    state: np.ndarray
-    action: np.ndarray
-    reward: np.ndarray
-    next_state: np.ndarray
-    done: np.ndarray
-
-    class Config:
-        arbitrary_types_allowed = True
+    state: int
+    action: int
+    reward: float
+    next_state: int
 
 
 class Trajectory(BaseModel):
