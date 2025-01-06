@@ -7,12 +7,8 @@ from rai.rl.agents.lunar import Agent
 
 
 def train_agent():
-    env = gym.make('LunarLander-v3',
-                   continuous=False,
-                   gravity=-10)
+    env = gym.make('LunarLander-v3')
 
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.n
     agent = Agent(state_dim,
                   action_dim,
                   lr=0.001,

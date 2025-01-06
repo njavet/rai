@@ -5,7 +5,6 @@ import numpy as np
 import torch
 import torch.optim as optim
 
-
 # project imports
 from rai.rl.dqn import DQN
 
@@ -41,6 +40,10 @@ class DQNAgent:
         self.decay = decay
         self.steps = 0
 
+    def optimal_policy(self, state):
+        with torch.no_grad():
+            return self.target_net(torch.tensor(state, device='cuda')).argmax().item()
+
     def select_actions(self, states):
         if random.random() < self.epsilon:
             return np.random.rand(self.action_dim, len(states))
@@ -53,7 +56,7 @@ class DQNAgent:
     def epsilon_decay(self):
         self.epsilon = max(self.epsilon * self.decay, self.min_epsilon)
 
-    def process_step(self):
+    def train(self):
         if len(self.memory) < self.batch_size:
             return
         states, actions, rewards, next_states, dones = self.memory.sample(self.batch_size)
@@ -72,12 +75,9 @@ class DQNAgent:
     def process_episode(self, episode):
         self.epsilon_decay()
 
-    def learn(self):
-        pass
-
 
 class ReplayMemory:
-    def __init__(self, device: str, capacity: int):
+    def __init__(self, device: torch.device, capacity: int):
         self.device = device
         self.memory = deque(maxlen=capacity)
 
