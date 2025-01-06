@@ -18,7 +18,7 @@ def train_agent():
                   lr=0.001,
                   capacity=1000000,
                   batch_size=512)
-    for episode in range(11000):
+    for episode in range(1000):
         state = env.reset()[0]
         total_reward = 0
         done = False

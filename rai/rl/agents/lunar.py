@@ -24,9 +24,9 @@ class Agent:
         self.optimizer = Adam(self.policy_net.parameters(), lr=lr)
         self.memory = ReplayMemory(capacity=capacity)
         self.epsilon = 1.0
-        self.eps_min = 0.05
-        self.decay = 0.9995
-        self.gamma = 0.99
+        self.eps_min = 0.01
+        self.decay = 0.995
+        self.gamma = 0.98
         self.batch_size = batch_size
         self.steps = 0
 

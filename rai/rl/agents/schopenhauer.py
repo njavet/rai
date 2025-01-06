@@ -17,20 +17,21 @@ class SchopenhauerAgent(ABC):
         self.env = env
         self.trajectory: Trajectory = Trajectory()
 
-    def policy(self, state: int) -> int:
+    def policy(self, state):
         raise NotImplementedError
 
     def reset(self):
         self.trajectory = Trajectory()
 
-    def exec_step(self, state: int, action: int) -> tuple[TrajectoryStep, bool]:
+    def exec_step(self, state, action) -> TrajectoryStep:
         next_state, reward, term, trunc, info = self.env.step(action)
+        done = term or trunc
         ts = TrajectoryStep(state=state,
                             action=action,
                             reward=reward,
-                            next_state=next_state)
-        done = term or trunc
-        return ts, done
+                            next_state=next_state,
+                            done=done)
+        return ts
 
     def process_step(self):
         pass
@@ -41,11 +42,11 @@ class SchopenhauerAgent(ABC):
         done = False
         while not done:
             action = self.policy(state)
-            ts, done = self.exec_step(state, action)
+            ts = self.exec_step(state, action)
             self.trajectory.steps.append(ts)
-            # the agent might want to do something after each step
             self.process_step()
             state = ts.next_state
+            done = ts.done
 
     def process_episode(self, episode):
         pass

@@ -6,6 +6,7 @@ class TrajectoryStep(BaseModel):
     action: int
     reward: float
     next_state: int
+    done: bool
 
 
 class Trajectory(BaseModel):
