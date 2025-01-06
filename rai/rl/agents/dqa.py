@@ -29,8 +29,17 @@ class DQNAgent(Learner):
         self.action_dim = env.action_space.n
         self.policy_net = DQN(self.obs_dim, self.action_dim).to(self.dev)
         self.target_net = DQN(self.obs_dim, self.action_dim).to(self.dev)
-        self.memory =
+        self.memory = ReplayMemory(capacity=memory_size)
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=lr)
+        self.batch_size = batch_size
+        self.target_update_steps = target_update_steps
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.min_epsilon = min_epsilon
+        self.decay = decay
+
+    def epsilon_decay(self):
+        self.epsilon = max(self.epsilon * self.decay, self.min_epsilon)
 
 
 class ReplayMemory:
