@@ -1,6 +1,5 @@
 from collections import deque
 import random
-import gymnasium as gym
 import numpy as np
 import torch
 import torch.optim as optim
@@ -40,7 +39,7 @@ class DQNAgent:
 
     def select_actions(self, states):
         if random.random() < self.epsilon:
-            return np.random.rand(self.action_dim, len(states))
+            return np.random.randint(self.action_dim, size=len(states))
         states = torch.tensor(states, dtype=torch.float32, device=self.dev)
         with torch.no_grad():
             q_values = self.policy_net(states)
@@ -59,12 +58,13 @@ class DQNAgent:
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+        self.epsilon = max(self.epsilon * self.decay, self.min_epsilon)
+
+    def store_transitions(self, states, actions, rewards, next_states, dones):
+        self.memory.push(states, actions, rewards, next_states, dones)
 
     def update_target_net(self):
         self.target_net.load_state_dict(self.policy_net.state_dict())
-
-    def epsilon_decay(self):
-        self.epsilon = max(self.epsilon * self.decay, self.min_epsilon)
 
 
 class ReplayMemory:
@@ -72,7 +72,7 @@ class ReplayMemory:
         self.device = device
         self.memory = deque(maxlen=capacity)
 
-    def store_transitions(self, states, actions, rewards, next_states, dones):
+    def push(self, states, actions, rewards, next_states, dones):
         transitions = zip(states, actions, rewards, next_states, dones)
         for transition in transitions:
             self.memory.append(transition)

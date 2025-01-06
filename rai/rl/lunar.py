@@ -1,5 +1,8 @@
 import gymnasium as gym
 from gymnasium.wrappers import RecordVideo
+import numpy as np
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env import VecEnv
 import torch
 
 # project imports
@@ -7,9 +10,11 @@ from rai.rl.agents.dqa import DQNAgent
 
 
 def train_agent():
-    train_env = gym.make('LunarLander-v3')
+    train_env = make_vec_env('LunarLander-v3', n_envs=8)
     obs_dim = train_env.observation_space.shape[0]
     action_dim = train_env.action_space.n
+    episode_rewards = np.zeros(train_env.num_envs)
+    max_time_steps = 10000
 
     agent = DQNAgent(obs_dim,
                      action_dim,
@@ -22,27 +27,17 @@ def train_agent():
                      decay=0.995,
                      lr=0.001)
 
-    for episode in range(1000):
-        state = env.reset()[0]
-        total_reward = 0
-        done = False
-
-        while not done:
-            action = agent.select_action(state)
-            next_state, reward, term, trunc, _ = env.step(action)
-            agent.memory.push(state, action, reward, next_state, done)
-            state = next_state
-            total_reward += reward
-            agent.optimize_model()
-            if trunc:
-                print('agent got trunced')
-            done = term or trunc
-
-        agent.epsilon_decay()
-        if episode % 100 == 0:
-            agent.target_net.load_state_dict(agent.policy_net.state_dict())
-        print(f'Episode: {str(episode).zfill(5)}, Epsilon: {agent.epsilon:.3f}, Reward: {total_reward:.2f}')
-    torch.save(agent.target_net.state_dict(), 'lunar3.pth')
+    states = train_env.reset()
+    for step in range(max_time_steps):
+        actions = agent.select_actions(states)
+        next_states, rewards, dones, infos = train_env.step(actions)
+        episode_rewards += rewards
+        agent.store_transitions(states, actions, rewards, next_states, dones)
+        agent.train()
+        states = next_states
+        if step % 1000 == 0:
+            agent.update_target_net()
+    torch.save(agent.target_net.state_dict(), 'lunar_vec.pth')
     return agent
 
 
