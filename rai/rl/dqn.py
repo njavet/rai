@@ -10,7 +10,6 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(128, action_dim)
 
     def forward(self, x):
-        x0 = F.relu(self.fc0(x))
-        x1 = F.relu(self.fc1(x0))
-        x2 = F.relu(self.fc2(x1))
-        return x2
+        x = F.relu(self.fc0(x))
+        x = F.relu(self.fc1(x))
+        return self.fc2(x)
