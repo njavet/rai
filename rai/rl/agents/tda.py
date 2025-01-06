@@ -35,7 +35,8 @@ class TDAgent(SchopenhauerAgent):
 
     def process_step(self) -> None:
         # temporal difference learning
-        s, a, r, ns = self.trajectory.steps[-1]
+        ts = self.trajectory.steps[-1]
+        s, a, r, ns = ts.state, ts.action, ts.reward, ts.next_state
         tmp = r + self.gamma * self.vtable[ns] - self.vtable[s]
         self.vtable[s] = self.vtable[s] + self.alpha * tmp
 

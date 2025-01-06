@@ -1,22 +1,27 @@
+from typing import Any
+
+import gymnasium as gym
+from gymnasium.core import ObsType
+from gymnasium.spaces import Discrete, MultiDiscrete
 from rich.console import Console
 import numpy as np
 from rich.text import Text
 
 # project imports
-from rai.rl.envs.base import BaseEnv
 
 
-class T3Env(BaseEnv):
-    def __init__(self):
-        super().__init__('tictactoe')
-        self.console = Console()
-        self.size = 9
-        self.state = np.zeros(self.size, dtype=np.int8)
-        self.winner = None
+class T3Env(gym.Env):
+    def __init__(self, render_mode=None):
+        self.render_mode = render_mode
+        self.observation_space = Discrete(9)
+        self.action_space = Discrete(9)
 
-    def reset(self) -> tuple[int, str]:
-        self.state = np.zeros(9, dtype=np.int8)
-        return 0, 'reset'
+    def reset(
+        self,
+        *,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[ObsType, dict[str, Any]]:
 
     # TODO different than other envs, move restrictions
     def available_moves(self) -> list[int]:
