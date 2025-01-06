@@ -1,14 +1,13 @@
-from pydantic import BaseModel, Field, model_validator
-import torch
+from pydantic import BaseModel, Field
+import numpy as np
 
 
 class TrajectoryStep(BaseModel):
-    # TODO validate that all properties are of the same type
-    state: int | torch.tensor
-    action: int | torch.tensor
-    reward: float | torch.tensor
-    next_state: int | torch.tensor
-    done: bool | torch.tensor
+    state: np.ndarray
+    action: np.ndarray
+    reward: np.ndarray
+    next_state: np.ndarray
+    done: np.ndarray
 
     class Config:
         arbitrary_types_allowed = True

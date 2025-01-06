@@ -40,6 +40,19 @@ class DQNAgent(Learner):
     def epsilon_decay(self):
         self.epsilon = max(self.epsilon * self.decay, self.min_epsilon)
 
+    def process_step(self):
+        if len(self.memory) < self.batch_size:
+            return
+        self.memory.push(self.trajectory[-1])
+        batch = self.memory.sample(self.batch_size)
+
+
+        states, action, rewards, next_states, dones =
+        q_values = self.policy_net(states).gather(1, actions)
+
+    def process_episode(self, episode):
+        pass
+
     def learn(self):
         pass
 
@@ -52,7 +65,9 @@ class ReplayMemory:
         self.memory.append(args)
 
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+        batch = random.sample(self.memory, batch_size)
+        ts for ts in batch
+        ts.state
 
     def __len__(self):
         return len(self.memory)
