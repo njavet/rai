@@ -19,16 +19,16 @@ def get_env(params):
 
 
 def train_and_show(agent, env, map_size):
-    agent.learn(n_runs=8, n_episodes=50000)
+    agent.learn(n_runs=4, n_episodes=100000)
     fig = plot_q_values_map(agent.qtable, env, map_size)
     fig.show()
 
 
 def frozenlake():
     params = {'is_slippery': True,
-              'proba_frozen': 0.7,
+              'proba_frozen': 0.65,
               'seed': 0x101,
-              'map_size': 6,
+              'map_size': 8,
               'render_mode': 'rgb_array'}
     env = get_env(params)
 
@@ -38,10 +38,10 @@ def frozenlake():
                       epsilon_min=0.01,
                       decay=0.995,
                       fv=True)
-    train_and_show(mcfv, env, params['map_size'])
+    # train_and_show(mcfv, env, params['map_size'])
     tda = QAgent(env,
                  alpha=0.2,
-                 gamma=0.85,
+                 gamma=0.9,
                  epsilon=1,
                  epsilon_min=0.01,
                  decay=0.995)
